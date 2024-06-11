@@ -43,6 +43,7 @@ def verify_sig(sig: G1, pub_key: G2, msg_bytes: bytes, ) -> bool:
   
   gt1 = GT.pairing(msg_point, pub_key)
   gt2 = GT.pairing(sig, G2)
+
   return gt1 == gt2
 
 def map_to_curve(_x: bytes) -> G1:
@@ -69,8 +70,8 @@ def check_g1_and_g2_discrete_log_equality(p1: G1, p2: G2) -> bool:
   G1 = get_g1_generator()
   G2 = get_g2_generator()
   
-  gt1 = GTPoint.pairing(p1, G2)
-  gt2 = GTPoint.pairing(G1, p2)
+  gt1 = GT.pairing(p1, G2)
+  gt2 = GT.pairing(G1, p2)
   return gt1 == gt2
 
 def get_g1_generator() -> G1:
@@ -80,7 +81,7 @@ def get_g1_generator() -> G1:
 
 def get_g2_generator() -> G2:
   g2 = G2()
-  g2.setStr(f"1 {_G2_XA} {_G2_XB} {_G2_YA} {_G2_YB}".encode("utf-8"))
+  g2.setStr(f"1 {_G2_XB} {_G2_XA} {_G2_YB} {_G2_YA}".encode("utf-8"))
   return g2
 
 def mul_by_generator_g1(a: Fr) -> G1:

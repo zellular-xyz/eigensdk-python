@@ -6,6 +6,20 @@ from . import utils
 BUFFER_SIZE = 2048
 
 
+def buildClear(cls):
+    wrapper = utils.wrap_function(
+        hook.mclbn384_256,
+        f"mclBn{cls.__name__}_clear",
+        None,
+        [ctypes.POINTER(cls)],
+    )
+
+    def clear(self):
+        return wrapper(self)
+
+    return clear
+
+
 def buildSetStr(cls):
     wrapper = utils.wrap_function(
         hook.mclbn384_256,

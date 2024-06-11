@@ -16,6 +16,8 @@ class G1Point(G1):
   def __init__(self, x: int, y: int) -> None:
     super().__init__()
     self.setStr(f"1 {x} {y}".encode("utf-8"))
+    if x==0 and y==0:
+      self.clear()
 
   def add(self, a: 'G1Point'):
     return self + a
@@ -27,7 +29,10 @@ class G1Point(G1):
     return bn256Utils.check_g1_and_g2_discrete_log_equality(self, a)
   
 def new_g1_point(x: int, y: int) -> G1Point:
-  return G1Point(x, y)
+  res = G1Point(x, y)
+  if x == 0 and y == 0:
+    res.clear()
+  return res
 
 def new_zero_g1_point() -> G1Point:
   return new_g1_point(0, 0)
@@ -36,6 +41,8 @@ class G2Point(G2):
   def __init__(self, xa: int, xb: int, ya: int, yb: int) -> None:
     super().__init__()
     self.setStr(f"1 {xa} {xb} {ya} {yb}".encode("utf-8"))
+    if xa==0 and xb==0 and ya==0 and yb==0:
+      self.clear()
 
   def add(self, a: 'G2Point'):
     return self + a
@@ -51,7 +58,14 @@ def new_zero_g2_point() -> G2Point:
 
 class GTPoint(GT): pass
 
-class Signature(G1Point): 
+class Signature(G1Point):
+  
+  @staticmethod 
+  def from_g1_point(p: G1Point) -> 'Signature':
+    x = int(p.getX().getStr())
+    y = int(p.getY().getStr())
+    return Signature(x, y)
+
   def to_json() -> dict:pass
   def from_json(_json: dict) -> 'Signature':pass
 
@@ -73,7 +87,7 @@ class PrivateKey(Fr):
       self.setInt(int.from_bytes(secret, "big"))
 
   def get_str(self) -> str:
-    return self.getStr(16).decode("utf-8").zfill(64)
+    return self.getStr(16).decode("utf-8")#.zfill(64)
 
 def new_private_key(sk: bytes=b"") -> PrivateKey:
   return PrivateKey(sk)
@@ -90,7 +104,9 @@ class KeyPair:
 
   @staticmethod
   def from_string(sk: str) -> 'KeyPair':
-    return KeyPair(PrivateKey(bytes.fromhex(sk)))
+    _bytes = bytes.fromhex(sk)
+    _bytes = b"\x00" * (32-len(_bytes)) + _bytes
+    return KeyPair(PrivateKey(_bytes))
   
   def save_to_file(self, _path: str, password: bytes):
     keystore_json = {
@@ -114,7 +130,7 @@ class KeyPair:
 
   def sign_hashed_to_curve_message(self, msg_map_point: G1Point) -> Signature:
     sig = (msg_map_point * self.priv_key).normalize()
-    return Signature(sig)
+    return Signature.from_g1_point(sig)
 
   def get_pub_g1(self) -> G1Point:
     return bn256Utils.mul_by_generator_g1(self)

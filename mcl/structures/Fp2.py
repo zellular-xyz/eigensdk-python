@@ -11,3 +11,4 @@ class Fp2(ctypes.Structure):
 
 Fp2.get_a = builder.buildGetSubArray(Fp2, 1, Fp)
 Fp2.get_b = builder.buildGetSubArray(Fp2, 0, Fp)
+Fp2.clear = builder.buildClear(Fp2)
