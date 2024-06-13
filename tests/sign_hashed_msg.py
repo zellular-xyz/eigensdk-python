@@ -1,5 +1,5 @@
 import unittest
-from eigensdk_python.crypto.bls.attestation import KeyPair, PrivateKey, new_private_key, G1Point
+from eigensdk.crypto.bls.attestation import KeyPair, PrivateKey, new_private_key, G1Point
 
 def int2hex(num: int):
 	return format(num, '064x')

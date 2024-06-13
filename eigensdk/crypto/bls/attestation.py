@@ -97,7 +97,8 @@ class PrivateKey(Fr):
         if not secret:
             self.setHashOf(os.urandom(64))
         else:
-            self.setInt(int.from_bytes(secret, "big"))
+            int_key = int.from_bytes(secret, 'big')
+            self.setStr(f"{int_key}".encode("utf-8"), 10)
 
     def get_str(self) -> str:
         return self.getStr(16).decode("utf-8")  # .zfill(64)
@@ -118,10 +119,10 @@ class KeyPair:
         self.pub_g2 = bn256Utils.mul_by_generator_g2(self.priv_key).normalize()
 
     @staticmethod
-    def from_string(sk: str) -> "KeyPair":
-        _bytes = bytes.fromhex(sk)
-        _bytes = b"\x00" * (32 - len(_bytes)) + _bytes
-        return KeyPair(PrivateKey(_bytes))
+    def from_string(sk: str, base=16) -> "KeyPair":
+        pk = PrivateKey()
+        pk.setStr(sk.encode('utf-8'), base)
+        return KeyPair(pk)
 
     def save_to_file(self, _path: str, password: bytes):
         keystore_json = {
