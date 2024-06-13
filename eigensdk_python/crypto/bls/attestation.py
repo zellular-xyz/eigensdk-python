@@ -87,7 +87,7 @@ class PrivateKey(Fr):
       self.setInt(int.from_bytes(secret, "big"))
 
   def get_str(self) -> str:
-    return self.getStr(16).decode("utf-8")#.zfill(64)
+    return self.getStr(16).decode("utf-8").zfill(64)
 
 def new_private_key(sk: bytes=b"") -> PrivateKey:
   return PrivateKey(sk)
