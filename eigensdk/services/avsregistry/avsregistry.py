@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from eigensdk_python.crypto.bls.attestation import KeyPair, G1Point, G2Point, Signature
+from eigensdk.crypto.bls.attestation import KeyPair, G1Point, G2Point, Signature
 
 
 @dataclass
@@ -33,6 +33,7 @@ class QuorumAvsState:
     agg_pub_key_g1: G1Point
     block_number: int
 
+
 @dataclass
 class CallOpts:
     # Whether to operate on the pending state or the last known one
@@ -46,11 +47,17 @@ class CallOpts:
 
     # the field below is for golang. Don't know the proper replacement for it in python
     # Context: context.Context # Network context to support cancellation and timeouts (nil = no timeout)
-    def __init__(self, pending:bool=None, from_address:str = None, block_number:int = None, block_hash:str = None):
-         self.pending = pending
-         self.from_address = from_address
-         block_number = block_number
-         block_hash = block_hash
+    def __init__(
+        self,
+        pending: bool = None,
+        from_address: str = None,
+        block_number: int = None,
+        block_hash: str = None,
+    ):
+        self.pending = pending
+        self.from_address = from_address
+        block_number = block_number
+        block_hash = block_hash
 
 
 @dataclass
@@ -60,11 +67,12 @@ class OperatorStateRetrieverCheckSignaturesIndices:
     total_stake_indices: list[int]
     non_signer_stake_indices: list[list[int]]
 
+
 @dataclass
 class SignedTaskResponseDigest:
-	task_response: any
-	bls_signature: Signature
-	operator_id: int
+    task_response: any
+    bls_signature: Signature
+    operator_id: int
 
 
 class AvsRegistryService(ABC):
