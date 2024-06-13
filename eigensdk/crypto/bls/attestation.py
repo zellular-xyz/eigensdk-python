@@ -44,7 +44,7 @@ def new_zero_g1_point() -> G1Point:
 class G2Point(G2):
     def __init__(self, xa: int, xb: int, ya: int, yb: int) -> None:
         super().__init__()
-        self.setStr(f"1 {xa} {xb} {ya} {yb}".encode("utf-8"))
+        self.setStr(f"1 {xb} {xa} {yb} {ya}".encode("utf-8"))
         if xa == 0 and xb == 0 and ya == 0 and yb == 0:
             self.clear()
 
