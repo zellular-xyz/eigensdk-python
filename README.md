@@ -6,9 +6,10 @@ It required to [MCL](https://github.com/herumi/mcl) native package be installed.
 # build dependency
 $ sudo apt install libgmp3-dev
 
-# clone and build
-$ git clone https://github.com/herumi/mcl.git
-$ cd mcl
+# get and build
+$ wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip
+$ unzip v1.93.zip
+$ cd mcl-1.93
 $ mkdir build
 $ cd build
 $ cmake ..
