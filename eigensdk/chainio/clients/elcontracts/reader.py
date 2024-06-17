@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Tuple
+from typing import Tuple
 
 from eth_typing import Address
 from web3 import Web3
