@@ -2,16 +2,14 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 import eigensdk.crypto.bls.attestation as bls
-from eigensdk.services.avsregistry.avsregistry import (
-    AvsRegistryService,
+from eigensdk.services.avsregistry.avsregistry import AvsRegistryService
+from eigensdk._types import (
     OperatorAvsState,
     QuorumAvsState,
-    SignedTaskResponseDigest,
-    CallOpts,
+    SignedTaskResponseDigest
 )
-from eigensdk.utils import exeption_to_dict
-import asyncio
 import json
+import queue
 
 
 def is_json_serializable(obj):
@@ -44,9 +42,6 @@ class BlsAggregationServiceResponse:
     non_signer_stake_indices: list[list[int]] = None
 
     def to_json(self, indent=None) -> str:
-        if self.err is not None:
-            return json.dumps({"err": exeption_to_dict(self.err)}, indent=indent)
-
         if not is_json_serializable(self.task_response):
             raise ValueError("Task response is not json serializable.")
 
@@ -139,7 +134,7 @@ class BlsAggregationServiceInterface(ABC):
     # Any task that is completed (see the completion criterion in the comment above InitializeNewTask)
     # will be sent on this channel along with all the necessary information to call BLSSignatureChecker onchain
     @abstractmethod
-    async def get_aggregated_response() -> BlsAggregationServiceResponse: ...
+    def get_aggregated_responses() -> BlsAggregationServiceResponse: ...
 
 
 class BlsAggregationService(BlsAggregationServiceInterface):
@@ -155,11 +150,12 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         quorum_apks_g1: list[G1Point]
         aggregated_operators_dict: dict
         timeout: int
-        future: asyncio.Future
         signatures: dict
 
     avs_registry_service: AvsRegistryService
-    aggregated_responses: dict[int, TaskListItem]
+    responses: dict[int, TaskListItem]
+    aggregated_responses: queue.Queue
+
 
     def __init__(
         self,
@@ -168,12 +164,13 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         # logger: any
     ) -> None:
         super().__init__()
-        self.aggregated_responses = {}
+        self.responses = {}
+        self.aggregated_responses = queue.Queue()
         self.avs_registry_service = avs_registry_service
         # self.logger = logger
         self.hash_function = hash_function
 
-    async def initialize_new_task(
+    def initialize_new_task(
         self,
         task_index: int,
         task_created_block: int,
@@ -181,7 +178,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         quorum_threshold_percentages: list[int],
         time_to_expiry: int,
     ) -> Exception:
-        if task_index in self.aggregated_responses:
+        if task_index in self.responses:
             raise ValueError("Task alredy initialized")
 
         quorum_threshold_percentages_map = {}
@@ -189,25 +186,26 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             quorum_threshold_percentages_map[qn] = quorum_threshold_percentages[i]
 
         operators_avs_state_dict = (
-            await self.avs_registry_service.get_operators_avs_state_at_block(
+            self.avs_registry_service.get_operators_avs_state_at_block(
                 quorum_numbers, task_created_block
             )
         )
         quorums_avs_state_dict = (
-            await self.avs_registry_service.get_quorums_avs_state_at_block(
+            self.avs_registry_service.get_quorums_avs_state_at_block(
                 quorum_numbers, task_created_block
             )
         )
 
+
         total_stake_per_quorum = {}
         for quorum_num, quorum_avs_state in quorums_avs_state_dict.items():
-            total_stake_per_quorum[quorum_num] = quorum_avs_state.total_stake
+            total_stake_per_quorum[quorum_num] = quorum_avs_state['total_stake']
 
         quorum_apks_g1 = []
         for i, qn in enumerate(quorum_numbers):
-            quorum_apks_g1.append(quorums_avs_state_dict[qn].agg_pub_key_g1)
+            quorum_apks_g1.append(quorums_avs_state_dict[qn]['agg_pubkey_g1'])
 
-        self.aggregated_responses[task_index] = self.TaskListItem(
+        self.responses[task_index] = self.TaskListItem(
             task_created_block=task_created_block,
             quorum_numbers=quorum_numbers,
             quorum_threshold_percentages=quorum_threshold_percentages,
@@ -218,19 +216,18 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             quorum_apks_g1=quorum_apks_g1,
             aggregated_operators_dict={},
             timeout=time_to_expiry,
-            future=asyncio.Future(),
             signatures={},
         )
 
-    async def process_new_signature(
+    def process_new_signature(
         self, task_index: int, task_response: str, bls_sign: Signature, operator_id: int
     ):
-        if task_index not in self.aggregated_responses:
+        if task_index not in self.responses:
             raise ValueError("Task not initialized")
-        if operator_id in self.aggregated_responses[task_index].signatures:
+        if operator_id in self.responses[task_index].signatures:
             raise ValueError("Operator signature has already been processed")
 
-        cd = self.aggregated_responses[task_index]
+        cd = self.responses[task_index]
         operators_avs_state_dict: dict[int, OperatorAvsState] = (
             cd.operators_avs_state_dict
         )
@@ -288,11 +285,11 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 digest_aggregated_operators.signers_total_stake_per_quorum[
                     quorum_num
                 ] += stake_amount
-        self.aggregated_responses[task_index].aggregated_operators_dict[
+        self.responses[task_index].aggregated_operators_dict[
             task_response_digest
         ] = digest_aggregated_operators
 
-        self.aggregated_responses[task_index].signatures[operator_id] = bls_sign
+        self.responses[task_index].signatures[operator_id] = bls_sign
 
         if self.__stake_thresholds_met(
             signed_stake_per_quorum=digest_aggregated_operators.signers_total_stake_per_quorum,
@@ -313,14 +310,11 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 for operator_id in non_signers_operator_ids
             ]
 
-            indices, err = await self.avs_registry_service.get_check_signatures_indices(
-                CallOpts(),
+            indices = self.avs_registry_service.avs_registry_reader.get_check_signatures_indices(
                 cd.task_created_block,
                 cd.quorum_numbers,
                 non_signers_operator_ids,
             )
-            if err is not None:
-                raise err
 
             result = BlsAggregationServiceResponse(
                 err=None,
@@ -336,20 +330,14 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 total_stake_indices=indices.total_stake_indices,
                 non_signer_stake_indices=indices.non_signer_stake_indices,
             )
-            self.aggregated_responses[task_index].future.set_result(result)
+            del self.responses[task_index]
+            self.aggregated_responses.put(result)
 
-    async def get_aggregated_response(self, task_index: int):
-        # return await wait_for(self.aggregated_responses_c[task_index].future)
-        try:
-            result = await asyncio.wait_for(
-                self.aggregated_responses[task_index].future,
-                self.aggregated_responses[task_index].timeout,
-            )
-            return result, None
-        except Exception as e:
-            return BlsAggregationServiceResponse(
-                err=asyncio.TimeoutError(f"task {task_index} expired")
-            ), None
+    def get_aggregated_responses(self):
+        while True:
+            response = self.aggregated_responses.get()
+            yield response
+            self.aggregated_responses.task_done()
 
     def __stake_thresholds_met(
         self,

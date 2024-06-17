@@ -2,7 +2,6 @@ import os
 import json
 from eth_account import Account
 from eth_keyfile import create_keyfile_json
-from typing import Any
 from mcl import G1, G2, GT, Fr, Fp
 from eigensdk.crypto.bn256 import utils as bn256Utils
 
@@ -29,7 +28,6 @@ class G1Point(G1):
     def verify_equivalence(self, a: "G2Point"):
         return bn256Utils.check_g1_and_g2_discrete_log_equality(self, a)
 
-
 def new_g1_point(x: int, y: int) -> G1Point:
     res = G1Point(x, y)
     if x == 0 and y == 0:
@@ -54,7 +52,6 @@ class G2Point(G2):
     def sub(self, a: "G2Point"):
         return self - a
 
-
 def new_g2_point(xa: int, xb: int, ya: int, yb: int) -> G2Point:
     return G2Point(xa, xb, ya, yb)
 
@@ -74,8 +71,11 @@ class Signature(G1Point):
         y = int(p.getY().getStr())
         return Signature(x, y)
 
-    def to_json() -> dict:
-        pass
+    def to_json(self) -> dict:
+        return {
+            'X': int(self.getX().getStr()),
+            'Y': int(self.getY().getStr()),
+        }
 
     def from_json(_json: dict) -> "Signature":
         pass
@@ -97,7 +97,7 @@ class PrivateKey(Fr):
         if not secret:
             self.setHashOf(os.urandom(64))
         else:
-            int_key = int.from_bytes(secret, 'big')
+            int_key = int.from_bytes(secret, "big")
             self.setStr(f"{int_key}".encode("utf-8"), 10)
 
     def get_str(self) -> str:
@@ -121,7 +121,7 @@ class KeyPair:
     @staticmethod
     def from_string(sk: str, base=16) -> "KeyPair":
         pk = PrivateKey()
-        pk.setStr(sk.encode('utf-8'), base)
+        pk.setStr(sk.encode("utf-8"), base)
         return KeyPair(pk)
 
     def save_to_file(self, _path: str, password: bytes):
@@ -139,7 +139,7 @@ class KeyPair:
     def read_from_file(_path: str, password: str):
         with open(_path, "r") as f:
             keystore_json = json.load(f)
-        private_key = Account.decrypt(keystore_json["crypto"], password)
+        private_key = Account.decrypt(keystore_json, password)
         return KeyPair(PrivateKey(bytes(private_key)))
 
     def sign_message(self, msg_bytes: bytes) -> Signature:
@@ -167,3 +167,15 @@ def new_key_pair_from_string(sk: str) -> KeyPair:
 
 def gen_random_bls_keys() -> KeyPair:
     return KeyPair()
+
+def g1_to_tupple(g1):
+    return (int(g1.getX().getStr()), int(g1.getY().getStr()))
+
+def g2_to_tupple(g2):
+    return ((
+        int(g2.getX().get_a().getStr()),
+        int(g2.getX().get_b().getStr()),
+    ), (
+        int(g2.getY().get_a().getStr()),
+        int(g2.getY().get_b().getStr()),
+    ))
