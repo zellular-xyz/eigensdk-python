@@ -3,12 +3,13 @@ import time
 from threading import Thread
 from typing import Any, Dict, Optional
 
-from eigensdk._types import OperatorInfo, OperatorPubkeys
-from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
-from eigensdk.crypto.bls.attestation import G1Point
 from eth_typing import Address
 from eth_utils.encoding import int_to_big_endian
 from web3 import Web3
+
+from eigensdk._types import OperatorInfo, OperatorPubkeys
+from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
+from eigensdk.crypto.bls.attestation import G1Point
 
 
 class OperatorsInfoServiceInMemory:
@@ -35,8 +36,8 @@ class OperatorsInfoServiceInMemory:
 
         # Start the service in a separate thread
         self.get_events()
-        # self.thread = Thread(target=self._service_thread)
-        # self.thread.start()
+        self.thread = Thread(target=self._service_thread)
+        self.thread.start()
 
     @staticmethod
     def operator_id_from_g1_pubkey(g1: G1Point) -> bytes:
