@@ -18,7 +18,7 @@ class OperatorsInfoServiceInMemory:
         avs_registry_reader: AvsRegistryReader,
         start_block_pub: int = 0,
         start_block_socket: int = 0,
-        check_interval: int = 60,
+        check_interval: int = 10,
         log_filter_query_block_range: int = 10000,
         logger: Optional[logging.Logger] = None,
     ):

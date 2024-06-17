@@ -39,7 +39,11 @@ class AvsRegistryService:
 
         for quorum_idx, quorum_num in enumerate(quorum_numbers):
             for operator in operators_stakes_in_quorums[quorum_idx]:
-                info = self.get_operator_info(operator.operator_id)
+                try:
+                    info = self.get_operator_info(operator.operator_id)
+                except:
+                    self.logger.error(f"Operator {operator.operator_id} info not found. The operator is skipped.")
+                    continue
 
                 if operator.operator_id not in operators_avs_state:
                     operators_avs_state[operator.operator_id] = OperatorAvsState(
@@ -85,5 +89,4 @@ class AvsRegistryService:
 
     def get_operator_info(self, operator_id: bytes) -> OperatorInfo:
         operator_addr = self.avs_registry_reader.get_operator_from_id(operator_id)
-        info = self.operator_info_service.get_operator_info(operator_addr)
-        return info
+        return self.operator_info_service.get_operator_info(operator_addr)

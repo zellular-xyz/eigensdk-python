@@ -226,6 +226,8 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             raise ValueError("Task not initialized")
         if operator_id in self.responses[task_index].signatures:
             raise ValueError("Operator signature has already been processed")
+        if operator_id not in self.responses[task_index].operators_avs_state_dict:
+            raise ValueError("Operator is not registered")
 
         cd = self.responses[task_index]
         operators_avs_state_dict: dict[int, OperatorAvsState] = (
