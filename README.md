@@ -1,7 +1,14 @@
 # eigensdk-python
 
-### Install system dependencies
-It required to [MCL](https://github.com/herumi/mcl) native package be installed.
+A Python SDK for EigenLayer, derived from the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go/tree/master/) implementation.
+
+> [!CAUTION]
+> This library is a PoC implemented for the EigenLayer hackathon Do not use it in Production, testnet only.
+
+
+
+## Dependencies
+It required to [MCL](https://github.com/herumi/mcl) native package to be installed.
 ```
 # build dependency
 $ sudo apt install libgmp3-dev
@@ -18,4 +25,12 @@ $ make install
 ```
 for more information read the link above.
 
-### Install python dependencies
+## Installation
+
+```
+git clone https://github.com/abramsymons/eigensdk-python
+pip install .
+```
+
+## Test
+You can use [Incredible Squaring Python AVS](https://github.com/abramsymons/incredible-squaring-avs-python/) as an example application using this SDK. 
