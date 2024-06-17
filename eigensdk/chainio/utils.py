@@ -11,8 +11,12 @@ def nums_to_bytes(nums: List[int]) -> bytes:
     return "".join(map(chr, nums)).encode()
 
 
-def bytes_to_nums(_bytes: bytes) -> List[int]:
-    return [ord(b) for b in _bytes]
+def bitmap_to_quorum_ids(bitmap: int) -> List[int]:
+    quorum_ids = []
+    for i in range(256):
+        if bitmap & (1 << i):
+            quorum_ids.append(int(i))
+    return quorum_ids
 
 
 def send_transaction(
