@@ -1,100 +1,89 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from eigensdk.crypto.bls.attestation import KeyPair, G1Point, G2Point, Signature
+import logging
+from typing import Dict, List, Union
+
+from eigensdk._types import OperatorAvsState, OperatorInfo
+from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
+from eigensdk.crypto.bls.attestation import G1Point, new_zero_g1_point
+from eigensdk.services.operatorsinfo.operatorsinfo_inmemory import (
+    OperatorsInfoServiceInMemory,
+)
 
 
-@dataclass
-class OperatorPubkeys:
-    # G1 signatures are used to verify signatures onchain (since G1 is cheaper to verify onchain via precompiles)
-    g1_pub_key: G1Point
-    # G2 is used to verify signatures offchain (signatures are on G1)
-    g2_pub_key: G2Point
-
-
-@dataclass
-class OperatorInfo:
-    socket: str
-    pub_keys: OperatorPubkeys
-
-
-@dataclass
-class OperatorAvsState:
-    operator_id: int
-    operator_info: OperatorInfo
-    # Stake of the operator for each quorum
-    stake_per_quorum: list[int, int]
-    block_number: int
-
-
-@dataclass
-class QuorumAvsState:
-    quorum_number: int
-    total_stake: int
-    agg_pub_key_g1: G1Point
-    block_number: int
-
-
-@dataclass
-class CallOpts:
-    # Whether to operate on the pending state or the last known one
-    pending: bool
-    # Optional the sender address, otherwise the first account is used
-    from_address: str
-    # Optional the block number on which the call should be performed
-    block_number: int
-    # Optional the block hash on which the call should be performed
-    block_hash: str
-
-    # the field below is for golang. Don't know the proper replacement for it in python
-    # Context: context.Context # Network context to support cancellation and timeouts (nil = no timeout)
+class AvsRegistryService:
     def __init__(
         self,
-        pending: bool = None,
-        from_address: str = None,
-        block_number: int = None,
-        block_hash: str = None,
+        avs_registry_reader: AvsRegistryReader,
+        operator_info_service: OperatorsInfoServiceInMemory,
+        logger: logging.Logger,
     ):
-        self.pending = pending
-        self.from_address = from_address
-        block_number = block_number
-        block_hash = block_hash
+        self.avs_registry_reader: AvsRegistryReader = avs_registry_reader
+        self.operator_info_service: OperatorsInfoServiceInMemory = operator_info_service
+        self.logger: logging.Logger = logger
 
+    def get_operators_avs_state_at_block(
+        self, quorum_numbers: List[int], block_number: int
+    ) -> Dict[bytes, OperatorAvsState]:
+        operators_avs_state: Dict[bytes, OperatorAvsState] = {}
 
-@dataclass
-class OperatorStateRetrieverCheckSignaturesIndices:
-    non_signer_quorum_bitmap_indices: list[int]
-    quorum_apk_indices: list[int]
-    total_stake_indices: list[int]
-    non_signer_stake_indices: list[list[int]]
+        operators_stakes_in_quorums = (
+            self.avs_registry_reader.get_operators_stake_in_quorums_at_block(
+                quorum_numbers, block_number
+            )
+        )
+        num_quorums = len(quorum_numbers)
+        if len(operators_stakes_in_quorums) != num_quorums:
+            self.logger.error(
+                "Number of quorums returned from get_operators_stake_in_quorums_at_block does not match number of quorums requested. Probably pointing to old contract or wrong implementation.",
+                extra={"service": "AvsRegistryServiceChainCaller"},
+            )
 
+        for quorum_idx, quorum_num in enumerate(quorum_numbers):
+            for operator in operators_stakes_in_quorums[quorum_idx]:
+                info = self.get_operator_info(operator.operator_id)
 
-@dataclass
-class SignedTaskResponseDigest:
-    task_response: any
-    bls_signature: Signature
-    operator_id: int
+                if operator.operator_id not in operators_avs_state:
+                    operators_avs_state[operator.operator_id] = OperatorAvsState(
+                        operator_id=operator.operator_id,
+                        operator_info=info,
+                        stake_per_quorum={},
+                        block_number=block_number,
+                    )
 
+                operators_avs_state[operator.operator_id].stake_per_quorum[
+                    quorum_num
+                ] = operator.stake
+        return operators_avs_state
 
-class AvsRegistryService(ABC):
-    """
-    all the moethods support cancellation through what is called a Context in Go.
-    The GetCheckSignaturesIndices should support Context inside CallOpts data class
-    """
+    def get_quorums_avs_state_at_block(
+        self, quorum_numbers: List[int], block_number: int
+    ) -> Dict[int, Dict[str, Union[int, G1Point]]]:
+        operators_avs_state = self.get_operators_avs_state_at_block(
+            quorum_numbers, block_number
+        )
 
-    @abstractmethod
-    async def get_operators_avs_state_at_block(
-        quorum_numbers: list[int], block_number: int
-    ) -> dict[int, OperatorAvsState]: ...
+        quorums_avs_state: Dict[int, Dict[str, Union[int, G1Point]]] = {}
+        for quorum_num in quorum_numbers:
+            agg_pubkey_g1 = new_zero_g1_point()
+            total_stake = 0
 
-    @abstractmethod
-    async def get_quorums_avs_state_at_block(
-        quorum_numbers: list[int], block_number: int
-    ) -> dict[int, QuorumAvsState]: ...
+            for operator_state in operators_avs_state.values():
+                if quorum_num in operator_state.stake_per_quorum:
+                    agg_pubkey_g1 = agg_pubkey_g1.add(
+                        operator_state.operator_info.pub_keys.g1_pub_key
+                    )
+                    stake = operator_state.stake_per_quorum[quorum_num]
+                    total_stake += stake
 
-    @abstractmethod
-    async def get_check_signatures_indices(
-        opts: CallOpts,
-        reference_block_number: int,
-        quorum_numbers: list[int],
-        non_signer_operator_ids: list[int],
-    ) -> OperatorStateRetrieverCheckSignaturesIndices: ...
+            quorums_avs_state[quorum_num] = {
+                "quorum_number": quorum_num,
+                "agg_pubkey_g1": agg_pubkey_g1,
+                "total_stake": total_stake,
+                "block_number": block_number,
+            }
+
+        return quorums_avs_state
+
+    def get_operator_info(self, operator_id: bytes) -> OperatorInfo:
+        operator_addr = self.avs_registry_reader.get_operator_from_id(operator_id)
+        info = self.operator_info_service.get_operator_info(operator_addr)
+        return info
