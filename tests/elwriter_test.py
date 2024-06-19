@@ -3,7 +3,6 @@ import unittest
 from eigensdk._types import Operator
 
 from config import Config
-from eigensdk.contracts import ABIs
 
 
 class TestELWriter(unittest.TestCase):
@@ -47,15 +46,6 @@ class TestELWriter(unittest.TestCase):
             self.config.OPERATOR_ECDSA_ADDR
         ).call()
         self.assertEqual(operator_details[1], new_delegation_approver_address)
-
-    # def test_deposit_erc20_into_strategy(self):
-    #     underlying_token_addr = self.config.STRATEGY.functions.underlyingToken().call()
-    #     underlying_token = self.config.WEB3.eth.contract(
-    #         address=underlying_token_addr, abi=ABIs.ERC20
-    #     )
-    #     receipt = self.el_writer.deposit_erc20_into_strategy(
-    #         self.config.STRATEGY_ADDR, 0
-    #     )
 
 
 if __name__ == "__main__":

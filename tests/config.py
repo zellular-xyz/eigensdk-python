@@ -3,8 +3,8 @@ import os
 
 from dotenv import load_dotenv
 from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
-from eigensdk.crypto.bls.attestation import KeyPair, new_fp_element, PrivateKey
 from eigensdk.contracts import ABIs
+from eigensdk.crypto.bls.attestation import KeyPair
 from eth_account import Account
 from eth_typing import Address
 from web3 import Web3
