@@ -1,7 +1,7 @@
 .. _chainio:
 
-chainio
-=======
+eigensdk.chainio
+================
 
 eigensdk.chainio.clients.builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

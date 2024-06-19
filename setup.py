@@ -6,6 +6,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         "web3",
+        "fastapi",
+        "pydantic",
+        "uvicorn"
     ],
     entry_points={
         "console_scripts": [
