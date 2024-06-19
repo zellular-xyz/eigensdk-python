@@ -43,7 +43,9 @@ To demonstrate using `eigensdk`, here's how you can find the list of operators r
     ...     operator_state_retriever_addr='0xD5D7fB4647cE79740E6e83819EFDf43fa74F8C31',
     ... )
     >>> clients = build_all(config)
-    >>> quorums = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(quorum_numbers=[0, 1])
+    >>> quorums = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(
+    ...     quorum_numbers=[0, 1]
+    ... )
     >>> quorums
     [[
         OperatorStateRetrieverOperator(
