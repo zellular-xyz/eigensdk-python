@@ -141,4 +141,5 @@ def run(node_api: NodeAPI):
         "/node/services/{service_id}/health", endpoint=service_health_handler(node_api)
     )
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    host, port = node_api.ip_port_addr.split(':')
+    uvicorn.run(app, host=host, port=int(port))
