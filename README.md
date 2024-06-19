@@ -28,8 +28,7 @@ for more information read the link above.
 ## Installation
 
 ```
-git clone https://github.com/abramsymons/eigensdk-python
-pip install .
+pip3 install git+https://github.com/abramsymons/eigensdk-python
 ```
 
 ## Test
