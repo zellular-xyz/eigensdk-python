@@ -154,7 +154,7 @@ class KeyPair:
         return bn256Utils.mul_by_generator_g1(self)
 
     def get_pub_g2(self) -> G2Point:
-        return bn256Utils.mul_by_generator_g2(self)
+        return bn256Utils.mul_by_generator_g2(self.priv_key)
 
 
 def new_key_pair(priv_key: PrivateKey) -> KeyPair:
