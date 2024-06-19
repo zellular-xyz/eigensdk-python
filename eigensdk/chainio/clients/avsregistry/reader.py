@@ -28,6 +28,7 @@ class AvsRegistryReader:
         stake_registry: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
+        eth_ws_client: Web3,
     ):
         self.logger: logging.Logger = logger
         self.bls_apk_registry_addr: Address = bls_apk_registry_addr
@@ -37,6 +38,7 @@ class AvsRegistryReader:
         self.operator_state_retriever: Contract = operator_state_retriever
         self.stake_registry: Contract = stake_registry
         self.eth_http_client: Web3 = eth_http_client
+        self.eth_ws_client: Web3 = eth_ws_client
 
     def get_quorum_count(self) -> int:
         return self.registry_coordinator.functions.quorumCount().call()
@@ -55,9 +57,9 @@ class AvsRegistryReader:
         self, quorum_numbers: List[int], block_number: int
     ) -> List[List[OperatorStateRetrieverOperator]]:
         operator_stakes = self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr,
-            utils.nums_to_bytes(quorum_numbers),
-            block_number,
+            registryCoordinator=self.registry_coordinator_addr,
+            quorumNumbers=utils.nums_to_bytes(quorum_numbers),
+            blockNumber=block_number,
         ).call()
         return [
             [
@@ -81,9 +83,9 @@ class AvsRegistryReader:
             )
 
         operator_stakes = self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr,
-            utils.nums_to_bytes(quorum_numbers),
-            cur_block,
+            registryCoordinator=self.registry_coordinator_addr,
+            quorumNumbers=utils.nums_to_bytes(quorum_numbers),
+            blockNumber=cur_block,
         ).call()
         return [[operator[0] for operator in quorum] for quorum in operator_stakes]
 
