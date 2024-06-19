@@ -28,7 +28,6 @@ class AvsRegistryReader:
         stake_registry: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
-        eth_ws_client: Web3,
     ):
         self.logger: logging.Logger = logger
         self.bls_apk_registry_addr: Address = bls_apk_registry_addr
@@ -38,7 +37,6 @@ class AvsRegistryReader:
         self.operator_state_retriever: Contract = operator_state_retriever
         self.stake_registry: Contract = stake_registry
         self.eth_http_client: Web3 = eth_http_client
-        self.eth_ws_client: Web3 = eth_ws_client
 
     def get_quorum_count(self) -> int:
         return self.registry_coordinator.functions.quorumCount().call()

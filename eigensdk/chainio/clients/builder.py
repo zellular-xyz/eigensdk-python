@@ -18,14 +18,12 @@ class BuildAllConfig:
     def __init__(
         self,
         eth_http_url: str,
-        eth_ws_url: str,
         registry_coordinator_addr: Address,
         operator_state_retriever_addr: Address,
         avs_name: str,
         prom_metrics_ip_port_address: str,
     ):
         self.eth_http_url: str = eth_http_url
-        self.eth_ws_url: str = eth_ws_url
         self.registry_coordinator_addr: Address = registry_coordinator_addr
         self.operator_state_retriever_addr: Address = operator_state_retriever_addr
         self.avs_name: str = avs_name
@@ -106,7 +104,6 @@ class BuildAllConfig:
         pk_wallet: LocalAccount,
     ) -> Tuple[avs_reader.AvsRegistryReader, avs_writer.AvsRegistryWriter]:
         eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
-        eth_ws_client = Web3(Web3.WebsocketProvider(self.eth_ws_url))
         registry_coordinator = eth_http_client.eth.contract(
             address=self.registry_coordinator_addr,
             abi=ABIs.REGISTRY_COORDINATOR,
@@ -139,7 +136,6 @@ class BuildAllConfig:
             stake_registry,
             logger,
             eth_http_client,
-            eth_ws_client,
         )
 
         avs_registry_writer = avs_writer.AvsRegistryWriter(
@@ -165,7 +161,6 @@ class Clients:
         el_reader: el_reader.ELReader,
         el_writer: el_writer.ELWriter,
         eth_http_client: Web3,
-        eth_ws_client: Web3,
         wallet: LocalAccount,
         metrics: Optional[Any],
     ):
@@ -174,7 +169,6 @@ class Clients:
         self.el_reader = el_reader
         self.el_writer = el_writer
         self.eth_http_client = eth_http_client
-        self.eth_ws_client = eth_ws_client
         self.wallet = wallet
         self.metrics = metrics
 
@@ -183,7 +177,6 @@ def build_all(
     config: BuildAllConfig, ecdsa_private_key: str, logger: logging.Logger
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
-    eth_ws_client = Web3(Web3.WebsocketProvider(config.eth_ws_url))
 
     pk_wallet: LocalAccount = Account.from_key(ecdsa_private_key)
 
@@ -200,7 +193,6 @@ def build_all(
         el_reader=el_reader,
         el_writer=el_writer,
         eth_http_client=eth_http_client,
-        eth_ws_client=eth_ws_client,
         wallet=pk_wallet,
         metrics=None,
     )
