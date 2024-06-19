@@ -23,8 +23,6 @@ class Config:
     KeyPair.from_string(OPERATOR_BLS_PRIVATE_KEY)
 
     ETH_HTTP_URL: str = os.getenv("ETH_HTTP_URL", "")
-    ETH_WS_URL: str = os.getenv("ETH_WS_URL", "")
-
     WEB3 = Web3(Web3.HTTPProvider(ETH_HTTP_URL))
 
     AVS_NAME: str = os.getenv("AVS_NAME", "")
@@ -47,7 +45,6 @@ class Config:
 
     CFG = BuildAllConfig(
         eth_http_url=ETH_HTTP_URL,
-        eth_ws_url=ETH_WS_URL,
         avs_name=AVS_NAME,
         registry_coordinator_addr=REGISTRY_COORDINATOR_ADDR,
         operator_state_retriever_addr=OPERATOR_STATE_RETRIEVER_ADDR,
