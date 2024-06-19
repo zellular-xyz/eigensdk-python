@@ -20,8 +20,8 @@ class BuildAllConfig:
         eth_http_url: str,
         registry_coordinator_addr: Address,
         operator_state_retriever_addr: Address,
-        avs_name: str,
-        prom_metrics_ip_port_address: str,
+        avs_name: str = '',
+        prom_metrics_ip_port_address: str = '',
     ):
         self.eth_http_url: str = eth_http_url
         self.registry_coordinator_addr: Address = registry_coordinator_addr
@@ -174,11 +174,11 @@ class Clients:
 
 
 def build_all(
-    config: BuildAllConfig, ecdsa_private_key: str, logger: logging.Logger
+    config: BuildAllConfig, ecdsa_private_key: str = '', logger: logging.Logger = logging.getLogger(__name__)
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
 
-    pk_wallet: LocalAccount = Account.from_key(ecdsa_private_key)
+    pk_wallet: LocalAccount = Account.from_key(ecdsa_private_key) if ecdsa_private_key else None
 
     el_reader, el_writer = config.build_el_clients(pk_wallet, logger)
 

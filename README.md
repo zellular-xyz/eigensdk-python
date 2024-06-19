@@ -3,7 +3,7 @@
 A Python SDK for EigenLayer, derived from the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go/tree/master/) implementation.
 
 > [!CAUTION]
-> This library is a PoC implemented for the EigenLayer hackathon Do not use it in Production, testnet only.
+> This library is a PoC implemented for the EigenLayer hackathon. Do not use it in Production, testnet only.
 
 
 

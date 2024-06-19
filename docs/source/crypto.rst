@@ -1,0 +1,6 @@
+.. _crypto:
+
+crypto
+======
+
+Crypto
