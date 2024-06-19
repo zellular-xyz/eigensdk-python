@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
+from eigensdk.crypto.bls.attestation import KeyPair, new_fp_element, PrivateKey
 from eigensdk.contracts import ABIs
 from eth_account import Account
 from eth_typing import Address
@@ -18,6 +19,8 @@ class Config:
     OPERATOR_ID = Web3.to_bytes(hexstr=os.getenv("OPERATOR_ID", ""))
 
     OPERATOR_BLS_PRIVATE_KEY: str = os.getenv("OPERATOR_BLS_PRIVATE_KEY", "")
+    BLS_KEY_PAIR: KeyPair = KeyPair()
+    KeyPair.from_string(OPERATOR_BLS_PRIVATE_KEY)
 
     ETH_HTTP_URL: str = os.getenv("ETH_HTTP_URL", "")
     ETH_WS_URL: str = os.getenv("ETH_WS_URL", "")
@@ -62,6 +65,8 @@ class Config:
 
     DELEGATION_MANAGER_ADDR = CLIENTS.el_reader.delegation_manager.address
     DELEGATION_MANAGER = CLIENTS.el_reader.delegation_manager
+
+    REGISTRY_COORDINATOR = CLIENTS.avs_registry_reader.registry_coordinator
 
     STRATEGY = WEB3.eth.contract(address=STRATEGY_ADDR, abi=ABIs.STRATEGY)
 
