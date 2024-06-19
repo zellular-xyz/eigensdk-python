@@ -50,11 +50,7 @@ class ELWriter:
         func = self.delegation_manager.functions.registerAsOperator(
             op_details, operator.metadata_url
         )
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Transaction successfully included",
@@ -93,11 +89,7 @@ class ELWriter:
         func = self.delegation_manager.functions.updateOperatorMetadataURI(
             operator.metadata_url
         )
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully updated operator metadata URI",
@@ -129,13 +121,7 @@ class ELWriter:
         deposit_func = self.strategy_manager.functions.depositIntoStrategy(
             strategy_addr, underlying_token_addr, amount
         )
-        try:
-            receipt = send_transaction(
-                deposit_func, self.pk_wallet, self.eth_http_client
-            )
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(deposit_func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully deposited the token into the strategy",

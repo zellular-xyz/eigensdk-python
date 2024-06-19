@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -46,7 +46,7 @@ class AvsRegistryWriter:
         bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
-    ) -> Optional[TxReceipt]:
+    ) -> TxReceipt:
         account = Account.from_key(operator_ecdsa_private_key)
         operator_addr = account.address
         self.logger.info(
@@ -107,11 +107,7 @@ class AvsRegistryWriter:
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
         )
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully registered operator with AVS registry coordinator",
@@ -128,7 +124,7 @@ class AvsRegistryWriter:
         self,
         operators_per_quorum: List[List[Address]],
         quorum_numbers: List[int],
-    ) -> Optional[TxReceipt]:
+    ) -> TxReceipt:
         self.logger.info(
             "Updating stakes for entire operator set",
             extra={"quorumNumbers": quorum_numbers},
@@ -137,11 +133,7 @@ class AvsRegistryWriter:
         func = self.registry_coordinator.functions.updateOperatorsForQuorum(
             operators_per_quorum, utils.nums_to_bytes(quorum_numbers)
         )
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully updated stakes for entire operator set",
@@ -154,18 +146,14 @@ class AvsRegistryWriter:
 
     def update_stakes_of_operator_subset_for_all_quorums(
         self, operators: List[Address]
-    ) -> Optional[TxReceipt]:
+    ) -> TxReceipt:
         self.logger.info(
             "Updating stakes of operator subset for all quorums",
             extra={"operators": operators},
         )
 
         func = self.registry_coordinator.functions.updateOperators(operators)
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully updated stakes of operator subset for all quorums",
@@ -176,17 +164,13 @@ class AvsRegistryWriter:
         )
         return receipt
 
-    def deregister_operator(self, quorum_numbers: List[int]) -> Optional[TxReceipt]:
+    def deregister_operator(self, quorum_numbers: List[int]) -> TxReceipt:
         self.logger.info("Deregistering operator with the AVS's registry coordinator")
 
         func = self.registry_coordinator.functions.deregisterOperator(
             utils.nums_to_bytes(quorum_numbers)
         )
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully deregistered operator with the AVS's registry coordinator",
@@ -194,17 +178,13 @@ class AvsRegistryWriter:
         )
         return receipt
 
-    def update_socket(self, socket: str) -> Optional[TxReceipt]:
+    def update_socket(self, socket: str) -> TxReceipt:
         self.logger.info(
             "Updating socket",
             extra={"socket": socket},
         )
         func = self.registry_coordinator.functions.updateSocket(socket)
-        try:
-            receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        except Exception as e:
-            self.logger.error(e)
-            return None
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         self.logger.info(
             "Successfully updated socket",
