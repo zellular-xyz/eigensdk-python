@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from eth_typing import Address
 
@@ -47,10 +47,10 @@ class QuorumAvsState:
 
 @dataclass
 class OperatorStateRetrieverCheckSignaturesIndices:
-    non_signer_quorum_bitmap_indices: list[int]
-    quorum_apk_indices: list[int]
-    total_stake_indices: list[int]
-    non_signer_stake_indices: list[list[int]]
+    non_signer_quorum_bitmap_indices: List[int]
+    quorum_apk_indices: List[int]
+    total_stake_indices: List[int]
+    non_signer_stake_indices: List[List[int]]
 
 
 @dataclass
