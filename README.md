@@ -29,7 +29,7 @@ pip3 install git+https://github.com/abramsymons/eigensdk-python
 
 ## Documentation
 
-Documentation is available [here](https://eigensdk-python.readthedocs.io/en/latest/quickstart.html) and in the docs directory.
+Documentation is available [here](https://eigensdk-python.readthedocs.io/en/latest) and in the docs directory.
 
 ## Test
 You can use [Incredible Squaring Python AVS](https://github.com/abramsymons/incredible-squaring-avs-python/) as an example application using this SDK. 
