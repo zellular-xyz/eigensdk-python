@@ -17,7 +17,7 @@ Getting Started
 - Read the source? → `Github <https://github.com/zellular-xyz/eigensdk-python>`_
 
 Table of Contents
------------------
+~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 1
