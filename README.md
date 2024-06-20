@@ -24,7 +24,7 @@ $ make install
 ## Installation
 
 ```
-pip3 install git+https://github.com/abramsymons/eigensdk-python
+pip3 install git+https://github.com/zellular-xyz/eigensdk-python
 ```
 
 ## Documentation
