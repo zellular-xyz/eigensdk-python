@@ -1,4 +1,4 @@
-.. _crypto:
+.. _eigensdk.crypto:
 
 eigensdk.crypto
 ===============

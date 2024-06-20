@@ -24,7 +24,6 @@ def is_json_serializable(obj):
 
 @dataclass
 class BlsAggregationServiceResponse:
-    err: Exception = None  # if err is not None, the other fields are not valid
     task_index: int = None  # unique identifier of the task
     task_response: any = None  # the task response that was signed
     task_response_digest: any = None  # digest of the task response that was signed
@@ -115,7 +114,7 @@ class BlsAggregationServiceInterface(ABC):
         quorum_numbers: list[int],
         quorum_threshold_percentages: list[int],
         time_to_expiry: int,
-    ) -> Exception: ...
+    ): ...
 
     # ProcessNewSignature processes a new signature over a taskResponseDigest for a particular taskIndex by a particular operator
     # It verifies that the signature is correct and returns an error if it is not, and then aggregates the signature and stake of
@@ -128,7 +127,7 @@ class BlsAggregationServiceInterface(ABC):
         taskResponse: any,
         blsSignature: Signature,
         operatorId: int,
-    ) -> Exception: ...
+    ): ...
 
     # GetResponseChannel returns the single channel that meant to be used as the response channel
     # Any task that is completed (see the completion criterion in the comment above InitializeNewTask)
@@ -177,7 +176,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         quorum_numbers: list[int],
         quorum_threshold_percentages: list[int],
         time_to_expiry: int,
-    ) -> Exception:
+    ):
         if task_index in self.responses:
             raise ValueError("Task alredy initialized")
 
@@ -319,7 +318,6 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             )
 
             result = BlsAggregationServiceResponse(
-                err=None,
                 task_index=task_index,
                 task_response=task_response,
                 task_response_digest=task_response_digest,
@@ -368,11 +366,11 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         task_index: int,
         signed_task_response_digest: SignedTaskResponseDigest,
         operators_avs_state_dict: dict[int, OperatorAvsState],
-    ) -> Exception:
+    ):
         operator_id = signed_task_response_digest.operator_id
 
         if operator_id not in operators_avs_state_dict:
-            return ValueError(f"Operator {operator_id} is not part of task quorum")
+            raise ValueError(f"Operator {operator_id} is not part of task quorum")
 
         task_response_digest = self.hash_function(
             signed_task_response_digest.task_response
@@ -382,13 +380,11 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             operator_id
         ].operator_info.pub_keys.g2_pub_key
         if not operator_g2_pub_key:
-            return ValueError(
+            raise ValueError(
                 f"TaskId: {task_index} operator G2 PubKey not fount for operator {operator_id}"
             )
 
         signature = signed_task_response_digest.bls_signature
         verified = signature.verify(operator_g2_pub_key, task_response_digest)
         if not verified:
-            return ValueError("Incorrect signature error")
-
-        return None
+            raise ValueError("Incorrect signature error")

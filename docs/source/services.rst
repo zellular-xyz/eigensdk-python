@@ -1,6 +1,0 @@
-.. _services:
-
-services
-========
-
-Services

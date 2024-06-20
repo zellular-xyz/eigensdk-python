@@ -1,4 +1,4 @@
-.. _nodeapi:
+.. _eigensdk.nodeapi:
 
 eigensdk.nodeapi
 ================

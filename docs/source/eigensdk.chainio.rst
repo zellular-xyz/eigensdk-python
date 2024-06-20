@@ -1,4 +1,4 @@
-.. _chainio:
+.. _eigensdk.chainio:
 
 eigensdk.chainio
 ================

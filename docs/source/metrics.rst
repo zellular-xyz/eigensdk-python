@@ -1,6 +1,0 @@
-.. _metrics:
-
-metrics
-=======
-
-Metrics
