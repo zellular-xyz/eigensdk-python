@@ -201,7 +201,7 @@ def buildSerialize(cls):
     wrapper = utils.wrap_function(
         hook.mclbn384_256,
         f"mclBn{cls.__name__}_serialize",
-        None,
+        ctypes.c_size_t,
         [
             (ctypes.c_char * (BUFFER_SIZE + 1)),
             ctypes.c_size_t,
@@ -212,8 +212,8 @@ def buildSerialize(cls):
 
     def serialize(self, mode=10):
         buffer = ctypes.create_string_buffer(b"\0" * BUFFER_SIZE)
-        wrapper(buffer, BUFFER_SIZE, self, mode)
-        return buffer.value
+        len = wrapper(buffer, BUFFER_SIZE, self, mode)
+        return bytes(bytearray(buffer[:len]))
 
     return serialize
 
