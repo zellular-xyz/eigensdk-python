@@ -1,7 +1,6 @@
 import os
 import json
 from eth_account import Account
-from eth_keyfile import create_keyfile_json
 from mcl import G1, G2, GT, Fr, Fp
 from eigensdk.crypto.bn256 import utils as bn256Utils
 
@@ -124,13 +123,9 @@ class KeyPair:
         pk.setStr(sk.encode("utf-8"), base)
         return KeyPair(pk)
 
-    def save_to_file(self, _path: str, password: bytes):
-        keystore_json = {
-            "pubKey": self.pub_g1.getStr().decode("utf-8"),
-            "crypto": create_keyfile_json(
-                bytes.fromhex(self.priv_key.get_str()), password
-            ),
-        }
+    def save_to_file(self, _path: str, password: str):
+        keystore_json = Account.encrypt('0x' + self.priv_key.getStr(16).decode('utf-8'), password)
+        keystore_json["pubKey"] = self.pub_g1.getStr().decode("utf-8")
         os.makedirs(os.path.dirname(_path), exist_ok=True)
         with open(_path, "w") as f:
             f.write(json.dumps(keystore_json))
