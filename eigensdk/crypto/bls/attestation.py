@@ -124,7 +124,8 @@ class KeyPair:
         return KeyPair(pk)
 
     def save_to_file(self, _path: str, password: str):
-        keystore_json = Account.encrypt('0x' + self.priv_key.getStr(16).decode('utf-8'), password)
+        priv_key = '0x' + self.priv_key.getStr(16).decode('utf-8').rjust(64, '0')
+        keystore_json = Account.encrypt(priv_key, password)
         keystore_json["pubKey"] = self.pub_g1.getStr().decode("utf-8")
         os.makedirs(os.path.dirname(_path), exist_ok=True)
         with open(_path, "w") as f:
