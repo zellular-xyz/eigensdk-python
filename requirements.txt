@@ -1,2 +1,0 @@
-web3=6.19.0
-prometheus-client==0.20.0
