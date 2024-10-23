@@ -5,7 +5,7 @@ setup(
     version="0.0.2",
     packages=find_packages(),
     install_requires=[
-        "web3==6.19.0",
+        "web3==7.4.0",
         "fastapi",
         "pydantic",
         "uvicorn"

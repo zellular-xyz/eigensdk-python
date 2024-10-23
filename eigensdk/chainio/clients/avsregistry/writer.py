@@ -94,7 +94,7 @@ class AvsRegistryWriter:
             operator_to_avs_registration_sig_salt,
             operator_to_avs_registration_sig_expiry,
         )
-        operator_signature = account.signHash(msg_to_sign)["signature"]
+        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
         operator_signature_with_salt_and_expiry = (
             operator_signature,
             operator_to_avs_registration_sig_salt,

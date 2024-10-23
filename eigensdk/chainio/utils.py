@@ -3,7 +3,7 @@ from typing import List
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.contract.contract import ContractFunction
-from web3.middleware.geth_poa import geth_poa_middleware
+# from web3.middleware.geth_poa import geth_poa_middleware
 from web3.types import TxReceipt
 
 
@@ -22,10 +22,10 @@ def bitmap_to_quorum_ids(bitmap: int) -> List[int]:
 def send_transaction(
     func: ContractFunction, pk_wallet: LocalAccount, eth_http_client: Web3
 ) -> TxReceipt:
-    try:
-        eth_http_client.middleware_onion.inject(geth_poa_middleware, layer=0)
-    except Exception:
-        pass
+    # try:
+    #     eth_http_client.middleware_onion.inject(geth_poa_middleware, layer=0)
+    # except Exception:
+    #     pass
 
     try:
         gas_estimate = func.estimate_gas({"from": pk_wallet.address})
@@ -46,6 +46,6 @@ def send_transaction(
     signed_tx = eth_http_client.eth.account.sign_transaction(
         tx, private_key=pk_wallet.key
     )
-    tx_hash = eth_http_client.eth.send_raw_transaction(signed_tx.rawTransaction)
+    tx_hash = eth_http_client.eth.send_raw_transaction(signed_tx.raw_transaction)
     receipt = eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
     return receipt
