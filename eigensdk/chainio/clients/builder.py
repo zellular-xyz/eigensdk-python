@@ -50,11 +50,14 @@ class BuildAllConfig:
             abi=ABIs.DELEGATION_MANAGER,
         )
 
-        slasher_addr = delegation_manager.functions.slasher().call()
-        slasher = eth_http_client.eth.contract(
-            address=slasher_addr,
-            abi=ABIs.SLASHER,
-        )
+        # fixme: slasher seems to be removed in testnet newer version
+        # these codes should be updated based on latest changes to eigensdk-go
+
+        # slasher_addr = delegation_manager.functions.slasher().call()
+        # slasher = eth_http_client.eth.contract(
+        #     address=slasher_addr,
+        #     abi=ABIs.SLASHER,
+        # )
 
         strategy_manager_addr = delegation_manager.functions.strategyManager().call()
         strategy_manager = eth_http_client.eth.contract(
@@ -75,7 +78,8 @@ class BuildAllConfig:
         )
 
         el_reader_instance = el_reader.ELReader(
-            slasher,
+            # slasher,
+            "0x0000000000000000000000000000000000000000",
             delegation_manager,
             strategy_manager,
             avs_directory,
@@ -84,7 +88,8 @@ class BuildAllConfig:
         )
 
         el_writer_instance = el_writer.ELWriter(
-            slasher,
+            # slasher,
+            "0x0000000000000000000000000000000000000000",
             delegation_manager,
             strategy_manager,
             strategy_manager_addr,
