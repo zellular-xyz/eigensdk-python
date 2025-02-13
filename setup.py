@@ -2,9 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="eigensdk",
-    version="0.0.2",
+    version="0.0.3",
     packages=find_packages(),
     install_requires=[
+        "mcl @ git+https://github.com/sadeghte/mcl-python.git",
         "web3==7.4.0",
         "fastapi",
         "pydantic",
