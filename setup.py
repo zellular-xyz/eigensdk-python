@@ -6,11 +6,13 @@ setup(
     packages=find_packages(),
     install_requires=[
         "mcl @ git+https://github.com/sadeghte/mcl-python.git",
-        "web3==7.4.0",
+        "web3",
         "python-dotenv==1.0.1",
         "fastapi",
         "pydantic",
-        "uvicorn"
+        "uvicorn",
+        "pytest",
+        "pytest-mock",
     ],
     entry_points={
         "console_scripts": [
