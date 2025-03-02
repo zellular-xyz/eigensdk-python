@@ -1126,34 +1126,6 @@ class ELReader:
         except Exception as e:
             return None, e
 
-    def test_get_strategy_and_underlying_token(strategy_address):
-        """Test get_strategy_and_underlying_token() with a deployed Anvil contract."""
-
-        try:
-            # Call the function
-            strategy_contract, underlying_token_addr, error = (
-                el_reader.get_strategy_and_underlying_token(strategy_address)
-            )
-
-            # Assertions
-            assert error is None, f"\n❌ Unexpected error: {error}"
-            assert (
-                strategy_contract is not None
-            ), "\n❌ Expected a valid strategy contract, got None"
-            assert (
-                underlying_token_addr is not None
-            ), "\n❌ Expected a valid underlying token address, got None"
-            assert isinstance(
-                underlying_token_addr, str
-            ), f"\n❌ Expected underlying token address to be a string, but got {type(underlying_token_addr)}"
-
-            # Print output for debugging
-            print(f"\n✅ Strategy Contract: {strategy_contract}")
-            print(f"✅ Underlying Token Address: {underlying_token_addr}")
-
-        except Exception as e:
-            pytest.fail(f"\n❌ Test failed due to unexpected error: {e}")
-
     def get_slashable_shares_for_operator_sets_before(
         self, operator_sets: List[Dict], future_block: int
     ) -> Tuple[Optional[List[Dict]], Optional[Exception]]:

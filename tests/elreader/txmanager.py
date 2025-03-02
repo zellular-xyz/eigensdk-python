@@ -1,37 +1,3 @@
-# from web3 import Web3
-
-# class TxManager:
-#     def __init__(self, w3: Web3, sender_address: str, private_key: str):
-#         self.w3 = w3
-#         self.sender_address = sender_address
-#         self.private_key = private_key
-
-#         if not Web3.is_address(self.sender_address):
-#             raise ValueError(f"Invalid sender address: {self.sender_address}")
-
-#     def get_no_send_tx_opts(self):
-#         nonce = self.w3.eth.get_transaction_count(self.sender_address)
-#         base_fee = self.w3.eth.gas_price  # Fetch base fee for EIP-1559 networks
-
-#         tx_opts = {
-#             'from': self.sender_address,
-#             'nonce': nonce,
-#             'gas': 2000000,
-#             'maxFeePerGas': base_fee + Web3.to_wei(2, "gwei"),
-#             'maxPriorityFeePerGas': Web3.to_wei(2, "gwei"),
-#         }
-#         return tx_opts
-
-#     def Send(self, tx, wait_for_receipt=True):
-#         signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=self.private_key)
-#         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-
-#         if wait_for_receipt:
-#             receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
-#             return receipt
-#         return tx_hash
-
-
 import time
 import logging
 from web3 import Web3

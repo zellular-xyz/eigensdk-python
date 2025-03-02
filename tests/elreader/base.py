@@ -30,14 +30,14 @@ def load_abi(file_path):
 
 
 # Provide ABI file paths (Replace with your ABI JSON file paths)
-ALLOCATION_MANAGER_ABI = load_abi("./ABIs/AllocationManager.json")
-AVS_DIRECTORY_ABI = load_abi("./ABIs/AVSDirectory.json")
-DELEGATION_MANAGER_ABI = load_abi("./ABIs/DelegationManager.json")
-PERMISSION_CONTROL_ABI = load_abi("./ABIs/PermissionController.json")
-STRATEGY_MANAGER_ABI = load_abi("./ABIs/StrategyManager.json")
-REWARDS_COORDINATOR_ABI = load_abi("./ABIs/RewardsCoordinator.json")
-IERC20 = load_abi("./ABIs/IERC20.json")
-ISTRATEGY = load_abi("./ABIs/IStrategy.json")
+ALLOCATION_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABIs/AllocationManager.json")
+AVS_DIRECTORY_ABI = load_abi("../../eigensdk/contracts/ABIs/AVSDirectory.json")
+DELEGATION_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABIs/DelegationManager.json")
+PERMISSION_CONTROL_ABI = load_abi("../../eigensdk/contracts/ABIs/PermissionController.json")
+STRATEGY_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABIs/StrategyManager.json")
+REWARDS_COORDINATOR_ABI = load_abi("../../eigensdk/contracts/ABIs/RewardsCoordinator.json")
+IERC20 = load_abi("../../eigensdk/contracts/ABIs/IERC20.json")
+ISTRATEGY = load_abi("../../eigensdk/contracts/ABIs/IStrategy.json")
 # print(ALLOCATION_MANAGER_ABI)
 
 
@@ -87,4 +87,3 @@ SENDER_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 tx_mgr = TxManager(w3, SENDER_ADDRESS, PRIVATE_KEY)
-

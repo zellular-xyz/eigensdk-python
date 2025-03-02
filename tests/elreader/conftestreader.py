@@ -13,12 +13,14 @@ def mock_allocation_manager(mocker):
 
 # ========================== ADDRESSES ========================== #
 
+
 @pytest.fixture
 def strategies():
     return [
         Web3.to_checksum_address("0x4444444444444444444444444444444444444444"),
         Web3.to_checksum_address("0x5555555555555555555555555555555555555555"),
     ]
+
 
 @pytest.fixture
 def operator():
