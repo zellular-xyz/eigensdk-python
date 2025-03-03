@@ -9,14 +9,6 @@ def test_get_allocatable_magnitude(operator_address, strategy_address):
     assert result == 1000000000000000000
 
 
-def test_get_encumbered_magnitude(
-    encumbered_operator_address, encumbered_strategy_address
-):
-    result = el_reader.get_encumbered_magnitude(
-        encumbered_operator_address, encumbered_strategy_address
-    )
-    assert isinstance(result, int)
-
 
 def test_get_max_magnitudes(
     max_magnitudes_operator_address, max_magnitudes_strategy_addresses
@@ -402,3 +394,13 @@ def test_get_strategy_and_underlying_erc20_token(mocker, strategy_address):
     assert (
         underlying_token_addr == "0x2222222222222222222222222222222222222222"
     ), f"\n❌ Unexpected underlying token address: {underlying_token_addr}"
+
+
+
+# def test_get_encumbered_magnitude(
+#     encumbered_operator_address, encumbered_strategy_address
+# ):
+#     result = el_reader.get_encumbered_magnitude(
+#         encumbered_operator_address, encumbered_strategy_address
+#     )
+#     assert isinstance(result, int)

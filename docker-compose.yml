@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  eigensdk:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: eigensdk_container
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      - VIRTUAL_ENV=/app/.venv
+      - PATH=/app/.venv/bin:$PATH
+    command: ["/bin/bash", "-c", "anvil --host 0.0.0.0 --port 8545 & sleep 2 && make run && tail -f /dev/null"]
+    ports:
+      - "8545:8545"  # Expose Anvil for external access
+    restart: unless-stopped  
+    networks:
+      - eigensdk_network  # Explicitly assign a network
+
+networks:
+  eigensdk_network:
+    driver: bridge  # Use a bridge network
