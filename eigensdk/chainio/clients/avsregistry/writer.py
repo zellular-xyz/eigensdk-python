@@ -38,156 +38,628 @@ class AvsRegistryWriter:
         self.eth_http_client: Web3 = eth_http_client
         self.pk_wallet: LocalAccount = pk_wallet
 
-    def register_operator_in_quorum_with_avs_registry_coordinator(
+    def register_operator(
         self,
-        operator_ecdsa_private_key: str,
-        operator_to_avs_registration_sig_salt: bytes,
-        operator_to_avs_registration_sig_expiry: int,
-        bls_key_pair: KeyPair,
-        quorum_numbers: List[int],
+        context: Any,
+        operator_ecdsa_private_key: ecdsa.SigningKey,
+        bls_key_pair: BLSKeyPair,
+        quorum_numbers: List[QuorumNum],
         socket: str,
-    ) -> TxReceipt:
-        account = Account.from_key(operator_ecdsa_private_key)
-        operator_addr = account.address
-        self.logger.info(
-            "Registering operator with the AVS's registry coordinator",
-            extra={
-                "avs-service-manager": self.service_manager_addr,
-                "operator": operator_addr,
-                "quorumNumbers": quorum_numbers,
-                "socket": socket,
-            },
-        )
-        g1_hashed_msg_to_sign = (
-            self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
+        wait_for_receipt: bool,
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key.to_string()).address
+            self.logger.info(
+                "registering operator with the AVS's registry coordinator",
+                extra={
+                    "avs-service-manager": self.service_manager_addr,
+                    "operator": operator_addr,
+                    "quorumNumbers": quorum_numbers,
+                    "socket": socket,
+                },
+            )
+
+            g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
                 operator_addr
             ).call()
-        )
-        signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            G1Point(*g1_hashed_msg_to_sign)
-        )
 
-        pubkey_reg_params = (
-            (
-                int(signed_msg.getX().getStr()),
-                int(signed_msg.getY().getStr()),
-            ),
-            (
-                int(bls_key_pair.pub_g1.getX().getStr()),
-                int(bls_key_pair.pub_g1.getY().getStr()),
-            ),
-            (
-                (
-                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
-                ),
-                (
-                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
-                ),
-            ),
-        )
+            signed_msg = bls_key_pair.sign_hashed_to_curve_message(
+                convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
+            ).g1_point
 
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
-            operator_addr,
-            self.service_manager_addr,
-            operator_to_avs_registration_sig_salt,
-            operator_to_avs_registration_sig_expiry,
-        )
-        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-        operator_signature_with_salt_and_expiry = (
-            operator_signature,
-            operator_to_avs_registration_sig_salt,
-            operator_to_avs_registration_sig_expiry,
-        )
+            g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_key_g1())
+            g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_key_g2())
 
-        func = self.registry_coordinator.functions.registerOperator(
-            utils.nums_to_bytes(quorum_numbers),
-            socket,
-            pubkey_reg_params,
-            operator_signature_with_salt_and_expiry,
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+            pubkey_reg_params = {
+                "pubkeyRegistrationSignature": signed_msg,
+                "pubkeyG1": g1_pubkey_bn254,
+                "pubkeyG2": g2_pubkey_bn254,
+            }
 
-        self.logger.info(
-            "Successfully registered operator with AVS registry coordinator",
-            extra={
-                "txHash": receipt.transactionHash.hex(),
-                "avs-service-manager": self.service_manager_addr,
-                "operator": operator_addr,
-                "quorumNumbers": quorum_numbers,
-            },
-        )
-        return receipt
+            signature_salt = os.urandom(32)
+            cur_block_num = self.web3.eth.block_number
+            cur_block = self.web3.eth.get_block(cur_block_num)
+            sig_valid_for_seconds = 60 * 60  # 1 hour
+            signature_expiry = cur_block["timestamp"] + sig_valid_for_seconds
+
+            msg_to_sign = self.el_reader.functions.calculateOperatorAVSRegistrationDigestHash(
+                operator_addr, self.service_manager_addr, signature_salt, signature_expiry
+            ).call()
+
+            operator_signature = self.web3.eth.account.sign_message(msg_to_sign, operator_ecdsa_private_key)
+            operator_signature_bytes = operator_signature.signature
+            operator_signature_bytes = operator_signature_bytes[:-1] + bytes([operator_signature_bytes[-1] + 27])
+
+            operator_signature_with_salt_and_expiry = {
+                "signature": operator_signature_bytes,
+                "salt": signature_salt,
+                "expiry": signature_expiry,
+            }
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.registerOperator(
+                no_send_tx_opts, quorum_numbers.underlying_type(), socket, pubkey_reg_params, operator_signature_with_salt_and_expiry
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            self.logger.info(
+                "successfully registered operator with AVS registry coordinator",
+                extra={
+                    "txHash": receipt["transactionHash"].hex(),
+                    "avs-service-manager": self.service_manager_addr,
+                    "operator": operator_addr,
+                    "quorumNumbers": quorum_numbers,
+                },
+            )
+
+            return receipt, None
+        except Exception as e:
+            return None, e
 
     def update_stakes_of_entire_operator_set_for_quorums(
+        self, context: Any, operators_per_quorum: List[List[str]], quorum_numbers: List[QuorumNum], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("updating stakes for entire operator set", extra={"quorumNumbers": quorum_numbers})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.updateOperatorsForQuorum(
+                no_send_tx_opts, operators_per_quorum, quorum_numbers.underlying_type()
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            self.logger.info(
+                "successfully updated stakes for entire operator set",
+                extra={
+                    "txHash": receipt["transactionHash"].hex(),
+                    "quorumNumbers": quorum_numbers,
+                },
+            )
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def register_operator_with_churn(
         self,
-        operators_per_quorum: List[List[Address]],
-        quorum_numbers: List[int],
-    ) -> TxReceipt:
-        self.logger.info(
-            "Updating stakes for entire operator set",
-            extra={"quorumNumbers": quorum_numbers},
-        )
+        context: Any,
+        operator_ecdsa_private_key: ecdsa.SigningKey,
+        churn_approval_ecdsa_private_key: ecdsa.SigningKey,
+        bls_key_pair: BLSKeyPair,
+        quorum_numbers: List[QuorumNum],
+        quorum_numbers_to_kick: List[QuorumNum],
+        operators_to_kick: List[str],
+        socket: str,
+        wait_for_receipt: bool,
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key.to_string()).address
 
-        func = self.registry_coordinator.functions.updateOperatorsForQuorum(
-            operators_per_quorum, utils.nums_to_bytes(quorum_numbers)
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+            g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
+                operator_addr
+            ).call()
 
-        self.logger.info(
-            "Successfully updated stakes for entire operator set",
-            extra={
-                "txHash": receipt.transactionHash.hex(),
-                "quorumNumbers": quorum_numbers,
-            },
-        )
-        return receipt
+            signed_msg = bls_key_pair.sign_hashed_to_curve_message(
+                convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
+            ).g1_point
+
+            g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_key_g1())
+            g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_key_g2())
+
+            pubkey_reg_params = {
+                "pubkeyRegistrationSignature": signed_msg,
+                "pubkeyG1": g1_pubkey_bn254,
+                "pubkeyG2": g2_pubkey_bn254,
+            }
+
+            signature_salt = os.urandom(32)
+            cur_block_num = self.web3.eth.block_number
+            cur_block = self.web3.eth.get_block(cur_block_num)
+            sig_valid_for_seconds = 60 * 60  # 1 hour
+            signature_expiry = cur_block["timestamp"] + sig_valid_for_seconds
+
+            msg_to_sign = self.el_reader.functions.calculateOperatorAVSRegistrationDigestHash(
+                operator_addr, self.service_manager_addr, signature_salt, signature_expiry
+            ).call()
+
+            operator_signature = self.web3.eth.account.sign_message(msg_to_sign, operator_ecdsa_private_key)
+            operator_signature_bytes = operator_signature.signature
+            operator_signature_bytes = operator_signature_bytes[:-1] + bytes([operator_signature_bytes[-1] + 27])
+
+            operator_signature_with_salt_and_expiry = {
+                "signature": operator_signature_bytes,
+                "salt": signature_salt,
+                "expiry": signature_expiry,
+            }
+
+            operator_kick_params = [
+                {"operator": operator_to_kick, "quorumNumber": quorum_numbers_to_kick[i].underlying_type()}
+                for i, operator_to_kick in enumerate(operators_to_kick)
+            ]
+
+            churn_signature_salt = os.urandom(32)
+            operator_id = bls_key_pair.get_pub_key_g1().get_operator_id()
+            operator_id_bytes = bytes.fromhex(operator_id[2:])
+
+            churn_msg_to_sign = self.registry_coordinator.functions.calculateOperatorChurnApprovalDigestHash(
+                operator_addr, operator_id_bytes, operator_kick_params, churn_signature_salt, signature_expiry
+            ).call()
+
+            churn_approval_signature = self.web3.eth.account.sign_message(
+                churn_msg_to_sign, churn_approval_ecdsa_private_key
+            )
+            churn_approval_signature_bytes = churn_approval_signature.signature
+            churn_approval_signature_bytes = (
+                churn_approval_signature_bytes[:-1] + bytes([churn_approval_signature_bytes[-1] + 27])
+            )
+
+            churn_approver_signature_with_salt_and_expiry = {
+                "signature": churn_approval_signature_bytes,
+                "salt": churn_signature_salt,
+                "expiry": signature_expiry,
+            }
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.registerOperatorWithChurn(
+                no_send_tx_opts,
+                quorum_numbers.underlying_type(),
+                socket,
+                pubkey_reg_params,
+                operator_kick_params,
+                churn_approver_signature_with_salt_and_expiry,
+                operator_signature_with_salt_and_expiry,
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            self.logger.info(
+                "successfully registered operator with AVS registry coordinator",
+                extra={
+                    "txHash": receipt["transactionHash"].hex(),
+                    "avs-service-manager": self.service_manager_addr,
+                    "operator": operator_addr,
+                    "quorumNumbers": quorum_numbers,
+                },
+            )
+
+            return receipt, None
+        except Exceptio
 
     def update_stakes_of_operator_subset_for_all_quorums(
-        self, operators: List[Address]
-    ) -> TxReceipt:
-        self.logger.info(
-            "Updating stakes of operator subset for all quorums",
-            extra={"operators": operators},
-        )
+        self, context: Any, operators: List[str], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("updating stakes of operator subset for all quorums", extra={"operators": operators})
 
-        func = self.registry_coordinator.functions.updateOperators(operators)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
+            tx = self.registry_coordinator.functions.updateOperators(
+                no_send_tx_opts, operators
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            self.logger.info(
+                "successfully updated stakes of operator subset for all quorums",
+                extra={
+                    "txHash": receipt["transactionHash"].hex(),
+                    "operators": operators,
+                },
+            )
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+    
+    def deregister_operator(
+        self, context: Any, quorum_numbers: List[QuorumNum], pubkey: BN254G1Point, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("deregistering operator with the AVS's registry coordinator")
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.deregisterOperator0(
+                no_send_tx_opts, quorum_numbers.underlying_type()
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            self.logger.info(
+                "successfully deregistered operator with the AVS's registry coordinator",
+                extra={"txHash": receipt["transactionHash"].hex()},
+            )
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def update_socket(
+        self, context: Any, socket: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.updateSocket(
+                no_send_tx_opts, socket
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def set_rewards_initiator(
+        self, context: Any, rewards_initiator_addr: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("setting rewards initiator with addr", extra={"rewardsInitiatorAddr": rewards_initiator_addr})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            service_manager_contract = self.web3.eth.contract(
+                address=self.service_manager_addr, abi=self.service_manager_abi
+            )
+
+            tx = service_manager_contract.functions.setRewardsInitiator(
+                no_send_tx_opts, rewards_initiator_addr
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def set_slashable_stake_lookahead(
+        self, context: Any, quorum_number: int, look_ahead_period: int, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.stake_registry.functions.setSlashableStakeLookahead(
+                no_send_tx_opts, quorum_number, look_ahead_period
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def set_minimum_stake_for_quorum(
+        self, context: Any, quorum_number: int, minimum_stake: int, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.stake_registry.functions.setMinimumStakeForQuorum(
+                no_send_tx_opts, quorum_number, minimum_stake
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def create_total_delegated_stake_quorum(
+        self,
+        context: Any,
+        operator_set_params: Dict,
+        minimum_stake_required: int,
+        strategy_params: List[Dict],
+        wait_for_receipt: bool,
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("Creating total delegated stake quorum")
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.createTotalDelegatedStakeQuorum(
+                no_send_tx_opts, operator_set_params, minimum_stake_required, strategy_params
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def create_slashable_stake_quorum(
+        self,
+        context: Any,
+        operator_set_params: Dict,
+        minimum_stake_required: int,
+        strategy_params: List[Dict],
+        look_ahead_period: int,
+        wait_for_receipt: bool,
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("Creating slashable stake quorum")
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.createSlashableStakeQuorum(
+                no_send_tx_opts, operator_set_params, minimum_stake_required, strategy_params, look_ahead_period
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def eject_operator(
+    self, context: Any, operator_address: str, quorum_numbers: List[QuorumNum], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+    try:
         self.logger.info(
-            "Successfully updated stakes of operator subset for all quorums",
+            "ejecting operator",
             extra={
-                "txHash": receipt.transactionHash.hex(),
-                "operators": operators,
-            },
+                "operator_address": operator_address,
+                "quorumNumbers": quorum_numbers
+            }
         )
-        return receipt
+        no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-    def deregister_operator(self, quorum_numbers: List[int]) -> TxReceipt:
-        self.logger.info("Deregistering operator with the AVS's registry coordinator")
+        tx = self.registry_coordinator.functions.ejectOperator(
+            no_send_tx_opts, operator_address, quorum_numbers.underlying_type()
+        ).build_transaction()
 
-        func = self.registry_coordinator.functions.deregisterOperator(
-            utils.nums_to_bytes(quorum_numbers)
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
 
-        self.logger.info(
-            "Successfully deregistered operator with the AVS's registry coordinator",
-            extra={"txHash": receipt.transactionHash.hex()},
-        )
-        return receipt
+        return receipt, None
+    except Exception as e:
+        return None, e
 
-    def update_socket(self, socket: str) -> TxReceipt:
-        self.logger.info(
-            "Updating socket",
-            extra={"socket": socket},
-        )
-        func = self.registry_coordinator.functions.updateSocket(socket)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+    
+    def set_operator_set_params(
+        self, context: Any, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("setting operator set params for quorum", extra={"quorumNumber": quorum_number})
 
-        self.logger.info(
-            "Successfully updated socket",
-            extra={"txHash": receipt.transactionHash.hex()},
-        )
-        return receipt
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.setOperatorSetParams(
+                no_send_tx_opts, quorum_number, operator_set_params
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def set_churn_approver(
+    self, context: Any, churn_approver_address: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+    try:
+        self.logger.info("setting churn approver", extra={"churnApproverAddress": churn_approver_address})
+
+        no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+        tx = self.registry_coordinator.functions.setChurnApprover(
+            no_send_tx_opts, churn_approver_address
+        ).build_transaction()
+
+        receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+        return receipt, None
+    except Exception as e:
+        return None, e
+
+    def set_ejector(
+        self, context: Any, ejector_address: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("setting ejector", extra={"ejectorAddress": ejector_address})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.setEjector(
+                no_send_tx_opts, ejector_address
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def modify_strategy_params(
+        self,
+        context: Any,
+        quorum_number: QuorumNum,
+        strategy_indices: List[int],
+        multipliers: List[int],
+        wait_for_receipt: bool,
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("modifying strategy params for quorum", extra={"quorumNumber": quorum_number})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.stake_registry.functions.modifyStrategyParams(
+                no_send_tx_opts, quorum_number.underlying_type(), strategy_indices, multipliers
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    
+    def set_account_identifier(
+        self, context: Any, account_identifier_address: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("setting account identifier", extra={"accountIdentifierAddress": account_identifier_address})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.setAccountIdentifier(
+                no_send_tx_opts, account_identifier_address
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def set_ejection_cooldown(
+        self, context: Any, ejection_cooldown: int, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("setting ejection cooldown", extra={"ejectionCooldown": ejection_cooldown})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.registry_coordinator.functions.setEjectionCooldown(
+                no_send_tx_opts, ejection_cooldown
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def add_strategies(
+        self, context: Any, quorum_number: QuorumNum, strategy_params: List[Dict], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("adding strategies for quorum", extra={"quorumNumber": quorum_number.underlying_type()})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.stake_registry.functions.addStrategies(
+                no_send_tx_opts, quorum_number.underlying_type(), strategy_params
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def update_avs_metadata_uri(
+        self, context: Any, metadata_uri: str, wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("updating AVS metadata URI", extra={"metadataUri": metadata_uri})
+
+            service_manager_contract = self.web3.eth.contract(
+                address=self.service_manager_addr, abi=self.service_manager_abi
+            )
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = service_manager_contract.functions.updateAVSMetadataURI(
+                no_send_tx_opts, metadata_uri
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def remove_strategies(
+        self, context: Any, quorum_number: QuorumNum, indices_to_remove: List[int], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("removing strategies from quorum", extra={"quorumNumber": quorum_number})
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = self.stake_registry.functions.removeStrategies(
+                no_send_tx_opts, quorum_number.underlying_type(), indices_to_remove
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def create_avs_rewards_submission(
+        self, context: Any, rewards_submission: List[Dict], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info("creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission})
+
+            service_manager_contract = self.web3.eth.contract(
+                address=self.service_manager_addr, abi=self.service_manager_abi
+            )
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = service_manager_contract.functions.createAVSRewardsSubmission(
+                no_send_tx_opts, rewards_submission
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
+
+    def create_operator_directed_avs_rewards_submission(
+        self, context: Any, operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
+    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info(
+                "creating operator directed AVS rewards submission",
+                extra={"operatorDirectedRewardsSubmissions": operator_directed_rewards_submissions},
+            )
+
+            service_manager_contract = self.web3.eth.contract(
+                address=self.service_manager_addr, abi=self.service_manager_abi
+            )
+
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+            tx = service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission(
+                no_send_tx_opts, operator_directed_rewards_submissions
+            ).build_transaction()
+
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+            return receipt, None
+        except Exception as e:
+            return None, e
