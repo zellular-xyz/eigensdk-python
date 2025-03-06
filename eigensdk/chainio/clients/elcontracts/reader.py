@@ -806,7 +806,7 @@ class ELReader:
         rewards_updater = self.reward_cordinator.functions.rewardsUpdater().call()
         return rewards_updater
 
-    def GetActivationDelay(self) -> int:
+    def get_activation_delay(self) -> int:
         if self.reward_cordinator is None:
             raise ValueError("RewardsCoordinator contract not provided")
 

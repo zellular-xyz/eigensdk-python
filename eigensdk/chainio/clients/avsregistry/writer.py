@@ -421,76 +421,58 @@ class AvsRegistryWriter:
             return None, e
 
     def eject_operator(
-    self, context: Any, operator_address: str, quorum_numbers: List[QuorumNum], wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
-    try:
-        self.logger.info(
-            "ejecting operator",
-            extra={
-                "operator_address": operator_address,
-                "quorumNumbers": quorum_numbers
-            }
-        )
-        no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+        self, context: Any, operator_address: str, quorum_numbers: List[QuorumNum], wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        try:
+            self.logger.info(
+                "ejecting operator",
+                extra={
+                    "operator_address": operator_address,
+                    "quorumNumbers": quorum_numbers
+                }
+            )
+            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-        tx = self.registry_coordinator.functions.ejectOperator(
-            no_send_tx_opts, operator_address, quorum_numbers.underlying_type()
-        ).build_transaction()
+            tx = self.registry_coordinator.functions.ejectOperator(
+                no_send_tx_opts, operator_address, quorum_numbers.underlying_type()
+            ).build_transaction()
 
-        receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
 
-        return receipt, None
-    except Exception as e:
-        return None, e
+            return receipt, None
+        except Exception as e:
+            return None, e
 
     
     def set_operator_set_params(
-        self, context: Any, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
-        try:
-            self.logger.info("setting operator set params for quorum", extra={"quorumNumber": quorum_number})
+            self, context: Any, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
+            try:
+                self.logger.info("setting operator set params for quorum", extra={"quorumNumber": quorum_number})
 
-            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+                no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-            tx = self.registry_coordinator.functions.setOperatorSetParams(
-                no_send_tx_opts, quorum_number, operator_set_params
-            ).build_transaction()
+                tx = self.registry_coordinator.functions.setOperatorSetParams(
+                    no_send_tx_opts, quorum_number, operator_set_params
+                ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
 
-            return receipt, None
-        except Exception as e:
-            return None, e
+                return receipt, None
+            except Exception as e:
+                return None, e
 
     
     def set_churn_approver(
-    self, context: Any, churn_approver_address: str, wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
-    try:
-        self.logger.info("setting churn approver", extra={"churnApproverAddress": churn_approver_address})
-
-        no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
-
-        tx = self.registry_coordinator.functions.setChurnApprover(
-            no_send_tx_opts, churn_approver_address
-        ).build_transaction()
-
-        receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
-
-        return receipt, None
-    except Exception as e:
-        return None, e
-
-    def set_ejector(
-        self, context: Any, ejector_address: str, wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
+        self, context: Any, churn_approver_address: str, wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
-            self.logger.info("setting ejector", extra={"ejectorAddress": ejector_address})
+            self.logger.info("setting churn approver", extra={"churnApproverAddress": churn_approver_address})
 
             no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-            tx = self.registry_coordinator.functions.setEjector(
-                no_send_tx_opts, ejector_address
+            tx = self.registry_coordinator.functions.setChurnApprover(
+                no_send_tx_opts, churn_approver_address
             ).build_transaction()
 
             receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
@@ -498,6 +480,24 @@ class AvsRegistryWriter:
             return receipt, None
         except Exception as e:
             return None, e
+
+    def set_ejector(
+            self, context: Any, ejector_address: str, wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
+            try:
+                self.logger.info("setting ejector", extra={"ejectorAddress": ejector_address})
+
+                no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+
+                tx = self.registry_coordinator.functions.setEjector(
+                    no_send_tx_opts, ejector_address
+                ).build_transaction()
+
+                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+
+                return receipt, None
+            except Exception as e:
+                return None, e
 
     def modify_strategy_params(
         self,
@@ -524,40 +524,40 @@ class AvsRegistryWriter:
 
     
     def set_account_identifier(
-        self, context: Any, account_identifier_address: str, wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
-        try:
-            self.logger.info("setting account identifier", extra={"accountIdentifierAddress": account_identifier_address})
+            self, context: Any, account_identifier_address: str, wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
+            try:
+                self.logger.info("setting account identifier", extra={"accountIdentifierAddress": account_identifier_address})
 
-            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+                no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-            tx = self.registry_coordinator.functions.setAccountIdentifier(
-                no_send_tx_opts, account_identifier_address
-            ).build_transaction()
+                tx = self.registry_coordinator.functions.setAccountIdentifier(
+                    no_send_tx_opts, account_identifier_address
+                ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
 
-            return receipt, None
-        except Exception as e:
-            return None, e
+                return receipt, None
+            except Exception as e:
+                return None, e
 
     def set_ejection_cooldown(
-        self, context: Any, ejection_cooldown: int, wait_for_receipt: bool
-    ) -> Tuple[Optional[Dict], Optional[Exception]]:
-        try:
-            self.logger.info("setting ejection cooldown", extra={"ejectionCooldown": ejection_cooldown})
+            self, context: Any, ejection_cooldown: int, wait_for_receipt: bool
+        ) -> Tuple[Optional[Dict], Optional[Exception]]:
+            try:
+                self.logger.info("setting ejection cooldown", extra={"ejectionCooldown": ejection_cooldown})
 
-            no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
+                no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
-            tx = self.registry_coordinator.functions.setEjectionCooldown(
-                no_send_tx_opts, ejection_cooldown
-            ).build_transaction()
+                tx = self.registry_coordinator.functions.setEjectionCooldown(
+                    no_send_tx_opts, ejection_cooldown
+                ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
 
-            return receipt, None
-        except Exception as e:
-            return None, e
+                return receipt, None
+            except Exception as e:
+                return None, e
 
     def add_strategies(
         self, context: Any, quorum_number: QuorumNum, strategy_params: List[Dict], wait_for_receipt: bool
