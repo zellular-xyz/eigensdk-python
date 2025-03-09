@@ -14,7 +14,7 @@ COPY . /app
 
 # Install Python dependencies
 RUN python -m venv /app/.venv && \
-    /app/.venv/bin/pip install --no-cache-dir .
+/app/.venv/bin/pip install --no-cache-dir .
 
 # Install Foundry and make sure it's available in PATH
 RUN curl -L https://foundry.paradigm.xyz | bash && \
@@ -23,9 +23,11 @@ RUN curl -L https://foundry.paradigm.xyz | bash && \
     ln -s /root/.foundry/bin/cast /usr/local/bin/cast && \
     ln -s /root/.foundry/bin/anvil /usr/local/bin/anvil
 
+
+RUN	if [ ! -d "eigenlayer-contracts" ];then git clone https://github.com/Layr-Labs/eigenlayer-contracts.git /app/eigenlayer-contracts; fi
+RUN cd eigenlayer-contracts && forge clean
+RUN cd eigenlayer-contracts && forge build
 # Expose required port
 EXPOSE 8545
 
-# Set default command to run `make run` and keep container running
-CMD ["/bin/bash", "-c", "make run && tail -f /dev/null"]
 
