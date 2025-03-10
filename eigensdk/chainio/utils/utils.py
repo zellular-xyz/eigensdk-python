@@ -31,3 +31,47 @@ def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
         x=(input_point.X.A1.to_big_int(), input_point.X.A0.to_big_int()),
         y=(input_point.Y.A1.to_big_int(), input_point.Y.A0.to_big_int())
     )
+
+
+def abi_encode_registration_params(
+    registration_type: int,
+    socket: str,
+    pubkey_reg_params: tuple[
+        tuple[int, int], tuple[int, int], tuple[list[int], list[int]]
+    ],
+) -> bytes:
+
+    type_str = (
+        "(uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
+    )
+
+    data = (
+        registration_type,
+        socket,
+        (pubkey_reg_params[0], pubkey_reg_params[1], pubkey_reg_params[2]),
+    )
+
+    encoded = encode_abi([type_str], [data])
+    return encoded[32:]  # Remove initial offset pointer
+
+
+def abi_encode_operator_avs_registration_params(
+    operator_id: int,
+    registration_type: int,
+    socket: str,
+    pubkey_reg_params: tuple[
+        tuple[int, int], tuple[int, int], tuple[list[int], list[int]]
+    ],
+) -> bytes:
+
+    type_str = "(uint256,uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
+
+    data = (
+        operator_id,
+        registration_type,
+        socket,
+        (pubkey_reg_params[0], pubkey_reg_params[1], pubkey_reg_params[2]),
+    )
+
+    encoded = encode_abi([type_str], [data])
+    return encoded[32:]

@@ -21,14 +21,17 @@ class AvsRegistryReader:
     def __init__(
         self,
         registry_coordinator: Contract,
+        registry_coordinator_addr: Address,
         bls_apk_registry: Contract,
+        bls_apk_registry_addr: Address,
         operator_state_retriever: Contract,
         service_manager: Contract,
         stake_registry: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
-        
+        tx_mgr: Any,
     ):
+        
         self.logger: logging.Logger = logger
         self.bls_apk_registry: Contract = bls_apk_registry
         self.registry_coordinator: Contract = registry_coordinator

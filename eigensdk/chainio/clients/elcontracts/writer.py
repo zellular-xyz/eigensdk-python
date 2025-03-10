@@ -6,8 +6,8 @@ from web3 import Web3
 from web3.contract import Contract
 from eigensdk._types import Operator
 from eigensdk.contracts import ABIs
-from eigensdk.chainio.clients.elcontracts.utils import get_pubkey_registration_params, abi_encode_registration_params
-
+from eigensdk.chainio.utils import utils 
+from eigensdk.chainio.txmgr import txmanager
 class ELWriter:
     def __init__(
         self,
@@ -18,12 +18,13 @@ class ELWriter:
         reward_coordinator: Contract,
         registry_coordinator: Contract,
         strategy_manager: Contract,
-        logger: logging.Logger,
+        strategy_manager_addr: Address,
+        el_chain_reader: Any,
         eth_http_client: Web3,
+        logger: logging.Logger,
+        tx_mgr: Any,
         strategy_abi: List[Dict[str, Any]],
         erc20_abi: List[Dict[str, Any]],
-        tx_mgr: Any,
-        el_chain_reader: Any,
     ):
         self.allocation_manager = allocation_manager
         self.avs_directory = avs_directory
@@ -36,8 +37,10 @@ class ELWriter:
         self.logger = logger
         self.strategy_abi = strategy_abi
         self.erc20_abi = erc20_abi
-        self.tx_mgr = tx_mgr
+        self.tx_mgr = txmanager
         self.el_chain_reader = el_chain_reader
+
+
 
     def register_as_operator(self, operator, wait_for_receipt: bool):
         if self.delegation_manager is None:
@@ -478,7 +481,7 @@ class ELWriter:
             return None, e
 
         try:
-            pubkey_reg_params = get_pubkey_registration_params(
+            pubkey_reg_params = utils.get_pubkey_registration_params(
                 self.eth_http_client,
                 Web3.to_checksum_address(registry_coordinator_addr),
                 Web3.to_checksum_address(request["operator_address"]),
@@ -489,7 +492,7 @@ class ELWriter:
             return None, e
 
         try:
-            data = abi_encode_registration_params(
+            data = utils.abi_encode_registration_params(
                 "RegistrationTypeNormal",
                 request["socket"],
                 pubkey_reg_params

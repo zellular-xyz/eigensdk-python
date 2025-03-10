@@ -21,6 +21,7 @@ class AvsRegistryWriter:
         registry_coordinator: Contract,
         operator_state_retriever: Contract,
         service_manager: Contract,
+        service_manager_addr: Address,
         stake_registry: Contract,
         bls_apk_registry: Contract,
         el_reader: ELReader,
