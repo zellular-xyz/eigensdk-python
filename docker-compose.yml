@@ -6,42 +6,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: eigensdk_container
+    container_name: eigensdk
     working_dir: /app
-    volumes:
-      - .:/app
     environment:
       - VIRTUAL_ENV=/app/.venv
-      - PATH=/app/.venv/bin:$PATH
     dns:
       - 8.8.8.8
     
     command: >
       /bin/bash -c "set -ex;
-        echo 'Listing /app:';
-        ls -la /app;
-        echo 'Listing /app/eigenlayer-contracts:';
-        ls -la /app/eigenlayer-contracts;
         nohup anvil > anvil.log 2>&1 & ANVIL_PID=$!;
         sleep 3;
         cd /app/eigenlayer-contracts;
-        echo 'Current directory:';
-        pwd;
-        echo 'Listing current directory:';
-        ls -la;
-        pwd;
         sleep 5;
         forge script script/deploy/local/deploy_from_scratch.slashing.s.sol --fork-url http://127.0.0.1:8545 --broadcast --skip-simulation --sig 'run(string memory)' 'local/deploy_from_scratch.slashing.anvil.config.json' --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         wait $ANVIL_PID"
-        ports:
+    ports:
       - "8545:8545"
     restart: unless-stopped  
     network_mode: "host"
-    #networks:
-      # - eigensdk_network
-#  - host
-
-#networks:
-  #  eigensdk_network:
-    #  driver: bridge
 
