@@ -59,7 +59,7 @@ el_writer = writer.ELWriter(
     strategy_manager=strategy_manager,
     logger=logger,
     eth_http_client=w3,
-    strategy_abi=LoadABI.ISTRATEGY_ABI(),
+    strategy_abi=LoadABI.I_STRATEGY_ABI(),
     erc20_abi=LoadABI.IERC20_ABI(),
 )
 
@@ -68,3 +68,5 @@ SENDER_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 tx_mgr = txmanager.TxManager(w3, SENDER_ADDRESS, PRIVATE_KEY)
+
+

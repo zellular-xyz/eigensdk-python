@@ -1,15 +1,21 @@
 import json
 
 def load_abi(file_path):
-    with open(file_path, "r") as file:
+    with open(f"../../eigensdk/contracts/ABI/{file_path}", "r") as file:
         data = json.load(file)
         return data["abi"]  # Extract only the ABI field
 
-ALLOCATION_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABI/AllocationManager.json")
-AVS_DIRECTORY_ABI = load_abi("../../eigensdk/contracts/ABI/AVSDirectory.json")
-DELEGATION_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABI/DelegationManager.json")
-PERMISSION_CONTROL_ABI = load_abi("../../eigensdk/contracts/ABI/PermissionController.json")
-STRATEGY_MANAGER_ABI = load_abi("../../eigensdk/contracts/ABI/StrategyManager.json")
-REWARDS_COORDINATOR_ABI = load_abi("../../eigensdk/contracts/ABI/RewardsCoordinator.json")
-IERC20_ABI = load_abi("../../eigensdk/contracts/ABI/IERC20.json")
-IStrategy_ABI = load_abi("../../eigensdk/contracts/ABI/IStrategy.json")
+
+ALLOCATION_MANAGER_ABI = load_abi("AllocationManager.json")
+AVS_DIRECTORY_ABI = load_abi("AVSDirectory.json")
+BLS_APK_REGISTRY_ABI = load_abi("BLSApkRegistry.json")
+DELEGATION_MANAGER_ABI = load_abi("DelegationManager.json")
+IERC20_ABI = load_abi("IERC20.json")
+I_STRATEGY_ABI = load_abi("IStrategy.json")
+OPERATOR_STATE_RETRIEVER_ABI = load_abi("OperatorStateRetriever.json")
+PERMISSION_CONTROLLER_ABI = load_abi("PermissionController.json")
+REGISTRY_COORDINATOR_ABI = load_abi("RegistryCoordinator.json")
+REWARDS_COORDINATOR_ABI = load_abi("RewardsCoordinator.json")
+SERVICE_MANAGER_BASE_ABI = load_abi("ServiceManagerBase.json")
+STAKE_REGISTRY_ABI = load_abi("StakeRegistry.json")
+STRATEGY_MANAGER_ABI = load_abi("StrategyManager.json")
