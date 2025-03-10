@@ -16,6 +16,7 @@ class ELWriter:
         delegation_manager: Contract,
         permission_controller: Contract,
         reward_coordinator: Contract,
+        registry_coordinator: Contract,
         strategy_manager: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
@@ -29,6 +30,7 @@ class ELWriter:
         self.delegation_manager = delegation_manager
         self.permission_controller = permission_controller
         self.rewards_coordinator = reward_coordinator
+        self.registry_coordinator = registry_coordinator
         self.strategy_manager = strategy_manager
         self.eth_http_client = eth_http_client
         self.logger = logger

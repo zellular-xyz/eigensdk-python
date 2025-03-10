@@ -20,20 +20,17 @@ DEFAULT_QUERY_BLOCK_RANGE = 10_000
 class AvsRegistryReader:
     def __init__(
         self,
-        registry_coordinator_addr: Address,
         registry_coordinator: Contract,
-        bls_apk_registry_addr: Address,
         bls_apk_registry: Contract,
         operator_state_retriever: Contract,
+        service_manager: Contract,
         stake_registry: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
         
     ):
         self.logger: logging.Logger = logger
-        self.bls_apk_registry_addr: Address = bls_apk_registry_addr
         self.bls_apk_registry: Contract = bls_apk_registry
-        self.registry_coordinator_addr: Address = registry_coordinator_addr
         self.registry_coordinator: Contract = registry_coordinator
         self.operator_state_retriever: Contract = operator_state_retriever
         self.stake_registry: Contract = stake_registry
@@ -609,7 +606,6 @@ class AvsRegistryReader:
                 operator_address
             ).call(call_options)
 
-            # 0 = NEVER_REGISTERED, 1 = REGISTERED, 2 = DEREGISTERED
             registered_with_avs = operator_status == 1
 
             return registered_with_avs, None

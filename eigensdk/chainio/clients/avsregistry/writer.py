@@ -18,29 +18,27 @@ from ..elcontracts.reader import ELReader
 class AvsRegistryWriter:
     def __init__(
         self,
-        service_manager_addr: Address,
         registry_coordinator: Contract,
         operator_state_retriever: Contract,
+        service_manager: Contract,
         stake_registry: Contract,
         bls_apk_registry: Contract,
         el_reader: ELReader,
         logger: logging.Logger,
         eth_http_client: Web3,
-        pk_wallet: LocalAccount,
     ):
-        self.service_manager_addr: Address = service_manager_addr
+
         self.registry_coordinator: Contract = registry_coordinator
         self.operator_state_retriever: Contract = operator_state_retriever
+        self.service_manager: Contract = service_manager
         self.stake_registry: Contract = stake_registry
         self.bls_apk_registry: Contract = bls_apk_registry
         self.el_reader: ELReader = el_reader
         self.logger: logging.Logger = logger
         self.eth_http_client: Web3 = eth_http_client
-        self.pk_wallet: LocalAccount = pk_wallet
 
     def register_operator(
         self,
-        context: Any,
         operator_ecdsa_private_key: ecdsa.SigningKey,
         bls_key_pair: BLSKeyPair,
         quorum_numbers: List[QuorumNum],
@@ -102,7 +100,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_numbers.underlying_type(), socket, pubkey_reg_params, operator_signature_with_salt_and_expiry
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             self.logger.info(
                 "successfully registered operator with AVS registry coordinator",
@@ -119,7 +117,7 @@ class AvsRegistryWriter:
             return None, e
 
     def update_stakes_of_entire_operator_set_for_quorums(
-        self, context: Any, operators_per_quorum: List[List[str]], quorum_numbers: List[QuorumNum], wait_for_receipt: bool
+        self,  operators_per_quorum: List[List[str]], quorum_numbers: List[QuorumNum], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("updating stakes for entire operator set", extra={"quorumNumbers": quorum_numbers})
@@ -130,7 +128,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operators_per_quorum, quorum_numbers.underlying_type()
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send(tx, wait_for_receipt)
 
             self.logger.info(
                 "successfully updated stakes for entire operator set",
@@ -147,7 +145,7 @@ class AvsRegistryWriter:
     
     def register_operator_with_churn(
         self,
-        context: Any,
+        
         operator_ecdsa_private_key: ecdsa.SigningKey,
         churn_approval_ecdsa_private_key: ecdsa.SigningKey,
         bls_key_pair: BLSKeyPair,
@@ -236,7 +234,7 @@ class AvsRegistryWriter:
                 operator_signature_with_salt_and_expiry,
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             self.logger.info(
                 "successfully registered operator with AVS registry coordinator",
@@ -252,7 +250,7 @@ class AvsRegistryWriter:
         except Exceptio
 
     def update_stakes_of_operator_subset_for_all_quorums(
-        self, context: Any, operators: List[str], wait_for_receipt: bool
+        self,  operators: List[str], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("updating stakes of operator subset for all quorums", extra={"operators": operators})
@@ -263,7 +261,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operators
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             self.logger.info(
                 "successfully updated stakes of operator subset for all quorums",
@@ -278,7 +276,7 @@ class AvsRegistryWriter:
             return None, e
     
     def deregister_operator(
-        self, context: Any, quorum_numbers: List[QuorumNum], pubkey: BN254G1Point, wait_for_receipt: bool
+        self,  quorum_numbers: List[QuorumNum], pubkey: BN254G1Point, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("deregistering operator with the AVS's registry coordinator")
@@ -289,7 +287,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_numbers.underlying_type()
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             self.logger.info(
                 "successfully deregistered operator with the AVS's registry coordinator",
@@ -301,7 +299,7 @@ class AvsRegistryWriter:
             return None, e
 
     def update_socket(
-        self, context: Any, socket: str, wait_for_receipt: bool
+        self,  socket: str, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
@@ -310,14 +308,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, socket
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def set_rewards_initiator(
-        self, context: Any, rewards_initiator_addr: str, wait_for_receipt: bool
+        self,  rewards_initiator_addr: str, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("setting rewards initiator with addr", extra={"rewardsInitiatorAddr": rewards_initiator_addr})
@@ -332,7 +330,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, rewards_initiator_addr
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -340,7 +338,7 @@ class AvsRegistryWriter:
 
     
     def set_slashable_stake_lookahead(
-        self, context: Any, quorum_number: int, look_ahead_period: int, wait_for_receipt: bool
+        self,  quorum_number: int, look_ahead_period: int, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
@@ -349,7 +347,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_number, look_ahead_period
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -357,7 +355,7 @@ class AvsRegistryWriter:
 
     
     def set_minimum_stake_for_quorum(
-        self, context: Any, quorum_number: int, minimum_stake: int, wait_for_receipt: bool
+        self,  quorum_number: int, minimum_stake: int, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
@@ -366,7 +364,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_number, minimum_stake
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -375,7 +373,7 @@ class AvsRegistryWriter:
     
     def create_total_delegated_stake_quorum(
         self,
-        context: Any,
+        
         operator_set_params: Dict,
         minimum_stake_required: int,
         strategy_params: List[Dict],
@@ -390,7 +388,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operator_set_params, minimum_stake_required, strategy_params
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -398,7 +396,7 @@ class AvsRegistryWriter:
 
     def create_slashable_stake_quorum(
         self,
-        context: Any,
+        
         operator_set_params: Dict,
         minimum_stake_required: int,
         strategy_params: List[Dict],
@@ -414,14 +412,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operator_set_params, minimum_stake_required, strategy_params, look_ahead_period
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def eject_operator(
-        self, context: Any, operator_address: str, quorum_numbers: List[QuorumNum], wait_for_receipt: bool
+        self,  operator_address: str, quorum_numbers: List[QuorumNum], wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info(
@@ -437,7 +435,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operator_address, quorum_numbers.underlying_type()
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -445,7 +443,7 @@ class AvsRegistryWriter:
 
     
     def set_operator_set_params(
-            self, context: Any, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
+            self,  quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
             try:
                 self.logger.info("setting operator set params for quorum", extra={"quorumNumber": quorum_number})
@@ -456,7 +454,7 @@ class AvsRegistryWriter:
                     no_send_tx_opts, quorum_number, operator_set_params
                 ).build_transaction()
 
-                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
                 return receipt, None
             except Exception as e:
@@ -464,7 +462,7 @@ class AvsRegistryWriter:
 
     
     def set_churn_approver(
-        self, context: Any, churn_approver_address: str, wait_for_receipt: bool
+        self,  churn_approver_address: str, wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("setting churn approver", extra={"churnApproverAddress": churn_approver_address})
@@ -475,14 +473,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, churn_approver_address
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def set_ejector(
-            self, context: Any, ejector_address: str, wait_for_receipt: bool
+            self,  ejector_address: str, wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
             try:
                 self.logger.info("setting ejector", extra={"ejectorAddress": ejector_address})
@@ -493,7 +491,7 @@ class AvsRegistryWriter:
                     no_send_tx_opts, ejector_address
                 ).build_transaction()
 
-                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
                 return receipt, None
             except Exception as e:
@@ -501,7 +499,7 @@ class AvsRegistryWriter:
 
     def modify_strategy_params(
         self,
-        context: Any,
+        
         quorum_number: QuorumNum,
         strategy_indices: List[int],
         multipliers: List[int],
@@ -516,7 +514,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_number.underlying_type(), strategy_indices, multipliers
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
@@ -524,7 +522,7 @@ class AvsRegistryWriter:
 
     
     def set_account_identifier(
-            self, context: Any, account_identifier_address: str, wait_for_receipt: bool
+            self,  account_identifier_address: str, wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
             try:
                 self.logger.info("setting account identifier", extra={"accountIdentifierAddress": account_identifier_address})
@@ -535,14 +533,14 @@ class AvsRegistryWriter:
                     no_send_tx_opts, account_identifier_address
                 ).build_transaction()
 
-                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
                 return receipt, None
             except Exception as e:
                 return None, e
 
     def set_ejection_cooldown(
-            self, context: Any, ejection_cooldown: int, wait_for_receipt: bool
+            self,  ejection_cooldown: int, wait_for_receipt: bool
         ) -> Tuple[Optional[Dict], Optional[Exception]]:
             try:
                 self.logger.info("setting ejection cooldown", extra={"ejectionCooldown": ejection_cooldown})
@@ -553,14 +551,14 @@ class AvsRegistryWriter:
                     no_send_tx_opts, ejection_cooldown
                 ).build_transaction()
 
-                receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+                receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
                 return receipt, None
             except Exception as e:
                 return None, e
 
     def add_strategies(
-        self, context: Any, quorum_number: QuorumNum, strategy_params: List[Dict], wait_for_receipt: bool
+        self,  quorum_number: QuorumNum, strategy_params: List[Dict], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("adding strategies for quorum", extra={"quorumNumber": quorum_number.underlying_type()})
@@ -571,14 +569,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_number.underlying_type(), strategy_params
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def update_avs_metadata_uri(
-        self, context: Any, metadata_uri: str, wait_for_receipt: bool
+        self,  metadata_uri: str, wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("updating AVS metadata URI", extra={"metadataUri": metadata_uri})
@@ -593,14 +591,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, metadata_uri
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def remove_strategies(
-        self, context: Any, quorum_number: QuorumNum, indices_to_remove: List[int], wait_for_receipt: bool
+        self,  quorum_number: QuorumNum, indices_to_remove: List[int], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("removing strategies from quorum", extra={"quorumNumber": quorum_number})
@@ -611,14 +609,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, quorum_number.underlying_type(), indices_to_remove
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def create_avs_rewards_submission(
-        self, context: Any, rewards_submission: List[Dict], wait_for_receipt: bool
+        self,  rewards_submission: List[Dict], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info("creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission})
@@ -633,14 +631,14 @@ class AvsRegistryWriter:
                 no_send_tx_opts, rewards_submission
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
             return None, e
 
     def create_operator_directed_avs_rewards_submission(
-        self, context: Any, operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
+        self,  operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
     ) -> Tuple[Optional[Dict], Optional[Exception]]:
         try:
             self.logger.info(
@@ -658,7 +656,7 @@ class AvsRegistryWriter:
                 no_send_tx_opts, operator_directed_rewards_submissions
             ).build_transaction()
 
-            receipt = self.tx_mgr.send(context, tx, wait_for_receipt)
+            receipt = self.tx_mgr.send( tx, wait_for_receipt)
 
             return receipt, None
         except Exception as e:
