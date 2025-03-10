@@ -2,7 +2,7 @@ import logging
 from web3 import Web3
 from eth_typing import Address
 from eigensdk.chainio.clients.elcontracts import writer
-from eigensdk.chainio.clients.elcontracts import txmanager
+from eigensdk.chainio.txmgr import txmanager
 from eigensdk.contracts.ABIs import LoadABI
 
 # Setup Web3 Connection to Anvil
