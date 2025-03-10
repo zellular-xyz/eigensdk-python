@@ -23,6 +23,5 @@ services:
         wait $ANVIL_PID"
     ports:
       - "8545:8545"
-    restart: unless-stopped  
     network_mode: "host"
 
