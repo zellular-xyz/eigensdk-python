@@ -732,9 +732,6 @@ class ELWriter:
 
 
     def new_add_pending_admin_tx(self, tx_opts, request: dict):
-        """
-        Create a transaction to add a pending admin
-        """
         if self.permission_controller is None:
             raise ValueError("Permission contract not provided")
 
