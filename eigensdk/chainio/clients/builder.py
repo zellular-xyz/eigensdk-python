@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, Dict
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -7,197 +7,212 @@ from eth_typing import Address
 from web3 import Web3
 
 from eigensdk.contracts import ABIs
-
-from .avsregistry import reader as avs_reader
-from .avsregistry import writer as avs_writer
-from .elcontracts import reader as el_reader
-from .elcontracts import writer as el_writer
+from eigensdk.chainio.txmgr import txmanager
+from eigensdk.chainio.clients.avsregistry import reader as avs_reader
+from eigensdk.chainio.clients.avsregistry import writer as avs_writer
+from eigensdk.chainio.clients.elcontracts import reader as el_reader
+from eigensdk.chainio.clients.elcontracts import writer as el_writer
 
 
 class BuildAllConfig:
     def __init__(
         self,
-        eth_http_url: str,
-        registry_coordinator_addr: Address,
-        operator_state_retriever_addr: Address,
-        avs_name: str = '',
-        prom_metrics_ip_port_address: str = '',
+        eth_http_url,
+        registry_coordinator_addr,
+        operator_state_retriever_addr,
+        avs_name,
+        prom_metrics_ip_port_address,
     ):
-        self.eth_http_url: str = eth_http_url
+
+        self.eth_client = Web3(Web3.HTTPProvider(eth_http_url))
         self.registry_coordinator_addr: Address = registry_coordinator_addr
         self.operator_state_retriever_addr: Address = operator_state_retriever_addr
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
+        self.logger: logging.Logger = logging.getLogger(__name__)
 
-    def build_el_clients(
-        self, pk_wallet: LocalAccount, logger: logging.Logger
-    ) -> Tuple[el_reader.ELReader, el_writer.ELWriter]:
-        eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
-        registry_coordinator = eth_http_client.eth.contract(
-            address=self.registry_coordinator_addr,
-            abi=ABIs.REGISTRY_COORDINATOR,
+    def build_el_reader_clients(
+        self,
+        allocation_manager: Address,
+        avs_directory: Address,
+        delegation_manager: Address,
+        permission_controller: Address,
+        reward_coordinator: Address,
+        strategy_manager: Address,
+    ) -> el_reader.ELReader:
+
+        allocation_manager_instance = self.eth_client.eth.contract(
+            address=allocation_manager, abi=ABIs.ALLOCATION_MANAGER_ABI
         )
-
-        stake_registry_addr = registry_coordinator.functions.stakeRegistry().call()
-        stake_registry = eth_http_client.eth.contract(
-            address=stake_registry_addr,
-            abi=ABIs.STAKE_REGISTRY,
+        avs_directory_instance = self.eth_client.eth.contract(
+            address=avs_directory, abi=ABIs.AVS_DIRECTORY_ABI
         )
-
-        delegation_manager_addr = stake_registry.functions.delegation().call()
-        delegation_manager = eth_http_client.eth.contract(
-            address=delegation_manager_addr,
-            abi=ABIs.DELEGATION_MANAGER,
+        delegation_manager_instance = self.eth_client.eth.contract(
+            address=delegation_manager, abi=ABIs.DELEGATION_MANAGER_ABI
         )
-
-        # fixme: slasher seems to be removed in testnet newer version
-        # these codes should be updated based on latest changes to eigensdk-go
-
-        # slasher_addr = delegation_manager.functions.slasher().call()
-        # slasher = eth_http_client.eth.contract(
-        #     address=slasher_addr,
-        #     abi=ABIs.SLASHER,
-        # )
-
-        strategy_manager_addr = delegation_manager.functions.strategyManager().call()
-        strategy_manager = eth_http_client.eth.contract(
-            address=strategy_manager_addr,
-            abi=ABIs.STRATEGY_MANAGER,
+        permission_controller_instance = self.eth_client.eth.contract(
+            address=permission_controller, abi=ABIs.PERMISSION_CONTROLLER_ABI
         )
-
-        service_manager_addr = registry_coordinator.functions.serviceManager().call()
-        service_manager = eth_http_client.eth.contract(
-            address=service_manager_addr,
-            abi=ABIs.SERVICE_MANAGER,
+        strategy_manager_instance = self.eth_client.eth.contract(
+            address=strategy_manager, abi=ABIs.STRATEGY_MANAGER_ABI
         )
-
-        avs_directory_addr = service_manager.functions.avsDirectory().call()
-        avs_directory = eth_http_client.eth.contract(
-            address=avs_directory_addr,
-            abi=ABIs.AVS_DIRECTORY,
+        rewards_coordinator_instance = self.eth_client.eth.contract(
+            address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
         )
 
         el_reader_instance = el_reader.ELReader(
-            # slasher,
-            "0x0000000000000000000000000000000000000000",
-            delegation_manager,
-            strategy_manager,
-            avs_directory,
-            logger,
-            eth_http_client,
+            allocation_manager=allocation_manager_instance,
+            avs_directory=avs_directory_instance,
+            delegation_manager=delegation_manager_instance,
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
+            strategy_manager=strategy_manager_instance,
+            logger=self.logger,
+            eth_client=self.eth_client,
+            strategy_abi=ABIs.STRATEGY_MANAGER_ABI,
+            erc20_abi=ABIs.IERC20_ABI,
+        )
+
+        return el_reader_instance
+
+    def build_el_writer_clients(
+        self,
+        sender_address,
+        private_key,
+        allocation_manager,
+        avs_directory,
+        delegation_manager,
+        permission_controller,
+        reward_coordinator,
+        registry_coordinator,
+        strategy_manager,
+        strategy_manager_addr,
+        el_chain_reader,
+    ) -> el_writer.ELWriter:
+
+        allocation_manager_instance = self.eth_client.eth.contract(
+            address=allocation_manager, abi=ABIs.ALLOCATION_MANAGER_ABI
+        )
+        avs_directory_instance = self.eth_client.eth.contract(
+            address=avs_directory, abi=ABIs.AVS_DIRECTORY_ABI
+        )
+        delegation_manager_instance = self.eth_client.eth.contract(
+            address=delegation_manager, abi=ABIs.DELEGATION_MANAGER_ABI
+        )
+        permission_controller_instance = self.eth_client.eth.contract(
+            address=permission_controller, abi=ABIs.PERMISSION_CONTROLLER_ABI
+        )
+        strategy_manager_instance = self.eth_client.eth.contract(
+            address=strategy_manager, abi=ABIs.STRATEGY_MANAGER_ABI
+        )
+        rewards_coordinator_instance = self.eth_client.eth.contract(
+            address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
+        )
+
+        registry_coordinator_instance = self.eth_client.eth.contract(
+            address=registry_coordinator, abi=ABIs.REGISTRY_COORDINATOR_ABI
         )
 
         el_writer_instance = el_writer.ELWriter(
-            # slasher,
-            "0x0000000000000000000000000000000000000000",
-            delegation_manager,
-            strategy_manager,
-            strategy_manager_addr,
-            avs_directory,
-            el_reader_instance,
-            logger,
-            eth_http_client,
-            pk_wallet,
+            allocation_manager=allocation_manager_instance,
+            avs_directory=avs_directory_instance,
+            delegation_manager=delegation_manager_instance,
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
+            registry_coordinator=registry_coordinator_instance,
+            strategy_manager=strategy_manager_instance,
+            strategy_manager_addr=strategy_manager_addr,
+            el_chain_reader=el_chain_reader,
+            logger=self.logger,
+            tx_mgr=txmanager.TxManager(self.eth_client, sender_address, private_key),
+            eth_client=self.eth_client,
+            strategy_abi=ABIs.STRATEGY_MANAGER_ABI,
+            erc20_abi=ABIs.IERC20_ABI,
         )
 
-        return el_reader_instance, el_writer_instance
+        return el_writer_instance
 
-    def build_avs_registry_clients(
+    def build_avs_registry_reader_clients(
         self,
-        el_reader: el_reader.ELReader,
-        logger: logging.Logger,
-        pk_wallet: LocalAccount,
-    ) -> Tuple[avs_reader.AvsRegistryReader, avs_writer.AvsRegistryWriter]:
-        eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
-        registry_coordinator = eth_http_client.eth.contract(
-            address=self.registry_coordinator_addr,
-            abi=ABIs.REGISTRY_COORDINATOR,
-        )
-        service_manager_addr = registry_coordinator.functions.serviceManager().call()
+        sender_address,
+        private_key,
+        registry_coordinator,
+        registry_coordinator_addr,
+        bls_apk_registry,
+        bls_apk_registry_addr,
+        operator_state_retriever,
+        service_manager,
+        stake_registry,
+    ) -> avs_reader.AvsRegistryReader:
 
-        bls_apk_registry_addr = registry_coordinator.functions.blsApkRegistry().call()
-        bls_apk_registry = eth_http_client.eth.contract(
-            address=bls_apk_registry_addr,
-            abi=ABIs.BLS_APK_REGISTRY,
+        registry_coordinator_instance = self.eth_client.eth.contract(
+            address=registry_coordinator, abi=ABIs.REGISTRY_COORDINATOR_ABI
         )
-
-        operator_state_retriever = eth_http_client.eth.contract(
-            address=self.operator_state_retriever_addr,
-            abi=ABIs.OPERATOR_STATE_RETRIEVER,
+        operator_state_retriever_instance = self.eth_client.eth.contract(
+            address=operator_state_retriever, abi=ABIs.OPERATOR_STATE_RETRIEVER_ABI
         )
-
-        stake_registry_addr = registry_coordinator.functions.stakeRegistry().call()
-        stake_registry = eth_http_client.eth.contract(
-            address=stake_registry_addr,
-            abi=ABIs.STAKE_REGISTRY,
+        bls_apk_registry_instance = self.eth_client.eth.contract(
+            address=bls_apk_registry, abi=ABIs.BLS_APK_REGISTRY_ABI
         )
-
-        avs_registry_reader = avs_reader.AvsRegistryReader(
-            self.registry_coordinator_addr,
-            registry_coordinator,
-            bls_apk_registry_addr,
-            bls_apk_registry,
-            operator_state_retriever,
-            stake_registry,
-            logger,
-            eth_http_client,
+        service_manager_instance = self.eth_client.eth.contract(
+            address=service_manager, abi=ABIs.STRATEGY_MANAGER_ABI
+        )
+        stake_registry_instance = self.eth_client.eth.contract(
+            address=stake_registry, abi=ABIs.STAKE_REGISTRY_ABI
         )
 
-        avs_registry_writer = avs_writer.AvsRegistryWriter(
-            service_manager_addr,
-            registry_coordinator,
-            operator_state_retriever,
-            stake_registry,
-            bls_apk_registry,
-            el_reader,
-            logger,
-            eth_http_client,
-            pk_wallet,
+        avs_reader_instance = avs_reader.AvsRegistryReader(
+            registry_coordinator=registry_coordinator_instance,
+            registry_coordinator_addr=registry_coordinator_addr,
+            bls_apk_registry=bls_apk_registry_instance,
+            bls_apk_registry_addr=bls_apk_registry_addr,
+            operator_state_retriever=operator_state_retriever_instance,
+            service_manager=service_manager_instance,
+            stake_registry=stake_registry_instance,
+            logger=self.logger,
+            eth_client=self.eth_client,
+            tx_mgr=txmanager.TxManager(self.eth_client, sender_address, private_key),
         )
 
-        return avs_registry_reader, avs_registry_writer
+        return avs_reader_instance
 
-
-class Clients:
-    def __init__(
+    def build_avs_registry_writer_clients(
         self,
-        avs_registry_reader: avs_reader.AvsRegistryReader,
-        avs_registry_writer: avs_writer.AvsRegistryWriter,
-        el_reader: el_reader.ELReader,
-        el_writer: el_writer.ELWriter,
-        eth_http_client: Web3,
-        wallet: LocalAccount,
-        metrics: Optional[Any],
-    ):
-        self.avs_registry_reader = avs_registry_reader
-        self.avs_registry_writer = avs_registry_writer
-        self.el_reader = el_reader
-        self.el_writer = el_writer
-        self.eth_http_client = eth_http_client
-        self.wallet = wallet
-        self.metrics = metrics
+        registry_coordinator,
+        operator_state_retriever,
+        service_manager,
+        service_manager_addr,
+        stake_registry,
+        bls_apk_registry,
+        el_chain_reader,
+    ) -> avs_writer.AvsRegistryWriter:
 
+        registry_coordinator_instance = self.eth_client.eth.contract(
+            address=registry_coordinator, abi=ABIs.REGISTRY_COORDINATOR_ABI
+        )
+        operator_state_retriever_instance = self.eth_client.eth.contract(
+            address=operator_state_retriever, abi=ABIs.OPERATOR_STATE_RETRIEVER_ABI
+        )
+        bls_apk_registry_instance = self.eth_client.eth.contract(
+            address=bls_apk_registry, abi=ABIs.BLS_APK_REGISTRY_ABI
+        )
+        service_manager_instance = self.eth_client.eth.contract(
+            address=service_manager, abi=ABIs.STRATEGY_MANAGER_ABI
+        )
+        stake_registry_instance = self.eth_client.eth.contract(
+            address=stake_registry, abi=ABIs.STAKE_REGISTRY_ABI
+        )
 
-def build_all(
-    config: BuildAllConfig, ecdsa_private_key: str = '', logger: logging.Logger = logging.getLogger(__name__)
-) -> Clients:
-    eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
+        avs_writer_instance = avs_writer.AvsRegistryWriter(
+            registry_coordinator=registry_coordinator_instance,
+            operator_state_retriever=operator_state_retriever_instance,
+            service_manager=service_manager_instance,
+            service_manager_addr=service_manager_addr,
+            stake_registry=stake_registry_instance,
+            bls_apk_registry=bls_apk_registry_instance,
+            el_reader=el_chain_reader,
+            logger=self.logger,
+            eth_client=self.eth_client,
+        )
 
-    pk_wallet: LocalAccount = Account.from_key(ecdsa_private_key) if ecdsa_private_key else None
-
-    el_reader, el_writer = config.build_el_clients(pk_wallet, logger)
-
-    (
-        avs_registry_reader,
-        avs_registry_writer,
-    ) = config.build_avs_registry_clients(el_reader, logger, pk_wallet)
-
-    return Clients(
-        avs_registry_reader=avs_registry_reader,
-        avs_registry_writer=avs_registry_writer,
-        el_reader=el_reader,
-        el_writer=el_writer,
-        eth_http_client=eth_http_client,
-        wallet=pk_wallet,
-        metrics=None,
-    )
+        return avs_writer_instance

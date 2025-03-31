@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - ETH_HTTP_URL=http://anvil:8545
+    depends_on:
+      anvil:
+        condition: service_healthy
+    command: bash
+
+  anvil:
+    build: .
+    ports:
+      - "8546:8545"
+    command: >
+      bash -c "
+        # Start Anvil
+        anvil --host 0.0.0.0 --port 8545 &
+        
+        # Keep container running
+        tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8545'"]
+      interval: 2s
+      timeout: 1s
+      retries: 10

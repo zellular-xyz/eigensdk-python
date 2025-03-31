@@ -27,6 +27,7 @@ class G1Point(G1):
     def verify_equivalence(self, a: "G2Point"):
         return bn256Utils.check_g1_and_g2_discrete_log_equality(self, a)
 
+
 def new_g1_point(x: int, y: int) -> G1Point:
     res = G1Point(x, y)
     if x == 0 and y == 0:
@@ -51,6 +52,7 @@ class G2Point(G2):
     def sub(self, a: "G2Point"):
         return self - a
 
+
 def new_g2_point(xa: int, xb: int, ya: int, yb: int) -> G2Point:
     return G2Point(xa, xb, ya, yb)
 
@@ -72,8 +74,8 @@ class Signature(G1Point):
 
     def to_json(self) -> dict:
         return {
-            'X': int(self.getX().getStr()),
-            'Y': int(self.getY().getStr()),
+            "X": int(self.getX().getStr()),
+            "Y": int(self.getY().getStr()),
         }
 
     def from_json(_json: dict) -> "Signature":
@@ -107,7 +109,7 @@ def new_private_key(sk: bytes = b"") -> PrivateKey:
     return PrivateKey(sk)
 
 
-class KeyPair:
+class BLSKeyPair:
     def __init__(self, priv_key: PrivateKey = None) -> None:
         if not priv_key:
             self.priv_key = PrivateKey()
@@ -118,13 +120,13 @@ class KeyPair:
         self.pub_g2 = bn256Utils.mul_by_generator_g2(self.priv_key).normalize()
 
     @staticmethod
-    def from_string(sk: str, base=16) -> "KeyPair":
+    def from_string(sk: str, base=16) -> "BLSKeyPair":
         pk = PrivateKey()
         pk.setStr(sk.encode("utf-8"), base)
-        return KeyPair(pk)
+        return BLSKeyPair(pk)
 
     def save_to_file(self, _path: str, password: str):
-        priv_key = '0x' + self.priv_key.getStr(16).decode('utf-8').rjust(64, '0')
+        priv_key = "0x" + self.priv_key.getStr(16).decode("utf-8").rjust(64, "0")
         keystore_json = Account.encrypt(priv_key, password)
         keystore_json["pubKey"] = self.pub_g1.getStr().decode("utf-8")
         os.makedirs(os.path.dirname(_path), exist_ok=True)
@@ -140,7 +142,7 @@ class KeyPair:
             keystore_json["version"] = 3
 
         private_key = Account.decrypt(keystore_json, password)
-        return KeyPair(PrivateKey(bytes(private_key)))
+        return BLSKeyPair(PrivateKey(bytes(private_key)))
 
     def sign_message(self, msg_bytes: bytes) -> Signature:
         h = bn256Utils.map_to_curve(msg_bytes)
@@ -157,25 +159,30 @@ class KeyPair:
         return bn256Utils.mul_by_generator_g2(self.priv_key)
 
 
-def new_key_pair(priv_key: PrivateKey) -> KeyPair:
-    return KeyPair(priv_key)
+def new_key_pair(priv_key: PrivateKey) -> BLSKeyPair:
+    return BLSKeyPair(priv_key)
 
 
-def new_key_pair_from_string(sk: str) -> KeyPair:
-    return KeyPair.from_string(sk)
+def new_key_pair_from_string(sk: str) -> BLSKeyPair:
+    return BLSKeyPair.from_string(sk)
 
 
-def gen_random_bls_keys() -> KeyPair:
-    return KeyPair()
+def gen_random_bls_keys() -> BLSKeyPair:
+    return BLSKeyPair()
+
 
 def g1_to_tupple(g1):
     return (int(g1.getX().getStr()), int(g1.getY().getStr()))
 
+
 def g2_to_tupple(g2):
-    return ((
-        int(g2.getX().get_a().getStr()),
-        int(g2.getX().get_b().getStr()),
-    ), (
-        int(g2.getY().get_a().getStr()),
-        int(g2.getY().get_b().getStr()),
-    ))
+    return (
+        (
+            int(g2.getX().get_a().getStr()),
+            int(g2.getX().get_b().getStr()),
+        ),
+        (
+            int(g2.getY().get_a().getStr()),
+            int(g2.getY().get_b().getStr()),
+        ),
+    )

@@ -65,3 +65,25 @@ class OperatorStateRetrieverOperator:
     operator: Address
     operator_id: bytes
     stake: int
+
+
+@dataclass
+class StakeRegistryTypesStrategyParams:
+    strategy: str
+    multiplier: int
+
+
+@dataclass
+class StakeRegistryTypesStakeUpdate:
+    """Python equivalent of IStakeRegistryTypesStakeUpdate struct for testing"""
+
+    update_block_number: int
+    next_update_block_number: int
+    stake: int
+
+
+@dataclass
+class BLSApkRegistryTypesApkUpdate:
+    apk_hash: bytes
+    update_block_number: int
+    next_update_block_number: int

@@ -70,9 +70,7 @@ if __name__ == "__main__":
     logger = logging.getLogger("NodeAPI")
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     logger.addHandler(handler)
 
     metrics = EigenMetrics("example_avs", "0.0.0.0:8000", logger)

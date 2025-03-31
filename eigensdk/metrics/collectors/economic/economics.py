@@ -38,9 +38,7 @@ class Collector(registry.Collector):
 
     def init_operator_id(self):
         if self.operator_id is None:
-            self.operator_id = self.avs_registry_reader.get_operator_id(
-                self.operator_addr
-            )
+            self.operator_id = self.avs_registry_reader.get_operator_id(self.operator_addr)
 
         return self.operator_id is not None  # true means success
 
