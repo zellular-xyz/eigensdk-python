@@ -53,7 +53,10 @@ For a quick test setup and run:
 
 ```bash
 # Build and run tests
-make setup-all
+
+make build
+
+make test
 
 ```
 
@@ -71,6 +74,7 @@ make setup-all
    # Build, deploy contracts, and run all tests
    make setup-all
    ```
+
 
 ### Test Environment Setup
 
@@ -97,15 +101,19 @@ make setup-all
    make build
    ```
 
+2. **Run tests**:
+   ```bash
+   make test
+   ```
 
-2. **Format and Lint**:
+3. **Format and Lint**:
    ```bash
    make format  # Run Black formatter
    make lint    # Run Flake8
    make mypy    # Run type checking
    ```
 
-3. **Development Shells**:
+4. **Development Shells**:
    ```bash
    make shell        # Open bash shell
    make anvil-shell  # Open Anvil container shell
