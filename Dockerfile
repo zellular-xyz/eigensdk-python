@@ -49,8 +49,11 @@ COPY . /app/
 # Install the application
 RUN pip install --no-cache-dir -e .
 
+# The scripts/setup_anvil.sh is already copied as part of the COPY . /app/ command
+RUN chmod +x /app/scripts/setup_anvil.sh    
+
 # Expose port 8545 for Anvil
 EXPOSE 8545
 
-# Default command
-CMD ["bash"] 
+# Default command to execute init.sh
+CMD ["/app/scripts/setup_anvil.sh"]
