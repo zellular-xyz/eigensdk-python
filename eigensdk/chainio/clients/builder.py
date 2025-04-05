@@ -17,12 +17,12 @@ from eigensdk.chainio.clients.elcontracts import writer as el_writer
 class BuildAllConfig:
     def __init__(
         self,
-        eth_http_url,
-        registry_coordinator_addr,
-        operator_state_retriever_addr,
-        avs_name,
-        prom_metrics_ip_port_address,
-    ):
+        eth_http_url: str,
+        registry_coordinator_addr: Address,
+        operator_state_retriever_addr: Address,
+        avs_name: str,
+        prom_metrics_ip_port_address: str,
+    ) -> None:
 
         self.eth_client = Web3(Web3.HTTPProvider(eth_http_url))
         self.registry_coordinator_addr: Address = registry_coordinator_addr
@@ -77,17 +77,17 @@ class BuildAllConfig:
 
     def build_el_writer_clients(
         self,
-        sender_address,
-        private_key,
-        allocation_manager,
-        avs_directory,
-        delegation_manager,
-        permission_controller,
-        reward_coordinator,
-        registry_coordinator,
-        strategy_manager,
-        strategy_manager_addr,
-        el_chain_reader,
+        sender_address: Address,
+        private_key: str,
+        allocation_manager: Address,
+        avs_directory: Address,
+        delegation_manager: Address,
+        permission_controller: Address,
+        reward_coordinator: Address,
+        registry_coordinator: Address,
+        strategy_manager: Address,
+        strategy_manager_addr: Address,
+        el_chain_reader: el_reader.ELReader,
     ) -> el_writer.ELWriter:
 
         allocation_manager_instance = self.eth_client.eth.contract(
@@ -124,7 +124,7 @@ class BuildAllConfig:
             strategy_manager_addr=strategy_manager_addr,
             el_chain_reader=el_chain_reader,
             logger=self.logger,
-            tx_mgr=txmanager.TxManager(self.eth_client, sender_address, private_key),
+            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
             eth_client=self.eth_client,
             strategy_abi=ABIs.STRATEGY_MANAGER_ABI,
             erc20_abi=ABIs.IERC20_ABI,
@@ -134,15 +134,15 @@ class BuildAllConfig:
 
     def build_avs_registry_reader_clients(
         self,
-        sender_address,
-        private_key,
-        registry_coordinator,
-        registry_coordinator_addr,
-        bls_apk_registry,
-        bls_apk_registry_addr,
-        operator_state_retriever,
-        service_manager,
-        stake_registry,
+        sender_address: Address,
+        private_key: str,
+        registry_coordinator: Address,
+        registry_coordinator_addr: Address,
+        bls_apk_registry: Address,
+        bls_apk_registry_addr: Address,
+        operator_state_retriever: Address,
+        service_manager: Address,
+        stake_registry: Address,
     ) -> avs_reader.AvsRegistryReader:
 
         registry_coordinator_instance = self.eth_client.eth.contract(
@@ -171,20 +171,20 @@ class BuildAllConfig:
             stake_registry=stake_registry_instance,
             logger=self.logger,
             eth_client=self.eth_client,
-            tx_mgr=txmanager.TxManager(self.eth_client, sender_address, private_key),
+            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
         )
 
         return avs_reader_instance
 
     def build_avs_registry_writer_clients(
         self,
-        registry_coordinator,
-        operator_state_retriever,
-        service_manager,
-        service_manager_addr,
-        stake_registry,
-        bls_apk_registry,
-        el_chain_reader,
+        registry_coordinator: Address,
+        operator_state_retriever: Address,
+        service_manager: Address,
+        service_manager_addr: Address,
+        stake_registry: Address,
+        bls_apk_registry: Address,
+        el_chain_reader: el_reader.ELReader,
     ) -> avs_writer.AvsRegistryWriter:
 
         registry_coordinator_instance = self.eth_client.eth.contract(

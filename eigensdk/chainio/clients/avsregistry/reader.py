@@ -19,6 +19,9 @@ from eigensdk._types import (
 )
 
 from typeguard import typechecked
+from typing import cast
+from web3.types import TxParams
+
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 
@@ -65,16 +68,20 @@ class AvsRegistryReader:
             raise ValueError("StakeRegistry contract not provided")
 
     @typechecked
-    def get_quorum_count(self, call_options: Optional[dict] = None) -> int:
+    def get_quorum_count(self, call_options: Optional[TxParams] = None) -> int:
+        if call_options:
+            result = self.registry_coordinator.functions.quorumCount().call(call_options)
+        else:
+            result = self.registry_coordinator.functions.quorumCount().call()
 
-        return self.registry_coordinator.functions.quorumCount().call(call_options)
+        return int(result)
 
     @typechecked
     def get_operators_stake_in_quorums_at_current_block(
-        self, call_options: Optional[dict], quorum_numbers: List[int]
+        self, call_options: Optional[TxParams], quorum_numbers: List[int]
     ) -> List[List[OperatorStateRetrieverOperator]]:
-
-        if (cur_block := self.eth_client.eth.block_number) > (2**32 - 1):
+        cur_block = self.eth_client.eth.block_number
+        if cur_block > (2**32 - 1):
             raise ValueError("Current block number is too large to be converted to uint32")
 
         return self.get_operators_stake_in_quorums_at_block(
@@ -83,156 +90,179 @@ class AvsRegistryReader:
 
     @typechecked
     def get_operators_stake_in_quorums_at_block(
-        self, call_options: Optional[dict], quorum_numbers: List[int], block_number: int
-    ) -> Optional[List[List[OperatorStateRetrieverOperator]]]:
+        self,
+        call_options: Optional[TxParams],
+        quorum_numbers: List[int],
+        block_number: int,
+    ) -> List[List[OperatorStateRetrieverOperator]]:
+        result: List[List[OperatorStateRetrieverOperator]] = (
+            self.operator_state_retriever.functions.getOperatorState(
+                self.registry_coordinator_addr,
+                quorum_numbers,
+                block_number,
+            ).call(call_options)
+        )
 
-        return self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr,
-            quorum_numbers,
-            block_number,
-        ).call(call_options)
+        return result
 
     @typechecked
     def get_operator_addrs_in_quorums_at_current_block(
-        self, call_options: Optional[dict], quorum_numbers: List[int]
-    ) -> Optional[List[List[str]]]:
-
+        self, call_options: Optional[TxParams], quorum_numbers: List[int]
+    ) -> List[List[str]]:
         cur_block = self.eth_client.eth.block_number
         if cur_block > (2**32 - 1):
-            return None, ValueError("Current block number is too large to be converted to uint32")
+            raise ValueError("Current block number is too large to be converted to uint32")
+
+        call_opts = {} if call_options is None else call_options
 
         operator_stakes = self.operator_state_retriever.functions.getOperatorState(
             self.registry_coordinator_addr,
             quorum_numbers,
             int(cur_block),
-        ).call(call_options)
+        ).call(call_opts)
 
         quorum_operator_addrs = [
-            [operator["operator"] for operator in quorum] for quorum in operator_stakes
+            [str(operator["operator"]) for operator in quorum] for quorum in operator_stakes
         ]
 
         return quorum_operator_addrs
 
     @typechecked
     def get_operators_stake_in_quorums_of_operator_at_block(
-        self, call_options: Optional[dict], operator_id: int, block_number: int
+        self, call_options: Optional[TxParams], operator_id: int, block_number: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
-
         quorum_bitmap, operator_stakes = self.operator_state_retriever.functions.getOperatorState0(
             self.registry_coordinator_addr, operator_id, block_number
-        ).call(call_options)
+        ).call(call_options if call_options is not None else {})
 
         quorums = bitmap_to_quorum_ids(quorum_bitmap)
 
-        return quorums, operator_stakes
+        return quorums, cast(Optional[List[List[OperatorStateRetrieverOperator]]], operator_stakes)
 
     @typechecked
     def get_operators_stake_in_quorums_of_operator_at_current_block(
-        self, call_options: Optional[dict], operator_id: int
+        self, call_options: Optional[TxParams], operator_id: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
+        cur_block = self.eth_client.eth.block_number
+        if cur_block > (2**32 - 1):
+            raise ValueError("Current block number is too large to be converted to uint32")
 
-        if (cur_block := self.eth_client.eth.block_number) > (2**32 - 1):
-            return (
-                None,
-                None,
-                ValueError("Current block number is too large to be converted to uint32"),
-            )
-
-        call_options["block_number"] = cur_block
+        options: TxParams = {} if call_options is None else dict(call_options)
+        options["block_number"] = cur_block
 
         return self.get_operators_stake_in_quorums_of_operator_at_block(
-            call_options, operator_id, int(cur_block)
+            options, operator_id, int(cur_block)
         )
 
     @typechecked
     def get_operator_stake_in_quorums_of_operator_at_current_block(
-        self, call_options: Optional[dict], operator_id: int
+        self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[Dict[int, int]]:
+        call_opts: TxParams = {} if call_options is None else dict(call_options)
 
-        if "block_number" not in call_options and "block_hash" not in call_options:
+        if "block_number" not in call_opts and "block_hash" not in call_opts:
             latest_block = self.eth_client.eth.block_number
-            call_options["block_number"] = latest_block
+            call_opts["block_number"] = latest_block
 
         quorum_bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(
             operator_id
-        ).call(call_options)
+        ).call(call_opts)
 
         quorums = bitmap_to_quorum_ids(quorum_bitmap)
-        quorum_stakes = {}
+        quorum_stakes: Dict[int, int] = {}
 
         for quorum in quorums:
             stake = self.stake_registry.functions.getCurrentStake(operator_id, int(quorum)).call(
-                call_options
+                call_opts
             )
-
-            quorum_stakes[quorum] = stake
+            quorum_stakes[int(quorum)] = int(stake)
 
         return quorum_stakes
 
     @typechecked
     def weight_of_operator_for_quorum(
-        self, call_options: Optional[dict], quorum_number: int, operator_addr: str
+        self, call_options: Optional[TxParams], quorum_number: int, operator_addr: str
     ) -> Optional[int]:
+        call_opts = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.weightOfOperatorForQuorum(
+        weight = self.stake_registry.functions.weightOfOperatorForQuorum(
             quorum_number, operator_addr
-        ).call(call_options)
+        ).call(call_opts)
+
+        return int(weight)
 
     @typechecked
     def strategy_params_length(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.strategyParamsLength(quorum_number).call(call_options)
+        length = self.stake_registry.functions.strategyParamsLength(quorum_number).call(call_opts)
+        return int(length)
 
     @typechecked
     def strategy_params_by_index(
-        self, call_options: Optional[dict], quorum_number: int, index: int
+        self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
         param = self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call(
-            call_options
+            call_opts
         )
 
         if isinstance(param, tuple):
             strategy_params = StakeRegistryTypesStrategyParams(
-                strategy=param[0], multiplier=param[1]
+                strategy=str(param[0]),
+                multiplier=int(param[1]),
+            )
+        elif isinstance(param, dict):
+            strategy = param.get("strategy") or param.get("Strategy")
+            multiplier = param.get("multiplier") or param.get("Multiplier")
+
+            if strategy is None or multiplier is None:
+                return None
+
+            strategy_params = StakeRegistryTypesStrategyParams(
+                strategy=str(strategy),
+                multiplier=int(multiplier),
             )
         else:
-            strategy_params = StakeRegistryTypesStrategyParams(
-                strategy=param.get("strategy") or param.get("Strategy"),
-                multiplier=param.get("multiplier") or param.get("Multiplier"),
-            )
+            return None  # In case it's an unexpected type
 
         return strategy_params
 
     @typechecked
     def get_stake_history_length(
-        self, call_options: Optional[dict], operator_id: int, quorum_number: int
+        self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[int]:
+        call_opts = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getStakeHistoryLength(operator_id, quorum_number).call(
-            call_options
-        )
+        length = self.stake_registry.functions.getStakeHistoryLength(
+            operator_id, quorum_number
+        ).call(call_opts)
+
+        return int(length)
 
     @typechecked
     def get_stake_history(
-        self, call_options: Optional[dict], operator_id: int, quorum_number: int
+        self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[List[StakeRegistryTypesStakeUpdate]]:
+        call_opts = {} if call_options is None else call_options
 
         stake_history_raw = self.stake_registry.functions.getStakeHistory(
             operator_id, quorum_number
-        ).call(call_options)
+        ).call(call_opts)
 
-        stake_history = []
+        stake_history: List[StakeRegistryTypesStakeUpdate] = []
+
         for update in stake_history_raw:
             if isinstance(update, tuple):
                 stake_update = StakeRegistryTypesStakeUpdate(
-                    update_block_number=update[0],
-                    next_update_block_number=update[1],
-                    stake=update[2],
+                    update_block_number=int(update[0]),
+                    next_update_block_number=int(update[1]),
+                    stake=int(update[2]),
                 )
-            else:
+            elif isinstance(update, dict):
                 update_block = update.get("updateBlockNumber") or update.get("UpdateBlockNumber")
                 next_update_block = update.get("nextUpdateBlockNumber") or update.get(
                     "NextUpdateBlockNumber"
@@ -240,10 +270,14 @@ class AvsRegistryReader:
                 stake = update.get("stake") or update.get("Stake")
 
                 stake_update = StakeRegistryTypesStakeUpdate(
-                    update_block_number=update_block,
-                    next_update_block_number=next_update_block,
-                    stake=stake,
+                    update_block_number=int(update_block) if update_block is not None else 0,
+                    next_update_block_number=(
+                        int(next_update_block) if next_update_block is not None else 0
+                    ),
+                    stake=int(stake) if stake is not None else 0,
                 )
+            else:
+                continue  # Skip invalid entries or raise an error
 
             stake_history.append(stake_update)
 
@@ -251,289 +285,366 @@ class AvsRegistryReader:
 
     @typechecked
     def get_latest_stake_update(
-        self, call_options: Optional[dict], operator_id: int, quorum_number: int
+        self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
         raw_stake_update = self.stake_registry.functions.getLatestStakeUpdate(
             operator_id, quorum_number
-        ).call(call_options)
+        ).call(call_opts)
 
         if isinstance(raw_stake_update, tuple):
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=raw_stake_update[0],
-                next_update_block_number=raw_stake_update[1],
-                stake=raw_stake_update[2],
+                update_block_number=int(raw_stake_update[0]),
+                next_update_block_number=int(raw_stake_update[1]),
+                stake=int(raw_stake_update[2]),
             )
-        else:
-            update_block = raw_stake_update.get("updateBlockNumber")
-            if update_block is None:
-                update_block = raw_stake_update.get("UpdateBlockNumber", 0)
-
-            next_update_block = raw_stake_update.get("nextUpdateBlockNumber")
-            if next_update_block is None:
-                next_update_block = raw_stake_update.get("NextUpdateBlockNumber", 0)
-
-            stake = raw_stake_update.get("stake")
-            if stake is None:
-                stake = raw_stake_update.get("Stake", 0)
+        elif isinstance(raw_stake_update, dict):
+            update_block = raw_stake_update.get("updateBlockNumber") or raw_stake_update.get(
+                "UpdateBlockNumber", 0
+            )
+            next_update_block = raw_stake_update.get(
+                "nextUpdateBlockNumber"
+            ) or raw_stake_update.get("NextUpdateBlockNumber", 0)
+            stake = raw_stake_update.get("stake") or raw_stake_update.get("Stake", 0)
 
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=update_block,
-                next_update_block_number=next_update_block,
-                stake=stake,
+                update_block_number=int(update_block),
+                next_update_block_number=int(next_update_block),
+                stake=int(stake),
             )
+        else:
+            return None  # Unknown type returned from contract
 
         return stake_update
 
     @typechecked
     def get_stake_update_at_index(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         operator_id: int,
         quorum_number: int,
         index: int,
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
         raw_stake_update = self.stake_registry.functions.getStakeUpdateAtIndex(
             quorum_number, operator_id, index
-        ).call(call_options)
+        ).call(call_opts)
 
         if isinstance(raw_stake_update, tuple):
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=raw_stake_update[0],
-                next_update_block_number=raw_stake_update[1],
-                stake=raw_stake_update[2],
+                update_block_number=int(raw_stake_update[0]),
+                next_update_block_number=int(raw_stake_update[1]),
+                stake=int(raw_stake_update[2]),
             )
-        else:
-            update_block = raw_stake_update.get("updateBlockNumber")
-            if update_block is None:
-                update_block = raw_stake_update.get("UpdateBlockNumber", 0)
-
-            next_update_block = raw_stake_update.get("nextUpdateBlockNumber")
-            if next_update_block is None:
-                next_update_block = raw_stake_update.get("NextUpdateBlockNumber", 0)
-
-            stake = raw_stake_update.get("stake")
-            if stake is None:
-                stake = raw_stake_update.get("Stake", 0)
+        elif isinstance(raw_stake_update, dict):
+            update_block = raw_stake_update.get("updateBlockNumber") or raw_stake_update.get(
+                "UpdateBlockNumber", 0
+            )
+            next_update_block = raw_stake_update.get(
+                "nextUpdateBlockNumber"
+            ) or raw_stake_update.get("NextUpdateBlockNumber", 0)
+            stake = raw_stake_update.get("stake") or raw_stake_update.get("Stake", 0)
 
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=update_block,
-                next_update_block_number=next_update_block,
-                stake=stake,
+                update_block_number=int(update_block),
+                next_update_block_number=int(next_update_block),
+                stake=int(stake),
             )
+        else:
+            return None  # Unknown type returned
 
         return stake_update
 
     @typechecked
     def get_stake_at_block_number(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         operator_id: int,
         quorum_number: int,
         block_number: int,
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getStakeAtBlockNumber(
+        stake = self.stake_registry.functions.getStakeAtBlockNumber(
             operator_id, quorum_number, block_number
-        ).call(call_options)
+        ).call(call_opts)
+
+        return int(stake)
 
     @typechecked
     def get_stake_update_index_at_block_number(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         operator_id: int,
         quorum_number: int,
         block_number: int,
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
+        index = self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
             operator_id, quorum_number, block_number
-        ).call(call_options)
+        ).call(call_opts)
+
+        return int(index)
 
     @typechecked
     def get_stake_at_block_number_and_index(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         operator_id: int,
         quorum_number: int,
         block_number: int,
         index: int,
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getStakeAtBlockNumberAndIndex(
+        stake = self.stake_registry.functions.getStakeAtBlockNumberAndIndex(
             quorum_number, block_number, operator_id, index
-        ).call(call_options)
+        ).call(call_opts)
+
+        return int(stake)
 
     @typechecked
     def get_total_stake_history_length(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getTotalStakeHistoryLength(quorum_number).call(
-            call_options
+        length = self.stake_registry.functions.getTotalStakeHistoryLength(quorum_number).call(
+            call_opts
         )
+
+        return int(length)
 
     @typechecked
     def get_check_signatures_indices(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         reference_block_number: int,
         quorum_numbers: List[int],
         non_signer_operator_ids: List[int],
-    ) -> Optional[OperatorStateRetrieverCheckSignaturesIndices]:
+    ) -> OperatorStateRetrieverCheckSignaturesIndices:
+        call_opts = {} if call_options is None else call_options
 
-        return self.operator_state_retriever.functions.getCheckSignaturesIndices(
-            self.registry_coordinator_addr,
-            reference_block_number,
-            quorum_numbers.underlying_type(),
-            non_signer_operator_ids,
-        ).call(call_options)
+        # Ensure quorum_numbers is a plain list of ints
+        q_numbers: List[int] = list(quorum_numbers)
+
+        result: OperatorStateRetrieverCheckSignaturesIndices = (
+            self.operator_state_retriever.functions.getCheckSignaturesIndices(
+                self.registry_coordinator_addr,
+                reference_block_number,
+                q_numbers,
+                non_signer_operator_ids,
+            ).call(call_opts)
+        )
+
+        return result
 
     @typechecked
     def get_current_total_stake(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getCurrentTotalStake(quorum_number).call(call_options)
+        total_stake = self.stake_registry.functions.getCurrentTotalStake(quorum_number).call(
+            call_opts
+        )
+
+        return int(total_stake)
 
     @typechecked
     def get_total_stake_update_at_index(
-        self, call_options: Optional[dict], quorum_number: int, index: int
+        self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
         raw_stake_update = self.stake_registry.functions.getTotalStakeUpdateAtIndex(
             quorum_number, index
-        ).call(call_options)
+        ).call(call_opts)
 
         if isinstance(raw_stake_update, tuple):
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=raw_stake_update[0],
-                next_update_block_number=raw_stake_update[1],
-                stake=raw_stake_update[2],
+                update_block_number=int(raw_stake_update[0]),
+                next_update_block_number=int(raw_stake_update[1]),
+                stake=int(raw_stake_update[2]),
             )
-        else:
-            update_block = raw_stake_update.get("updateBlockNumber")
-            if update_block is None:
-                update_block = raw_stake_update.get("UpdateBlockNumber", 0)
-
-            next_update_block = raw_stake_update.get("nextUpdateBlockNumber")
-            if next_update_block is None:
-                next_update_block = raw_stake_update.get("NextUpdateBlockNumber", 0)
-
-            stake = raw_stake_update.get("stake")
-            if stake is None:
-                stake = raw_stake_update.get("Stake", 0)
+        elif isinstance(raw_stake_update, dict):
+            update_block = raw_stake_update.get("updateBlockNumber") or raw_stake_update.get(
+                "UpdateBlockNumber", 0
+            )
+            next_update_block = raw_stake_update.get(
+                "nextUpdateBlockNumber"
+            ) or raw_stake_update.get("NextUpdateBlockNumber", 0)
+            stake = raw_stake_update.get("stake") or raw_stake_update.get("Stake", 0)
 
             stake_update = StakeRegistryTypesStakeUpdate(
-                update_block_number=update_block,
-                next_update_block_number=next_update_block,
-                stake=stake,
+                update_block_number=int(update_block),
+                next_update_block_number=int(next_update_block),
+                stake=int(stake),
             )
+        else:
+            return None  # Fallback for unexpected types
 
         return stake_update
 
     @typechecked
     def get_total_stake_at_block_number_from_index(
         self,
-        call_options: Optional[dict],
+        call_options: Optional[TxParams],
         quorum_number: int,
         block_number: int,
         index: int,
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getTotalStakeAtBlockNumberFromIndex(
+        total_stake = self.stake_registry.functions.getTotalStakeAtBlockNumberFromIndex(
             quorum_number, block_number, index
-        ).call(call_options)
+        ).call(call_opts)
+
+        return int(total_stake)
 
     @typechecked
     def get_total_stake_indices_at_block_number(
-        self, call_options: Optional[dict], quorum_numbers: List[int], block_number: int
+        self, call_options: Optional[TxParams], quorum_numbers: List[int], block_number: int
     ) -> Optional[List[int]]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.getTotalStakeIndicesAtBlockNumber(
-            block_number, quorum_numbers.underlying_type()
-        ).call(call_options)
+        indices = self.stake_registry.functions.getTotalStakeIndicesAtBlockNumber(
+            block_number, quorum_numbers
+        ).call(call_opts)
+
+        return list(map(int, indices))
 
     @typechecked
     def get_minimum_stake_for_quorum(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call(call_options)
+        minimum_stake = self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call(
+            call_opts
+        )
+
+        return int(minimum_stake)
 
     @typechecked
     def get_strategy_params_at_index(
-        self, call_options: Optional[dict], quorum_number: int, index: int
+        self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.strategyParams(quorum_number, index).call(call_options)
+        raw = self.stake_registry.functions.strategyParams(quorum_number, index).call(call_opts)
+
+        if isinstance(raw, tuple):
+            if len(raw) >= 2:
+                return StakeRegistryTypesStrategyParams(
+                    strategy=str(raw[0]), multiplier=int(raw[1])
+                )
+        elif isinstance(raw, dict):
+            strategy = raw.get("strategy") or raw.get("Strategy")
+            multiplier = raw.get("multiplier") or raw.get("Multiplier")
+
+            if strategy is not None and multiplier is not None:
+                return StakeRegistryTypesStrategyParams(
+                    strategy=str(strategy), multiplier=int(multiplier)
+                )
+
+        return None  # fallback for unexpected type
 
     @typechecked
     def get_strategy_per_quorum_at_index(
-        self, call_options: Optional[dict], quorum_number: int, index: int
-    ) -> Tuple[Optional[str]]:
+        self, call_options: Optional[TxParams], quorum_number: int, index: int
+    ) -> Optional[str]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call(
-            call_options
+        strategy = self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call(
+            call_opts
         )
+
+        return str(strategy)
 
     @typechecked
-    def get_restakeable_strategies(self, call_options: Optional[dict]) -> Optional[List[str]]:
+    def get_restakeable_strategies(self, call_options: Optional[TxParams]) -> List[str]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return remove_duplicate_strategies(
-            self.service_manager.functions.getRestakeableStrategies().call(call_options)
-        )
+        raw_strategies = self.service_manager.functions.getRestakeableStrategies().call(call_opts)
+
+        result: List[str] = remove_duplicate_strategies(list(map(str, raw_strategies)))
+        return result
 
     @typechecked
     def get_operator_restaked_strategies(
-        self, call_options: Optional[dict], operator: str
-    ) -> Optional[List[str]]:
+        self, call_options: Optional[TxParams], operator: str
+    ) -> List[str]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return remove_duplicate_strategies(
-            self.service_manager.functions.getOperatorRestakedStrategies(operator).call(
-                call_options
-            )
-        )
+        raw_strategies = self.service_manager.functions.getOperatorRestakedStrategies(
+            operator
+        ).call(call_opts)
+
+        result: List[str] = remove_duplicate_strategies(list(map(str, raw_strategies)))
+        return result
 
     @typechecked
     def get_stake_type_per_quorum(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call(call_options)
+        stake_type = self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call(call_opts)
+
+        return int(stake_type)
 
     @typechecked
     def get_slashable_stake_look_ahead_per_quorum(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.slashableStakeLookAheadPerQuorum(quorum_number).call(
-            call_options
-        )
+        look_ahead = self.stake_registry.functions.slashableStakeLookAheadPerQuorum(
+            quorum_number
+        ).call(call_opts)
+
+        return int(look_ahead)
 
     @typechecked
     def get_operator_id(
-        self, call_options: Optional[dict], operator_address: str
+        self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[bytes]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.registry_coordinator.functions.getint(operator_address).call(call_options)
+        raw_id = self.registry_coordinator.functions.getOperatorId(operator_address).call(call_opts)
+
+        return bytes(raw_id)
 
     @typechecked
-    def get_operator_from_id(self, call_options: Optional[dict], operator_id: int) -> Optional[str]:
+    def get_operator_from_id(
+        self, call_options: Optional[TxParams], operator_id: int
+    ) -> Optional[str]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.registry_coordinator.functions.getOperatorFromId(operator_id).call(call_options)
+        operator_address = self.registry_coordinator.functions.getOperatorFromId(operator_id).call(
+            call_opts
+        )
+
+        return str(operator_address)
 
     @typechecked
     def query_registration_detail(
-        self, call_options: Optional[dict], operator_address: str
+        self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[List[bool]]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        operator_id = self.get_operator_id(call_options, operator_address)
+        operator_id = self.get_operator_id(call_opts, operator_address)
+        if operator_id is None:
+            return None
 
-        value = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(
-            call_options
+        raw_value = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(
+            call_opts
         )
+        value = int(raw_value)
 
         num_bits = value.bit_length()
         quorums = [(value & (1 << i)) != 0 for i in range(num_bits)]
@@ -542,67 +653,76 @@ class AvsRegistryReader:
 
     @typechecked
     def is_operator_registered(
-        self, call_options: Optional[dict], operator_address: str
-    ) -> Optional[bool]:
+        self, call_options: Optional[TxParams], operator_address: str
+    ) -> bool:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        registered_with_avs = (
-            self.registry_coordinator.functions.getOperatorStatus(operator_address).call(
-                call_options
-            )
-            == 1
+        status = self.registry_coordinator.functions.getOperatorStatus(operator_address).call(
+            call_opts
         )
+        registered_with_avs = int(status) == 1
 
         return registered_with_avs
 
     @typechecked
     def is_operator_set_quorum(
-        self, call_options: Optional[dict], quorum_number: int
+        self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[bool]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call(call_options)
+        result = self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call(call_opts)
+        return bool(result)
 
     @typechecked
     def get_operator_id_from_operator_address(
-        self, call_options: Optional[dict], operator_address: str
+        self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[bytes]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.bls_apk_registry.functions.operatorToPubkeyHash(operator_address).call(
-            call_options
+        pubkey_hash = self.bls_apk_registry.functions.operatorToPubkeyHash(operator_address).call(
+            call_opts
         )
+        return bytes(pubkey_hash)
 
     @typechecked
     def get_operator_address_from_operator_id(
-        self, call_options: Optional[dict], operator_pubkey_hash: bytes
+        self, call_options: Optional[TxParams], operator_pubkey_hash: bytes
     ) -> Optional[str]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        return self.bls_apk_registry.functions.pubkeyHashToOperator(operator_pubkey_hash).call(
-            call_options
-        )
+        operator_address = self.bls_apk_registry.functions.pubkeyHashToOperator(
+            operator_pubkey_hash
+        ).call(call_opts)
+
+        return str(operator_address)
 
     @typechecked
     def get_pubkey_from_operator_address(
-        self, call_options: Optional[dict], operator_address: str
+        self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[G1Point]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
         operator_pubkey = self.bls_apk_registry.functions.operatorToPubkey(operator_address).call(
-            call_options
+            call_opts
         )
 
-        operator_pubkey_g1 = G1Point(operator_pubkey["x"], operator_pubkey["y"])
+        # Assuming G1Point takes two integers
+        operator_pubkey_g1 = G1Point(int(operator_pubkey["x"]), int(operator_pubkey["y"]))
 
         return operator_pubkey_g1
 
     @typechecked
     def get_apk_update(
-        self, call_options: Optional[dict], quorum_number: int, index: int
+        self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[BLSApkRegistryTypesApkUpdate]:
+        call_opts: TxParams = {} if call_options is None else call_options
 
-        update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call(call_options)
+        update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call(call_opts)
 
         apk_update = BLSApkRegistryTypesApkUpdate(
-            apk_hash=update["apkHash"],
-            update_block_number=update["updateBlockNumber"],
-            next_update_block_number=update["nextUpdateBlockNumber"],
+            apk_hash=bytes(update["apkHash"]),
+            update_block_number=int(update["updateBlockNumber"]),
+            next_update_block_number=int(update["nextUpdateBlockNumber"]),
         )
 
         return apk_update
@@ -611,10 +731,11 @@ class AvsRegistryReader:
     def get_current_apk(
         self, call_options: Optional[dict], quorum_number: int
     ) -> Optional[G1Point]:
+        call_opts = call_options if call_options is not None else {}
 
-        apk = self.bls_apk_registry.functions.currentApk(quorum_number).call(call_options)
+        apk = self.bls_apk_registry.functions.currentApk(quorum_number).call(call_opts)
 
-        apk_g1 = G1Point(apk["x"], apk["y"])
+        apk_g1 = G1Point(int(apk["x"]), int(apk["y"]))
 
         return apk_g1
 
@@ -625,7 +746,6 @@ class AvsRegistryReader:
         stop_block: Optional[int],
         block_range: Optional[int],
     ) -> Optional[Dict[bytes, str]]:
-
         if start_block is None:
             start_block = 0
         if stop_block is None:
@@ -633,12 +753,11 @@ class AvsRegistryReader:
         if block_range is None:
             block_range = DEFAULT_QUERY_BLOCK_RANGE
 
-        operator_id_to_socket_map = {}  # Dict[bytes, str]
+        operator_id_to_socket_map: Dict[bytes, str] = {}
 
         i = start_block
         while i <= stop_block:
             to_block = min(i + block_range - 1, stop_block)
-
             filter_opts = {"fromBlock": i, "toBlock": to_block}
 
             socket_updates = self.registry_coordinator.events.OperatorSocketUpdate().get_logs(
@@ -647,23 +766,20 @@ class AvsRegistryReader:
 
             num_socket_updates = 0
             for event in socket_updates:
-                # Get operator_id as bytes (Bytes32) instead of int
-                operator_id = event["args"][
-                    "operatorId"
-                ]  # Assuming the correct field name is "operatorId"
+                args: Dict[str, Any] = event["args"]
 
-                # Ensure operator_id is bytes
-                if not isinstance(operator_id, bytes):
-                    # Convert to bytes if it's not already bytes
-                    # This depends on how the data is actually returned from the contract
+                operator_id_raw = args.get("operatorId")
+                if isinstance(operator_id_raw, bytes):
+                    operator_id = operator_id_raw
+                elif isinstance(operator_id_raw, str):
                     operator_id = bytes.fromhex(
-                        operator_id[2:] if operator_id.startswith("0x") else operator_id
+                        operator_id_raw[2:] if operator_id_raw.startswith("0x") else operator_id_raw
                     )
+                else:
+                    continue  # Skip invalid type
 
-                # Get socket as string
-                socket = event["args"]["socket"]
+                socket = str(args.get("socket", ""))
 
-                # Store in map
                 operator_id_to_socket_map[operator_id] = socket
                 num_socket_updates += 1
 

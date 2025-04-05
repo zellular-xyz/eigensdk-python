@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Any
 
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
@@ -29,6 +29,8 @@ class AvsRegistryWriter:
         el_reader: ELReader,
         logger: logging.Logger,
         eth_client: Web3,
+        tx_mgr: Any = None,
+        service_manager_abi: Optional[List[Dict[str, Any]]] = None,
     ):
 
         self.registry_coordinator: Contract = registry_coordinator
@@ -40,6 +42,9 @@ class AvsRegistryWriter:
         self.el_reader: ELReader = el_reader
         self.logger: logging.Logger = logger
         self.eth_client: Web3 = eth_client
+        self.web3: Web3 = eth_client  # Create alias for compatibility
+        self.tx_mgr: Any = tx_mgr
+        self.service_manager_abi: Optional[List[Dict[str, Any]]] = service_manager_abi
 
         if registry_coordinator is None:
             raise ValueError("RegistryCoordinator contract not provided")
@@ -87,8 +92,8 @@ class AvsRegistryWriter:
             convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
         ).g1_point
 
-        g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_key_g1())
-        g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_key_g2())
+        g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
+        g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
 
         pubkey_reg_params = {
             "pubkeyRegistrationSignature": signed_msg,
@@ -102,12 +107,12 @@ class AvsRegistryWriter:
         sig_valid_for_seconds = 60 * 60  # 1 hour
         signature_expiry = cur_block["timestamp"] + sig_valid_for_seconds
 
-        msg_to_sign = self.el_reader.functions.calculateOperatorAVSRegistrationDigestHash(
+        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digestHash(
             operator_addr,
             self.service_manager_addr,
             signature_salt,
             signature_expiry,
-        ).call()
+        )
 
         operator_signature = self.web3.eth.account.sign_message(
             msg_to_sign, operator_ecdsa_private_key
@@ -127,7 +132,7 @@ class AvsRegistryWriter:
 
         tx = self.registry_coordinator.functions.registerOperator(
             no_send_tx_opts,
-            quorum_numbers.underlying_type(),
+            quorum_numbers,
             socket,
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
@@ -163,8 +168,8 @@ class AvsRegistryWriter:
         no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
         tx = self.registry_coordinator.functions.updateOperatorsForQuorum(
-            no_send_tx_opts, operators_per_quorum, quorum_numbers.underlying_type()
-        ).build_transaction()
+            no_send_tx_opts, operators_per_quorum, quorum_numbers
+        )
 
         receipt = self.tx_mgr.send(tx, wait_for_receipt)
 
@@ -203,8 +208,8 @@ class AvsRegistryWriter:
             convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
         ).g1_point
 
-        g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_key_g1())
-        g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_key_g2())
+        g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
+        g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
 
         pubkey_reg_params = {
             "pubkeyRegistrationSignature": signed_msg,
@@ -218,12 +223,12 @@ class AvsRegistryWriter:
         sig_valid_for_seconds = 60 * 60  # 1 hour
         signature_expiry = cur_block["timestamp"] + sig_valid_for_seconds
 
-        msg_to_sign = self.el_reader.functions.calculateOperatorAVSRegistrationDigestHash(
+        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digestHash(
             operator_addr,
             self.service_manager_addr,
             signature_salt,
             signature_expiry,
-        ).call()
+        )
 
         operator_signature = self.web3.eth.account.sign_message(
             msg_to_sign, operator_ecdsa_private_key
@@ -242,13 +247,13 @@ class AvsRegistryWriter:
         operator_kick_params = [
             {
                 "operator": operator_to_kick,
-                "quorumNumber": quorum_numbers_to_kick[i].underlying_type(),
+                "quorumNumber": quorum_numbers_to_kick[i],
             }
             for i, operator_to_kick in enumerate(operators_to_kick)
         ]
 
         churn_signature_salt = os.urandom(32)
-        operator_id = bls_key_pair.get_pub_key_g1().get_operator_id()
+        operator_id = bls_key_pair.get_pub_g1().get_operator_id()
         operator_id_bytes = bytes.fromhex(operator_id[2:])
 
         churn_msg_to_sign = (
@@ -279,7 +284,7 @@ class AvsRegistryWriter:
 
         tx = self.registry_coordinator.functions.registerOperatorWithChurn(
             no_send_tx_opts,
-            quorum_numbers.underlying_type(),
+            quorum_numbers,
             socket,
             pubkey_reg_params,
             operator_kick_params,
@@ -339,8 +344,8 @@ class AvsRegistryWriter:
         no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
         tx = self.registry_coordinator.functions.deregisterOperator0(
-            no_send_tx_opts, quorum_numbers.underlying_type()
-        ).build_transaction()
+            no_send_tx_opts, quorum_numbers
+        )
 
         receipt = self.tx_mgr.send(tx, wait_for_receipt)
 
@@ -483,8 +488,8 @@ class AvsRegistryWriter:
         no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
         tx = self.registry_coordinator.functions.ejectOperator(
-            no_send_tx_opts, operator_address, quorum_numbers.underlying_type()
-        ).build_transaction()
+            no_send_tx_opts, operator_address, quorum_numbers
+        )
 
         receipt = self.tx_mgr.send(tx, wait_for_receipt)
 
@@ -563,7 +568,7 @@ class AvsRegistryWriter:
 
         tx = self.stake_registry.functions.modifyStrategyParams(
             no_send_tx_opts,
-            quorum_number.underlying_type(),
+            quorum_number,
             strategy_indices,
             multipliers,
         ).build_transaction()
@@ -616,13 +621,13 @@ class AvsRegistryWriter:
 
         self.logger.info(
             "adding strategies for quorum",
-            extra={"quorumNumber": quorum_number.underlying_type()},
+            extra={"quorumNumber": quorum_number},
         )
 
         no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
         tx = self.stake_registry.functions.addStrategies(
-            no_send_tx_opts, quorum_number.underlying_type(), strategy_params
+            no_send_tx_opts, quorum_number, strategy_params
         ).build_transaction()
 
         receipt = self.tx_mgr.send(tx, wait_for_receipt)
@@ -658,7 +663,7 @@ class AvsRegistryWriter:
         no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
 
         tx = self.stake_registry.functions.removeStrategies(
-            no_send_tx_opts, quorum_number.underlying_type(), indices_to_remove
+            no_send_tx_opts, quorum_number, indices_to_remove
         ).build_transaction()
 
         receipt = self.tx_mgr.send(tx, wait_for_receipt)

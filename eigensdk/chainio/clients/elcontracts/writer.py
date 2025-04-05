@@ -7,7 +7,6 @@ from web3.contract import Contract
 from eigensdk._types import Operator
 from eigensdk.contracts import ABIs
 from eigensdk.chainio import chainio_utils as utils
-from eigensdk.chainio.txmgr import txmanager
 
 from typeguard import typechecked
 
