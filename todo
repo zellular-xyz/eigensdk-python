@@ -1,3 +1,6 @@
 why get_stake_update_at_index uses if/else?
 example usage of call_options
+activate typechecked globally
+ecdsa.SigningKey vs Address function args
+implement holesky eigenda tests
 
