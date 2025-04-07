@@ -5,7 +5,6 @@ from eth_typing import Address
 from web3 import Web3
 from web3.contract.contract import Contract
 from eigensdk._types import (
-    OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
 )
@@ -18,8 +17,6 @@ from eigensdk._types import (
     BLSApkRegistryTypesApkUpdate,
 )
 
-from typeguard import typechecked
-from typing import cast
 from web3.types import TxParams
 
 

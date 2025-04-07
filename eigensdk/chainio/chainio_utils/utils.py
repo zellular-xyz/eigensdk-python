@@ -2,9 +2,12 @@ from typing import Tuple, Dict, Any
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
 from decimal import Decimal
 from web3 import Web3
-from eth_abi import encode_abi
+from eth_abi.codec import ABICodec
 from eth_typing import Address, ChecksumAddress
 import os
+
+# Create an ABICodec instance at module level
+abi_codec = ABICodec(Web3().codec)
 
 
 class BN254G1Point:
@@ -73,7 +76,7 @@ def abi_encode_registration_params(
         pubkey_data,
     )
 
-    encoded = encode_abi([type_str], [data])
+    encoded = abi_codec.encode_abi([type_str], [data])
     return encoded[32:]  # Remove initial offset pointer
 
 
@@ -95,7 +98,7 @@ def abi_encode_operator_avs_registration_params(
         (pubkey_reg_params[0], pubkey_reg_params[1], pubkey_reg_params[2]),
     )
 
-    encoded = encode_abi([type_str], [data])
+    encoded = abi_codec.encode_abi([type_str], [data])
     return encoded[32:]
 
 

@@ -14,7 +14,7 @@ from eigensdk.crypto.bls.attestation import *
 
 from ...utils import send_transaction
 from ..elcontracts.reader import ELReader
-from typeguard import typechecked
+
 
 
 class AvsRegistryWriter:

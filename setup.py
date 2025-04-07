@@ -14,7 +14,6 @@ setup(
         "pytest",
         "pytest-mock",
         "ecdsa",
-        "typeguard",
     ],
     entry_points={
         "console_scripts": [

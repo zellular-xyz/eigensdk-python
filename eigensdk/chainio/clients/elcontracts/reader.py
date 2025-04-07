@@ -1,12 +1,8 @@
 import logging
 from typing import Tuple, List, Any, Dict, Optional
-from functools import wraps
 from eth_typing import Address
 from web3 import Web3
 from web3.contract.contract import Contract
-from typeguard import typechecked
-from web3.types import ChecksumAddress
-from web3.exceptions import ContractLogicError, BadFunctionCallOutput
 
 
 class ELReader:
@@ -92,19 +88,12 @@ class ELReader:
 
 
     def get_operator_shares(
-            self, operator_addr: Address, strategy_addresses: List[Address]
-        ) -> List[int]:
-        return self.delegation_manager.functions.getOperatorShares(
-            operator_addr, strategy_addresses
-        ).call()
-
-
-    def get_operator_shares_single(
             self, operator_address: Address, strategy_addresses: List[Address]
         ) -> List[int]:
         return self.delegation_manager.functions.getOperatorShares(
             operator_address, strategy_addresses
         ).call()
+
 
 
     def get_operator_sets_for_operator(self, operator_addr: Address) -> List[Dict[str, Any]]:
@@ -164,9 +153,8 @@ class ELReader:
             operator_addresses: List[Address],
             strategy_addresses: List[Address],
         ) -> List[List[int]]:
-        key = (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"])
         stakes = self.allocation_manager.functions.getAllocatedStake(
-            key, operator_addresses, strategy_addresses
+            (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"]), operator_addresses, strategy_addresses
         ).call()
         return stakes
 
@@ -187,12 +175,6 @@ class ELReader:
 
 
     def get_strategies_for_operator_set(self, operator_set: dict) -> List[Address]:
-        if "Id" not in operator_set or "Avs" not in operator_set:
-            raise ValueError("operator_set must contain 'Id' and 'Avs' keys.")
-        if operator_set["Id"] == 0:
-            raise ValueError("Legacy AVSs not supported (operatorSet.Id == 0)")
-        if not self.allocation_manager:
-            raise ValueError("AllocationManager contract not provided")
         return self.allocation_manager.functions.getStrategiesInOperatorSet(
             (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"])
         ).call()
@@ -262,9 +244,12 @@ class ELReader:
 
 
     def get_delegation_approver_salt_is_spent(
-            self, delegation_approver: Address, approver_salt: bytes
-        ) -> bool:
-        return self.delegation_manager.functions.delegationApproverSaltIsSpent_
+        self, delegation_approver: Address, approver_salt: bytes
+    ) -> bool:
+
+        return self.delegation_manager.functions.delegationApproverSaltIsSpent(
+            delegation_approver, approver_salt
+        ).call()
 
 
     def get_pending_withdrawal_status(self, withdrawal_root: bytes) -> bool:
@@ -341,15 +326,33 @@ class ELReader:
 
 
     def check_claim(self, claim: Dict[str, Any]) -> bool:
-        return self.reward_coordinator.functions.checkClaim(
-            (
-                claim["root"],
-                claim["index"],
-                claim["account"],
-                claim["amount"],
-                claim["merkleProof"],
-            )
-        ).call()
+
+        # Construct the earnerLeaf tuple
+        earner_leaf = (
+            claim.get("earnerLeaf", {}).get("earner", "0x0000000000000000000000000000000000000000"),
+            claim.get("earnerLeaf", {}).get("earnerTokenRoot", bytes(32))
+        )
+        
+        # Construct the tokenLeaves list of tuples
+        token_leaves = []
+        for leaf in claim.get("tokenLeaves", []):
+            token_leaves.append((
+                leaf.get("token", "0x0000000000000000000000000000000000000000"),
+                leaf.get("cumulativeEarnings", 0)
+            ))
+        
+        # Construct the complete claim tuple
+        claim_tuple = (
+            claim.get("rootIndex", 0),
+            claim.get("earnerIndex", 0),
+            claim.get("earnerTreeProof", b''),
+            earner_leaf,
+            claim.get("tokenIndices", []),
+            claim.get("tokenTreeProofs", []),
+            token_leaves
+        )
+        
+        return self.reward_coordinator.functions.checkClaim(claim_tuple).call()
 
 
     def get_operator_avs_split(self, operator: Address, avs: Address) -> int:
@@ -361,7 +364,7 @@ class ELReader:
 
     def get_operator_set_split(self, operator: Address, operator_set: dict) -> int:
         return self.reward_coordinator.functions.getOperatorSetSplit(
-            operator, (operator_set["avs"], operator_set["id"])
+            operator, (operator_set["Avs"], operator_set["Id"])
         ).call()
 
 
@@ -453,28 +456,28 @@ class ELReader:
         ).call()
 
 
-    def get_calculation_interval_seconds(self) -> Optional[int]:
+    def get_calculation_interval_seconds(self) -> int:
         return self.reward_coordinator.functions.CALCULATION_INTERVAL_SECONDS().call()
 
-    def get_max_rewards_duration(self) -> Optional[int]:
+    def get_max_rewards_duration(self) -> int:
         return self.reward_coordinator.functions.MAX_REWARDS_DURATION().call()
 
-    def get_max_retroactive_length(self) -> Optional[int]:
+    def get_max_retroactive_length(self) -> int:
         return self.reward_coordinator.functions.MAX_RETROACTIVE_LENGTH().call()
 
-    def get_max_future_length(self) -> Optional[int]:
+    def get_max_future_length(self) -> int:
         return self.reward_coordinator.functions.MAX_FUTURE_LENGTH().call()
 
-    def get_genesis_rewards_timestamp(self) -> Optional[int]:
+    def get_genesis_rewards_timestamp(self) -> int:
         return self.reward_coordinator.functions.GENESIS_REWARDS_TIMESTAMP().call()
 
-    def get_activation_delay(self) -> Optional[int]:
+    def get_activation_delay(self) -> int:
         return self.reward_coordinator.functions.activationDelay().call()
 
-    def get_deallocation_delay(self) -> Optional[int]:
+    def get_deallocation_delay(self) -> int:
         return self.allocation_manager.functions.DEALLOCATION_DELAY().call()
 
-    def get_allocation_configuration_delay(self) -> Optional[int]:
+    def get_allocation_configuration_delay(self) -> int:
         return self.allocation_manager.functions.ALLOCATION_CONFIGURATION_DELAY().call()
 
     def get_num_operator_sets_for_operator(self, operator_address: Address) -> int:
@@ -483,10 +486,9 @@ class ELReader:
     def get_slashable_shares(
             self, operator_address: Address, operator_set: Dict[str, Any], strategies: List[Address]
         ) -> Optional[Dict[str, int]]:
-        shares = self.allocation_manager.functions.getMinimumSlashableStake(
+        return self.allocation_manager.functions.getMinimumSlashableStake(
             operator_set, [operator_address], strategies, self.eth_client.eth.block_number
         ).call()
-        return {strategies[i]: shares[0][i] for i in range(len(strategies))}
 
 
     def get_slashable_shares_for_operator_sets_before(
@@ -494,15 +496,16 @@ class ELReader:
         ) -> Optional[List[Dict[str, Any]]]:
         result = []
         for op_set in operator_sets:
-            op_set["Id"] = op_set.get("Id") or op_set.pop("id", None)
-            strategies = self.get_strategies_for_operator_set(op_set)
             operators = self.get_operators_for_operator_set(op_set)
+            strategies = self.get_strategies_for_operator_set(op_set)
+            
             stakes = self.allocation_manager.functions.getMinimumSlashableStake(
-                {"Id": op_set["Id"], "Avs": op_set["Avs"]},
+                op_set,
                 operators,
                 strategies,
                 future_block,
             ).call()
+            
             result.append(
                 {
                     "OperatorSet": op_set,
@@ -517,7 +520,6 @@ class ELReader:
     def get_slashable_shares_for_operator_sets(
             self, operator_sets: List[Dict[str, Any]]
         ) -> Optional[List[Dict[str, Any]]]:
-        res = self.get_slashable_shares_for_operator_sets_before(
+        return self.get_slashable_shares_for_operator_sets_before(
             operator_sets, self.eth_client.eth.block_number
         )
-        return res if isinstance(res, list) else None

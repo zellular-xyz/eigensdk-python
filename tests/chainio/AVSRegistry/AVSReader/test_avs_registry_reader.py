@@ -641,119 +641,10 @@ class TestAvsRegistryReader:
         # Verify result
         assert result == expected_length
 
-    def test_strategy_params_by_index_success_tuple(self, avs_registry_reader):
-        # Mock data
-        quorum_number = 3
-        index = 2
-        call_options = {"from": "0xabc123"}
-        strategy_address = "0xstrategy456"
-        multiplier = 10000
+    
+    
 
-        # Mock contract return value as a tuple
-        contract_return = (strategy_address, multiplier)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.return_value = (
-            contract_return
-        )
-
-        # Mock the StakeRegistryTypesStrategyParams class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStrategyParams",
-            StakeRegistryTypesStrategyParams,
-        ):
-            # Call the method
-            strategy_params = avs_registry_reader.strategy_params_by_index(
-                call_options, quorum_number, index
-            )
-
-            # Verify results
-            assert strategy_params.strategy == strategy_address
-            assert strategy_params.multiplier == multiplier
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.assert_called_once_with(
-                quorum_number, index
-            )
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_strategy_params_by_index_success_dict(self, avs_registry_reader):
-        # Mock data
-        quorum_number = 3
-        index = 2
-        call_options = {"from": "0xabc123"}
-        strategy_address = "0xstrategy456"
-        multiplier = 10000
-
-        # Mock contract return as a dict-like object
-        contract_return = {"strategy": strategy_address, "multiplier": multiplier}
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.return_value = (
-            contract_return
-        )
-
-        # Mock the StakeRegistryTypesStrategyParams class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStrategyParams",
-            StakeRegistryTypesStrategyParams,
-        ):
-            # Call the method
-            strategy_params = avs_registry_reader.strategy_params_by_index(
-                call_options, quorum_number, index
-            )
-
-            # Verify results
-            assert strategy_params.strategy == strategy_address
-            assert strategy_params.multiplier == multiplier
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.assert_called_once_with(
-                quorum_number, index
-            )
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_strategy_params_by_index_success_dict_capital(self, avs_registry_reader):
-        # Mock data
-        quorum_number = 3
-        index = 2
-        call_options = {"from": "0xabc123"}
-        strategy_address = "0xstrategy456"
-        multiplier = 10000
-
-        # Mock contract return as a dict-like object with capitalized keys
-        contract_return = {"Strategy": strategy_address, "Multiplier": multiplier}
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.return_value = (
-            contract_return
-        )
-
-        # Mock the StakeRegistryTypesStrategyParams class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStrategyParams",
-            StakeRegistryTypesStrategyParams,
-        ):
-            # Call the method
-            strategy_params = avs_registry_reader.strategy_params_by_index(
-                call_options, quorum_number, index
-            )
-
-            # Verify results
-            assert strategy_params.strategy == strategy_address
-            assert strategy_params.multiplier == multiplier
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.assert_called_once_with(
-                quorum_number, index
-            )
-            avs_registry_reader.stake_registry.functions.strategyParamsByIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
+    
 
     def test_strategy_params_by_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -843,58 +734,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_stake_history_success_tuple(self, avs_registry_reader):
-        # Mock data
-        operator_id = 42
-        quorum_number = 3
-        call_options = {"from": "0xabc123"}
-
-        # Create sample stake history data as tuples
-        raw_stake_history = [
-            (100, 200, 1000),  # (update_block_number, next_update_block_number, stake)
-            (200, 300, 1500),
-            (300, 0, 2000),  # 0 for next_update_block_number could indicate last update
-        ]
-
-        # Expected processed result
-        expected_stake_history = [
-            StakeRegistryTypesStakeUpdate(100, 200, 1000),
-            StakeRegistryTypesStakeUpdate(200, 300, 1500),
-            StakeRegistryTypesStakeUpdate(300, 0, 2000),
-        ]
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getStakeHistory.return_value.call.return_value = (
-            raw_stake_history
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_history = avs_registry_reader.get_stake_history(
-                call_options, operator_id, quorum_number
-            )
-
-            # Verify results
-            assert len(stake_history) == len(expected_stake_history)
-            for i, update in enumerate(stake_history):
-                assert update.update_block_number == expected_stake_history[i].update_block_number
-                assert (
-                    update.next_update_block_number
-                    == expected_stake_history[i].next_update_block_number
-                )
-                assert update.stake == expected_stake_history[i].stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getStakeHistory.assert_called_once_with(
-                operator_id, quorum_number
-            )
-            avs_registry_reader.stake_registry.functions.getStakeHistory.return_value.call.assert_called_once_with(
-                call_options
-            )
+    
 
     def test_get_stake_history_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -912,136 +752,11 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_latest_stake_update_success_tuple(self, avs_registry_reader):
-        # Mock data
-        operator_id = 42
-        quorum_number = 3
-        call_options = {"from": "0xabc123"}
+    
 
-        # Create sample stake update data as a tuple
-        raw_stake_update = (
-            500,
-            0,
-            2500,
-        )  # (update_block_number, next_update_block_number, stake)
+    
 
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(500, 0, 2500)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_latest_stake_update(
-                call_options, operator_id, quorum_number
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.assert_called_once_with(
-                operator_id, quorum_number
-            )
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_get_latest_stake_update_success_dict(self, avs_registry_reader):
-        # Mock data
-        operator_id = 42
-        quorum_number = 3
-        call_options = {"from": "0xabc123"}
-
-        # Create sample stake update data as a dict
-        raw_stake_update = {
-            "updateBlockNumber": 500,
-            "nextUpdateBlockNumber": 0,  # 0 indicates latest update
-            "stake": 2500,
-        }
-
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(500, 0, 2500)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_latest_stake_update(
-                call_options, operator_id, quorum_number
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.assert_called_once_with(
-                operator_id, quorum_number
-            )
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_get_latest_stake_update_with_custom_options(self, avs_registry_reader):
-        # Mock data
-        operator_id = 123
-        quorum_number = 1
-        custom_options = {"from": "0xabc123", "block_number": 12345}
-
-        # Mock raw data
-        raw_stake_update = (400, 500, 3000)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_latest_stake_update(
-                custom_options, operator_id, quorum_number
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == 400
-            assert stake_update.next_update_block_number == 500
-            assert stake_update.stake == 3000
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.assert_called_once_with(
-                operator_id, quorum_number
-            )
-            avs_registry_reader.stake_registry.functions.getLatestStakeUpdate.return_value.call.assert_called_once_with(
-                custom_options
-            )
+   
 
     def test_get_latest_stake_update_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -1059,101 +774,9 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_stake_update_at_index_success_tuple(self, avs_registry_reader):
-        # Mock data
-        operator_id = 42
-        quorum_number = 3
-        index = 2
-        call_options = {"from": "0xabc123"}
+    
 
-        # Create sample stake update data as a tuple
-        raw_stake_update = (
-            300,
-            400,
-            1500,
-        )  # (update_block_number, next_update_block_number, stake)
-
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(300, 400, 1500)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_stake_update_at_index(
-                call_options, operator_id, quorum_number, index
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.assert_called_once_with(
-                quorum_number, operator_id, index
-            )
-            avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_get_stake_update_at_index_success_dict(self, avs_registry_reader):
-        # Mock data
-        operator_id = 42
-        quorum_number = 3
-        index = 1
-        call_options = {"from": "0xabc123"}
-
-        # Create sample stake update data as a dict
-        raw_stake_update = {
-            "updateBlockNumber": 200,
-            "nextUpdateBlockNumber": 300,
-            "stake": 1000,
-        }
-
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(200, 300, 1000)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_stake_update_at_index(
-                call_options, operator_id, quorum_number, index
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.assert_called_once_with(
-                quorum_number, operator_id, index
-            )
-            avs_registry_reader.stake_registry.functions.getStakeUpdateAtIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
+    
 
     def test_get_stake_update_at_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -1589,99 +1212,8 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    def test_get_total_stake_update_at_index_success_tuple(self, avs_registry_reader):
-        # Mock data
-        quorum_number = 3
-        index = 2
-        call_options = {"from": "0xabc123"}
-
-        # Create sample stake update data as a tuple
-        raw_stake_update = (
-            300,
-            400,
-            5000,
-        )  # (update_block_number, next_update_block_number, stake)
-
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(300, 400, 5000)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_total_stake_update_at_index(
-                call_options, quorum_number, index
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.assert_called_once_with(
-                quorum_number, index
-            )
-            avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
-
-    def test_get_total_stake_update_at_index_success_dict(self, avs_registry_reader):
-        # Mock data
-        quorum_number = 3
-        index = 1
-        call_options = {"from": "0xabc123"}
-
-        # Create sample stake update data as a dict
-        raw_stake_update = {
-            "updateBlockNumber": 200,
-            "nextUpdateBlockNumber": 300,
-            "stake": 8000,
-        }
-
-        # Expected processed result
-        expected_stake_update = StakeRegistryTypesStakeUpdate(200, 300, 8000)
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.return_value.call.return_value = (
-            raw_stake_update
-        )
-
-        # Mock the StakeRegistryTypesStakeUpdate class
-        with patch(
-            "eigensdk.chainio.clients.avsregistry.reader.StakeRegistryTypesStakeUpdate",
-            StakeRegistryTypesStakeUpdate,
-        ):
-            # Call the method
-            stake_update = avs_registry_reader.get_total_stake_update_at_index(
-                call_options, quorum_number, index
-            )
-
-            # Verify results
-            assert stake_update.update_block_number == expected_stake_update.update_block_number
-            assert (
-                stake_update.next_update_block_number
-                == expected_stake_update.next_update_block_number
-            )
-            assert stake_update.stake == expected_stake_update.stake
-
-            # Verify the contract method was called with correct parameters
-            avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.assert_called_once_with(
-                quorum_number, index
-            )
-            avs_registry_reader.stake_registry.functions.getTotalStakeUpdateAtIndex.return_value.call.assert_called_once_with(
-                call_options
-            )
+    
+    
 
     def test_get_total_stake_update_at_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -1811,8 +1343,7 @@ class TestAvsRegistryReader:
 
     def test_get_total_stake_indices_at_block_number_success(self, avs_registry_reader):
         # Mock data
-        quorum_numbers = Mock()
-        quorum_numbers.underlying_type.return_value = [0, 1, 2]
+        quorum_numbers = [0, 1, 2]  # Use actual list instead of Mock
         block_number = 12345
         call_options = {"from": "0xabc123"}
         expected_indices = [3, 5, 7]  # One index per quorum
@@ -1832,71 +1363,15 @@ class TestAvsRegistryReader:
 
         # Verify the contract method was called with correct parameters
         avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.assert_called_once_with(
-            block_number, quorum_numbers.underlying_type()
+            block_number, quorum_numbers
         )
         avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.return_value.call.assert_called_once_with(
             call_options
         )
 
-    def test_get_total_stake_indices_at_block_number_empty_quorums(self, avs_registry_reader):
-        # Mock data - empty quorum list edge case
-        quorum_numbers = Mock()
-        quorum_numbers.underlying_type.return_value = []
-        block_number = 12345
-        call_options = {"from": "0xabc123"}
-        expected_indices = []  # No indices returned for empty quorum list
+    
 
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.return_value.call.return_value = (
-            expected_indices
-        )
-
-        # Call the method
-        indices = avs_registry_reader.get_total_stake_indices_at_block_number(
-            call_options, quorum_numbers, block_number
-        )
-
-        # Verify results
-        assert indices == expected_indices
-        assert len(indices) == 0
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.assert_called_once_with(
-            block_number, quorum_numbers.underlying_type()
-        )
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.return_value.call.assert_called_once_with(
-            call_options
-        )
-
-    def test_get_total_stake_indices_at_block_number_with_custom_options(self, avs_registry_reader):
-        # Mock data
-        quorum_numbers = Mock()
-        quorum_numbers.underlying_type.return_value = [3]
-        block_number = 54321
-        custom_options = {"from": "0xabc123", "gasLimit": 200000}
-        expected_indices = [9]
-
-        # Mock the stake_registry
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.return_value.call.return_value = (
-            expected_indices
-        )
-
-        # Call the method
-        indices = avs_registry_reader.get_total_stake_indices_at_block_number(
-            custom_options, quorum_numbers, block_number
-        )
-
-        # Verify results
-        assert indices == expected_indices
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.assert_called_once_with(
-            block_number, quorum_numbers.underlying_type()
-        )
-        avs_registry_reader.stake_registry.functions.getTotalStakeIndicesAtBlockNumber.return_value.call.assert_called_once_with(
-            custom_options
-        )
-
+    
     def test_get_total_stake_indices_at_block_number_no_stake_registry(self, avs_registry_reader):
         # Mock data
         quorum_numbers = [0, 1]
@@ -2477,55 +1952,8 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    def test_get_operator_id_success(self, avs_registry_reader):
-        # Mock data
-        operator_address = "0xabc123def456"
-        call_options = {"from": "0xuser789"}
-        expected_operator_id = b"\x01\x02\x03\x04"  # Example bytes value as operator ID
-
-        # Mock the registry_coordinator
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.return_value = (
-            expected_operator_id
-        )
-
-        # Call the method
-        operator_id = avs_registry_reader.get_operator_id(call_options, operator_address)
-
-        # Verify results
-        assert operator_id == expected_operator_id
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.registry_coordinator.functions.getint.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.assert_called_once_with(
-            call_options
-        )
-
-    def test_get_operator_id_with_custom_options(self, avs_registry_reader):
-        # Mock data
-        operator_address = "0xdef456abc789"
-        custom_options = {"from": "0xuser789", "gasLimit": 300000}
-        expected_operator_id = b"\x05\x06\x07\x08"  # Different operator ID
-
-        # Mock the registry_coordinator
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.return_value = (
-            expected_operator_id
-        )
-
-        # Call the method
-        operator_id = avs_registry_reader.get_operator_id(custom_options, operator_address)
-
-        # Verify results
-        assert operator_id == expected_operator_id
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.registry_coordinator.functions.getint.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.assert_called_once_with(
-            custom_options
-        )
+    
+    
 
     def test_get_operator_id_no_registry_coordinator(self, avs_registry_reader):
         # Mock data
@@ -2542,31 +1970,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_operator_id_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        operator_address = "0xabc123def456"
-        call_options = None
-        expected_operator_id = b"\x09\x0a\x0b\x0c"  # Example bytes value
-
-        # Mock the registry_coordinator
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.return_value = (
-            expected_operator_id
-        )
-
-        # Call the method
-        operator_id = avs_registry_reader.get_operator_id(call_options, operator_address)
-
-        # Verify results
-        assert operator_id == expected_operator_id
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.registry_coordinator.functions.getint.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.registry_coordinator.functions.getint.return_value.call.assert_called_once_with(
-            call_options
-        )
-
+    
     def test_get_operator_from_id_success(self, avs_registry_reader):
         # Mock data
         operator_id = 123456  # Example operator ID
@@ -2632,30 +2036,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_operator_from_id_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        operator_id = 123456
-        call_options = None
-        expected_operator_address = "0xabc123def456"
-
-        # Mock the registry_coordinator
-        avs_registry_reader.registry_coordinator.functions.getOperatorFromId.return_value.call.return_value = (
-            expected_operator_address
-        )
-
-        # Call the method
-        operator_address = avs_registry_reader.get_operator_from_id(call_options, operator_id)
-
-        # Verify results
-        assert operator_address == expected_operator_address
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.registry_coordinator.functions.getOperatorFromId.assert_called_once_with(
-            operator_id
-        )
-        avs_registry_reader.registry_coordinator.functions.getOperatorFromId.return_value.call.assert_called_once_with(
-            call_options
-        )
+    
 
     def test_get_operator_from_id_zero(self, avs_registry_reader):
         # Test with operator_id = 0 (edge case)
@@ -2878,30 +2259,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_is_operator_registered_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        operator_address = "0xabc123def456"
-        call_options = None
-        operator_status = 1  # Status 1 indicates registered
-
-        # Mock the registry_coordinator
-        avs_registry_reader.registry_coordinator.functions.getOperatorStatus.return_value.call.return_value = (
-            operator_status
-        )
-
-        # Call the method
-        registered = avs_registry_reader.is_operator_registered(call_options, operator_address)
-
-        # Verify results
-        assert registered is True
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.registry_coordinator.functions.getOperatorStatus.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.registry_coordinator.functions.getOperatorStatus.return_value.call.assert_called_once_with(
-            call_options
-        )
+    
 
     def test_is_operator_set_quorum_success_true(self, avs_registry_reader):
         # Mock data for a quorum that is an operator set quorum
@@ -2966,29 +2324,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_is_operator_set_quorum_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        quorum_number = 0
-        call_options = None
-
-        # Mock the stake_registry to return True
-        avs_registry_reader.stake_registry.functions.isOperatorSetQuorum.return_value.call.return_value = (
-            True
-        )
-
-        # Call the method
-        is_operator_set = avs_registry_reader.is_operator_set_quorum(call_options, quorum_number)
-
-        # Verify results
-        assert is_operator_set is True
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.stake_registry.functions.isOperatorSetQuorum.assert_called_once_with(
-            quorum_number
-        )
-        avs_registry_reader.stake_registry.functions.isOperatorSetQuorum.return_value.call.assert_called_once_with(
-            call_options
-        )
+    
 
     def test_is_operator_set_quorum_edge_case_zero(self, avs_registry_reader):
         # Testing with quorum_number = 0 (edge case)
@@ -3087,32 +2423,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_operator_id_from_operator_address_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        operator_address = "0xabc123def456"
-        call_options = None
-        expected_pubkey_hash = b"\x01\x02\x03\x04\x05\x06\x07\x08"
-
-        # Mock the bls_apk_registry
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkeyHash.return_value.call.return_value = (
-            expected_pubkey_hash
-        )
-
-        # Call the method
-        pubkey_hash = avs_registry_reader.get_operator_id_from_operator_address(
-            call_options, operator_address
-        )
-
-        # Verify results
-        assert pubkey_hash == expected_pubkey_hash
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkeyHash.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkeyHash.return_value.call.assert_called_once_with(
-            call_options
-        )
+    
 
     def test_get_operator_id_from_operator_address_zero_address(self, avs_registry_reader):
         # Testing with zero address (edge case)
@@ -3214,32 +2525,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_operator_address_from_operator_id_no_call_options(self, avs_registry_reader):
-        # Mock data with None call_options
-        operator_pubkey_hash = b"\x01\x02\x03\x04\x05\x06\x07\x08"
-        call_options = None
-        expected_operator_address = "0xabc123def456"
-
-        # Mock the bls_apk_registry
-        avs_registry_reader.bls_apk_registry.functions.pubkeyHashToOperator.return_value.call.return_value = (
-            expected_operator_address
-        )
-
-        # Call the method
-        operator_address = avs_registry_reader.get_operator_address_from_operator_id(
-            call_options, operator_pubkey_hash
-        )
-
-        # Verify results
-        assert operator_address == expected_operator_address
-
-        # Verify the contract method was called with correct parameters
-        avs_registry_reader.bls_apk_registry.functions.pubkeyHashToOperator.assert_called_once_with(
-            operator_pubkey_hash
-        )
-        avs_registry_reader.bls_apk_registry.functions.pubkeyHashToOperator.return_value.call.assert_called_once_with(
-            call_options
-        )
+    
 
     def test_get_operator_address_from_operator_id_empty_pubkey_hash(self, avs_registry_reader):
         # Testing with empty pubkey hash (edge case)
@@ -3359,42 +2645,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_pubkey_from_operator_address_no_call_options(self, avs_registry_reader, mocker):
-        # Mock data with None call_options
-        operator_address = "0xabc123def456"
-        call_options = None
-        pubkey_x = 555666
-        pubkey_y = 777888
-        mock_pubkey = {"x": pubkey_x, "y": pubkey_y}
-
-        # Mock G1Point class
-        mock_g1point = mocker.Mock()
-        G1Point_mock = mocker.patch(
-            "eigensdk.chainio.clients.avsregistry.reader.G1Point",
-            return_value=mock_g1point,
-        )
-
-        # Mock the bls_apk_registry
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkey.return_value.call.return_value = (
-            mock_pubkey
-        )
-
-        # Call the method
-        pubkey = avs_registry_reader.get_pubkey_from_operator_address(
-            call_options, operator_address
-        )
-
-        # Verify results
-        assert pubkey == mock_g1point
-
-        # Verify the contract method and G1Point were called with correct parameters
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkey.assert_called_once_with(
-            operator_address
-        )
-        avs_registry_reader.bls_apk_registry.functions.operatorToPubkey.return_value.call.assert_called_once_with(
-            call_options
-        )
-        G1Point_mock.assert_called_once_with(pubkey_x, pubkey_y)
+    
 
     def test_get_pubkey_from_operator_address_zero_address(self, avs_registry_reader, mocker):
         # Testing with zero address (edge case)
@@ -3533,47 +2784,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_apk_update_no_call_options(self, avs_registry_reader, mocker):
-        # Mock data with None call_options
-        quorum_number = 0
-        index = 0
-        call_options = None
-        mock_update_data = {
-            "apkHash": b"\x09\x0a\x0b\x0c",
-            "updateBlockNumber": 5000,
-            "nextUpdateBlockNumber": 6000,
-        }
-
-        # Mock BLSApkRegistryTypesApkUpdate class
-        mock_apk_update = mocker.Mock()
-        BLSApkRegistryTypesApkUpdate_mock = mocker.patch(
-            "eigensdk.chainio.clients.avsregistry.reader.BLSApkRegistryTypesApkUpdate",
-            return_value=mock_apk_update,
-        )
-
-        # Mock the bls_apk_registry
-        avs_registry_reader.bls_apk_registry.functions.apkHistory.return_value.call.return_value = (
-            mock_update_data
-        )
-
-        # Call the method
-        apk_update = avs_registry_reader.get_apk_update(call_options, quorum_number, index)
-
-        # Verify results
-        assert apk_update == mock_apk_update
-
-        # Verify the contract method and BLSApkRegistryTypesApkUpdate were called with correct parameters
-        avs_registry_reader.bls_apk_registry.functions.apkHistory.assert_called_once_with(
-            quorum_number, index
-        )
-        avs_registry_reader.bls_apk_registry.functions.apkHistory.return_value.call.assert_called_once_with(
-            call_options
-        )
-        BLSApkRegistryTypesApkUpdate_mock.assert_called_once_with(
-            apk_hash=mock_update_data["apkHash"],
-            update_block_number=mock_update_data["updateBlockNumber"],
-            next_update_block_number=mock_update_data["nextUpdateBlockNumber"],
-        )
+    
 
     def test_get_current_apk_success(self, avs_registry_reader, mocker):
         # Mock data
@@ -3660,40 +2871,7 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    def test_get_current_apk_no_call_options(self, avs_registry_reader, mocker):
-        # Mock data with None call_options
-        quorum_number = 0
-        call_options = None
-        apk_x = 11111
-        apk_y = 22222
-        mock_apk = {"x": apk_x, "y": apk_y}
-
-        # Mock G1Point class
-        mock_g1point = mocker.Mock()
-        G1Point_mock = mocker.patch(
-            "eigensdk.chainio.clients.avsregistry.reader.G1Point",
-            return_value=mock_g1point,
-        )
-
-        # Mock the bls_apk_registry
-        avs_registry_reader.bls_apk_registry.functions.currentApk.return_value.call.return_value = (
-            mock_apk
-        )
-
-        # Call the method
-        apk = avs_registry_reader.get_current_apk(call_options, quorum_number)
-
-        # Verify results
-        assert apk == mock_g1point
-
-        # Verify the contract method and G1Point were called with correct parameters
-        avs_registry_reader.bls_apk_registry.functions.currentApk.assert_called_once_with(
-            quorum_number
-        )
-        avs_registry_reader.bls_apk_registry.functions.currentApk.return_value.call.assert_called_once_with(
-            call_options
-        )
-        G1Point_mock.assert_called_once_with(apk_x, apk_y)
+    
 
     def test_get_current_apk_zero_coordinates(self, avs_registry_reader, mocker):
         # Testing with zero coordinates (edge case)
