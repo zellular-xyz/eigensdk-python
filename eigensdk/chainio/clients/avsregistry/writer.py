@@ -61,6 +61,11 @@ class AvsRegistryWriter:
         if stake_registry is None:
             raise ValueError("StakeRegistry contract not provided")
 
+    def send(self, tx_func, *args, wait_for_receipt: bool = True):
+        tx_opts = self.tx_mgr.get_no_send_tx_opts()
+        tx = tx_func(tx_opts, *args).build_transaction()
+        return self.tx_mgr.send(tx, wait_for_receipt)
+
     def register_operator(
         self,
         operator_ecdsa_private_key: ecdsa.SigningKey,
@@ -113,26 +118,28 @@ class AvsRegistryWriter:
             "expiry": signature_expiry,
         }
 
-        tx = self.registry_coordinator.functions.registerOperator(
-            self.tx_mgr.get_no_send_tx_opts(),
+        # Updated to use the send method
+        return self.send(
+            self.registry_coordinator.functions.registerOperator,
             quorum_numbers,
             socket,
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
-        ).build_transaction()
-
-        return self.tx_mgr.send(tx, wait_for_receipt)
+            wait_for_receipt=wait_for_receipt
+        )
 
     def update_stakes_of_entire_operator_set_for_quorums(
-        self,
-        operators_per_quorum: List[List[str]],
-        quorum_numbers: List[int],
-        wait_for_receipt: bool,
-    ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.updateOperatorsForQuorum(
-            self.tx_mgr.get_no_send_tx_opts(), operators_per_quorum, quorum_numbers
-        )
-        return self.tx_mgr.send(tx, wait_for_receipt)
+            self,
+            operators_per_quorum: List[List[str]],
+            quorum_numbers: List[int],
+            wait_for_receipt: bool,
+        ) -> Optional[Dict]:
+            return self.send(
+                self.registry_coordinator.functions.updateOperatorsForQuorum,
+                operators_per_quorum,
+                quorum_numbers,
+                wait_for_receipt=wait_for_receipt
+            )
 
     def register_operator_with_churn(
         self,
@@ -218,69 +225,76 @@ class AvsRegistryWriter:
             "expiry": signature_expiry,
         }
 
-        no_send_tx_opts = self.tx_mgr.get_no_send_tx_opts()
-
-        tx = self.registry_coordinator.functions.registerOperatorWithChurn(
-            no_send_tx_opts,
+        # Updated to use the send method
+        return self.send(
+            self.registry_coordinator.functions.registerOperatorWithChurn,
             quorum_numbers,
             socket,
             pubkey_reg_params,
             operator_kick_params,
             churn_approver_signature_with_salt_and_expiry,
             operator_signature_with_salt_and_expiry,
-        ).build_transaction()
-
-        return self.tx_mgr.send(tx, wait_for_receipt)
+            wait_for_receipt=wait_for_receipt
+        )
 
     def update_stakes_of_operator_subset_for_all_quorums(
         self, operators: List[str], wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.updateOperators(
-            self.tx_mgr.get_no_send_tx_opts(), operators
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.updateOperators,
+            operators,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def deregister_operator(
         self, quorum_numbers: List[int], pubkey: BN254G1Point, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.deregisterOperator0(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_numbers
+        return self.send(
+            self.registry_coordinator.functions.deregisterOperator0,
+            quorum_numbers,
+            wait_for_receipt=wait_for_receipt
         )
-        return self.tx_mgr.send(tx, wait_for_receipt)
 
     def update_socket(self, socket: str, wait_for_receipt: bool) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.updateSocket(
-            self.tx_mgr.get_no_send_tx_opts(), socket
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.updateSocket,
+            socket,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_rewards_initiator(
         self, rewards_initiator_addr: str, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        return self.tx_mgr.send(
-            self.web3.eth.contract(address=self.service_manager_addr, abi=self.service_manager_abi)
-            .functions.setRewardsInitiator(
-                self.tx_mgr.get_no_send_tx_opts(), rewards_initiator_addr
-            )
-            .build_transaction(),
-            wait_for_receipt,
+        service_manager_contract = self.web3.eth.contract(
+            address=self.service_manager_addr, 
+            abi=self.service_manager_abi
+        )
+        
+        return self.send(
+            service_manager_contract.functions.setRewardsInitiator,
+            rewards_initiator_addr,
+            wait_for_receipt=wait_for_receipt
         )
 
     def set_slashable_stake_lookahead(
         self, quorum_number: int, look_ahead_period: int, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.stake_registry.functions.setSlashableStakeLookahead(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, look_ahead_period
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.stake_registry.functions.setSlashableStakeLookahead,
+            quorum_number,
+            look_ahead_period,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_minimum_stake_for_quorum(
         self, quorum_number: int, minimum_stake: int, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.stake_registry.functions.setMinimumStakeForQuorum(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, minimum_stake
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.stake_registry.functions.setMinimumStakeForQuorum,
+            quorum_number,
+            minimum_stake,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def create_total_delegated_stake_quorum(
         self,
@@ -289,13 +303,13 @@ class AvsRegistryWriter:
         strategy_params: List[Dict],
         wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.createTotalDelegatedStakeQuorum(
-            self.tx_mgr.get_no_send_tx_opts(),
+        return self.send(
+            self.registry_coordinator.functions.createTotalDelegatedStakeQuorum,
             operator_set_params,
             minimum_stake_required,
             strategy_params,
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+            wait_for_receipt=wait_for_receipt
+        )
 
     def create_slashable_stake_quorum(
         self,
@@ -306,44 +320,50 @@ class AvsRegistryWriter:
         wait_for_receipt: bool,
     ) -> Optional[Dict]:
         self.logger.info("Creating slashable stake quorum")
-        tx = self.registry_coordinator.functions.createSlashableStakeQuorum(
-            self.tx_mgr.get_no_send_tx_opts(),
+        return self.send(
+            self.registry_coordinator.functions.createSlashableStakeQuorum,
             operator_set_params,
             minimum_stake_required,
             strategy_params,
             look_ahead_period,
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+            wait_for_receipt=wait_for_receipt
+        )
 
     def eject_operator(
         self, operator_address: str, quorum_numbers: List[int], wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.ejectOperator(
-            self.tx_mgr.get_no_send_tx_opts(), operator_address, quorum_numbers
+        return self.send(
+            self.registry_coordinator.functions.ejectOperator,
+            operator_address,
+            quorum_numbers,
+            wait_for_receipt=wait_for_receipt
         )
-        return self.tx_mgr.send(tx, wait_for_receipt)
 
     def set_operator_set_params(
         self, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.setOperatorSetParams(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, operator_set_params
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.setOperatorSetParams,
+            quorum_number,
+            operator_set_params,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_churn_approver(
         self, churn_approver_address: str, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.setChurnApprover(
-            self.tx_mgr.get_no_send_tx_opts(), churn_approver_address
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.setChurnApprover,
+            churn_approver_address,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_ejector(self, ejector_address: str, wait_for_receipt: bool) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.setEjector(
-            self.tx_mgr.get_no_send_tx_opts(), ejector_address
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.setEjector,
+            ejector_address,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def modify_strategy_params(
         self,
@@ -352,50 +372,63 @@ class AvsRegistryWriter:
         multipliers: List[int],
         wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        tx = self.stake_registry.functions.modifyStrategyParams(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, strategy_indices, multipliers
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.stake_registry.functions.modifyStrategyParams,
+            quorum_number,
+            strategy_indices,
+            multipliers,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_account_identifier(
         self, account_identifier_address: str, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.setAccountIdentifier(
-            self.tx_mgr.get_no_send_tx_opts(), account_identifier_address
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.setAccountIdentifier,
+            account_identifier_address,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def set_ejection_cooldown(
         self, ejection_cooldown: int, wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.registry_coordinator.functions.setEjectionCooldown(
-            self.tx_mgr.get_no_send_tx_opts(), ejection_cooldown
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.registry_coordinator.functions.setEjectionCooldown,
+            ejection_cooldown,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def add_strategies(
         self, quorum_number: int, strategy_params: List[Dict], wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.stake_registry.functions.addStrategies(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, strategy_params
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
-
-    def update_avs_metadata_uri(self, metadata_uri: str, wait_for_receipt: bool) -> Optional[Dict]:
-        tx = (
-            self.web3.eth.contract(address=self.service_manager_addr, abi=self.service_manager_abi)
-            .functions.updateAVSMetadataURI(self.tx_mgr.get_no_send_tx_opts(), metadata_uri)
-            .build_transaction()
+        return self.send(
+            self.stake_registry.functions.addStrategies,
+            quorum_number,
+            strategy_params,
+            wait_for_receipt=wait_for_receipt
         )
-        return self.tx_mgr.send(tx, wait_for_receipt)
+    
+    def update_avs_metadata_uri(self, metadata_uri: str, wait_for_receipt: bool) -> Optional[Dict]:
+        service_manager_contract = self.web3.eth.contract(
+            address=self.service_manager_addr,
+            abi=self.service_manager_abi
+        )
+        
+        return self.send(
+            service_manager_contract.functions.updateAVSMetadataURI,
+            metadata_uri,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def remove_strategies(
         self, quorum_number: int, indices_to_remove: List[int], wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = self.stake_registry.functions.removeStrategies(
-            self.tx_mgr.get_no_send_tx_opts(), quorum_number, indices_to_remove
-        ).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        return self.send(
+            self.stake_registry.functions.removeStrategies,
+            quorum_number,
+            indices_to_remove,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def create_avs_rewards_submission(
         self, rewards_submission: List[Dict], wait_for_receipt: bool
@@ -403,23 +436,28 @@ class AvsRegistryWriter:
         self.logger.info(
             "Creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission}
         )
-        tx = (
-            self.web3.eth.contract(address=self.service_manager_addr, abi=self.service_manager_abi)
-            .functions.createAVSRewardsSubmission(
-                self.tx_mgr.get_no_send_tx_opts(), rewards_submission
-            )
-            .build_transaction()
+        
+        service_manager_contract = self.web3.eth.contract(
+            address=self.service_manager_addr,
+            abi=self.service_manager_abi
         )
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        
+        return self.send(
+            service_manager_contract.functions.createAVSRewardsSubmission,
+            rewards_submission,
+            wait_for_receipt=wait_for_receipt
+        )
 
     def create_operator_directed_avs_rewards_submission(
         self, operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
     ) -> Optional[Dict]:
-        tx = (
-            self.web3.eth.contract(address=self.service_manager_addr, abi=self.service_manager_abi)
-            .functions.createOperatorDirectedAVSRewardsSubmission(
-                self.tx_mgr.get_no_send_tx_opts(), operator_directed_rewards_submissions
-            )
-            .build_transaction()
+        service_manager_contract = self.web3.eth.contract(
+            address=self.service_manager_addr,
+            abi=self.service_manager_abi
         )
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        
+        return self.send(
+            service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission,
+            operator_directed_rewards_submissions,
+            wait_for_receipt=wait_for_receipt
+        )
