@@ -35,7 +35,7 @@ ENV PATH="/root/.foundry/bin:${PATH}"
 
 # Clone and build eigenlayer-contracts
 RUN git clone --depth 1 https://github.com/Layr-Labs/eigenlayer-contracts.git \
-    && cd /app/eigenlayer-contracts \
+    && cd eigenlayer-contracts \
     && forge build
 
 # Copy application requirements first for better caching
@@ -49,11 +49,8 @@ COPY . /app/
 # Install the application
 RUN pip install --no-cache-dir -e .
 
-# The scripts/setup_anvil.sh is already copied as part of the COPY . /app/ command
-RUN chmod +x /app/scripts/setup_anvil.sh    
-
 # Expose port 8545 for Anvil
 EXPOSE 8545
 
 # Default command to execute init.sh
-CMD ["/app/scripts/setup_anvil.sh"]
+CMD ["anvil"]
