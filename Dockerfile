@@ -34,9 +34,11 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
 ENV PATH="/root/.foundry/bin:${PATH}"
 
 # Clone and build eigenlayer-contracts
-RUN git clone --depth 1 https://github.com/Layr-Labs/eigenlayer-contracts.git \
+RUN git clone https://github.com/Layr-Labs/eigenlayer-contracts.git \
     && cd eigenlayer-contracts \
+    && git checkout 2e53e2f7662d8d9a43b2ca0cca22ecd068604226 \
     && forge build
+
 
 # Copy application requirements first for better caching
 COPY setup.py requirements-dev.txt /app/
