@@ -3,6 +3,9 @@
 build:
 	COMPOSE_BAKE=true docker compose build
 
+anvil-reset: down
+	docker compose up anvil
+
 # Run basic tests (without Anvil dependency)
 basic-test:
 	docker compose run --no-deps app python3 -m pytest tests/public/test_imports.py tests//public/test_no_chain.py
@@ -42,7 +45,7 @@ simple-setup: build basic-test
 
 # Run tests against the running Anvil instance
 test:
-	docker compose run --rm app bash -c "cd /app && python -m pytest tests/ -v"
+	docker compose run --rm app bash -c "python -m pytest tests/ -v"
 
 mypy:
 	docker compose run app mypy eigensdk
