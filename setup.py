@@ -14,10 +14,10 @@ setup(
         "pytest",
         "pytest-mock",
         "ecdsa",
+        "prometheus_client"
     ],
     entry_points={
         "console_scripts": [
-            # Define any CLI scripts here
         ],
     },
     author="Abram Symons",

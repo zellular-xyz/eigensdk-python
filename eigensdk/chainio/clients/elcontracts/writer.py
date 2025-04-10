@@ -72,17 +72,6 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt
         )
 
-    
-    def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict):
-        return self.send(
-            self.allocation_manager.functions.registerForOperatorSets,
-            Web3.to_checksum_address(request["operator_address"]),
-            {"avs": Web3.to_checksum_address(request["avs_address"]), "operatorSetIds": request["operator_set_ids"], 
-            "data": utils.abi_encode_registration_params("RegistrationTypeNormal", request["socket"], 
-            utils.get_pubkey_registration_params(self.eth_client, Web3.to_checksum_address(registry_coordinator_addr), 
-            Web3.to_checksum_address(request["operator_address"]), request["bls_key_pair"]))},
-            wait_for_receipt=request["wait_for_receipt"]
-        )
 
 
     

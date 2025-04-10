@@ -1,6 +1,5 @@
 .PHONY: $(MAKECMDGOALS)
 
-# Build the Docker image and setup Anvil with deployed contracts
 build:
 	docker compose build
 
@@ -12,7 +11,6 @@ basic-test:
 format:
 	docker compose run app black .
 
-# Open a shell in the container
 shell:
 	docker compose run app bash
 
@@ -24,21 +22,9 @@ clean:
 down:
 	docker compose down -v -t0 --remove-orphans
 
-# Check Anvil container logs
 anvil-logs:
 	docker compose logs anvil
 
-
-# Start anvil in the background and deploy contracts
-anvil-up:
-	docker compose up -d anvil
-	@echo "Waiting for Anvil to start up and deploy contracts..."
-	@sleep 10
-	@docker logs --tail 20 eigensdk-python-anvil-1
-
-# Anvil shell for working with foundry
-anvil-shell:
-	docker compose run anvil bash
 
 # Get the contract addresses from the deployment
 get-addresses:
