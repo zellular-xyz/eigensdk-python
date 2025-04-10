@@ -41,10 +41,10 @@ update-env:
 setup-all: build  test
 
 # Simple setup for running tests without blockchain dependency
-simple-setup: build basic-test 
+simple-setup: build update-env basic-test 
 
 # Run tests against the running Anvil instance
-test:
+test: update-env
 	docker compose run --rm app bash -c "python -m pytest tests/ -v"
 
 mypy:
