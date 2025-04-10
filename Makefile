@@ -1,7 +1,7 @@
 .PHONY: $(MAKECMDGOALS)
 
 build:
-	docker compose build
+	COMPOSE_BAKE=true docker compose build
 
 # Run basic tests (without Anvil dependency)
 basic-test:
