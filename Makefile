@@ -28,7 +28,6 @@ down:
 anvil-logs:
 	docker compose logs anvil
 
-
 # Get the contract addresses from the deployment
 get-addresses:
 	docker compose run app python3 scripts/get_contract_addresses.py
@@ -36,9 +35,6 @@ get-addresses:
 # Update the .env file with contract addresses
 update-env:
 	docker compose run app python3 scripts/update_env.py
-
-# Full setup: build, start anvil, update env, run tests
-setup-all: build  test
 
 # Simple setup for running tests without blockchain dependency
 simple-setup: build update-env basic-test 
