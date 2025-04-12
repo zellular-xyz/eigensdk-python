@@ -1,6 +1,6 @@
 import logging
-from typing import Tuple, List, Any, Dict, Optional
 from eth_typing import Address
+from typing import Tuple, List, Any, Dict, Optional
 from web3 import Web3
 from web3.contract.contract import Contract
 

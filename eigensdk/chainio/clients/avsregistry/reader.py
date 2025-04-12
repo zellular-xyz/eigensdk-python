@@ -1,24 +1,23 @@
 import logging
 import math
-from typing import Dict, List, Optional, Tuple, Any
 from eth_typing import Address
+from typing import Dict, List, Optional, Tuple, Any
 from web3 import Web3
 from web3.contract.contract import Contract
+from web3.types import TxParams
+
 from eigensdk._types import (
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
 )
-from eigensdk.chainio import utils
-from eigensdk.chainio.chainio_utils.utils import *
-from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from eigensdk._types import (
     StakeRegistryTypesStrategyParams,
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
 )
-
-from web3.types import TxParams
-
+from eigensdk.chainio import utils
+from eigensdk.chainio.chainio_utils.utils import *
+from eigensdk.crypto.bls.attestation import G1Point, G2Point
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 

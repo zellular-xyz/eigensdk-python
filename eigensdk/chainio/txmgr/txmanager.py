@@ -1,9 +1,8 @@
-import time
 import logging
+import time
+from eth_account import Account
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
-from eth_account import Account
-
 
 FALLBACK_GAS_TIP_CAP = Web3.to_wei(5, "gwei")
 FALLBACK_GAS_LIMIT_MULTIPLIER = 1.2

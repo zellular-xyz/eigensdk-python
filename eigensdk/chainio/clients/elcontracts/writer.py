@@ -1,10 +1,10 @@
 import logging
-from typing import List, Any, Dict, Optional
 from eth_typing import Address
+from typing import List, Any, Dict, Optional
 from web3 import Web3
 from web3.contract import Contract
-from eigensdk.chainio import chainio_utils as utils
 
+from eigensdk.chainio import chainio_utils as utils
 
 
 class ELWriter:

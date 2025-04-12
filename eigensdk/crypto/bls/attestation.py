@@ -1,7 +1,8 @@
-import os
 import json
+import os
 from eth_account import Account
 from mcl import G1, G2, GT, Fr, Fp
+
 from eigensdk.crypto.bn256 import utils as bn256Utils
 
 

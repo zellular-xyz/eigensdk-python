@@ -1,11 +1,11 @@
-from enum import Enum
-from dataclasses import dataclass, asdict
-from typing import List
-import threading
 import queue
+import threading
 import uvicorn
+from dataclasses import dataclass, asdict
+from enum import Enum
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from typing import List
 
 # Constants similar to Go constants
 BASE_URL = "/eigen"

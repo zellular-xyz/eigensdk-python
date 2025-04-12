@@ -1,8 +1,9 @@
-from tests.builder import *
-from web3 import Web3
 import pytest
 from eth_typing import Address as EthAddress
 from unittest.mock import MagicMock
+from web3 import Web3
+
+from tests.builder import *
 
 
 # Consolidated fixtures

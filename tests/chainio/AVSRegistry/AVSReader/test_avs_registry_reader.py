@@ -1,12 +1,13 @@
 import pytest
-from unittest.mock import Mock, patch, MagicMock, PropertyMock
-from web3.exceptions import ContractLogicError
-from web3.contract.contract import Contract
-from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
-from typing import List
 from dataclasses import dataclass
-from eigensdk._types import OperatorStateRetrieverOperator
+from typing import List
 from unittest.mock import MagicMock
+from unittest.mock import Mock, patch, MagicMock, PropertyMock
+from web3.contract.contract import Contract
+from web3.exceptions import ContractLogicError
+
+from eigensdk._types import OperatorStateRetrieverOperator
+from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
 
 
 # Create a simple Operator class for expected structure

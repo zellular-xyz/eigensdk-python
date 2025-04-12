@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
-
 from eth_typing import Address
+from typing import Any, Dict, List, Optional, Union
 
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 

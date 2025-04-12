@@ -1,9 +1,7 @@
-from typing import List
-
 from eth_account.signers.local import LocalAccount
+from typing import List
 from web3 import Web3
 from web3.contract.contract import ContractFunction
-
 # from web3.middleware.geth_poa import geth_poa_middleware
 from web3.types import TxReceipt
 

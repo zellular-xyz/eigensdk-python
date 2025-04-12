@@ -1,20 +1,17 @@
+import ecdsa
 import logging
-from typing import List, Optional, Tuple, Dict, Any
-
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
+from typing import List, Optional, Tuple, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxReceipt
-import ecdsa
 
 from eigensdk.chainio.chainio_utils.utils import *
 from eigensdk.crypto.bls.attestation import *
-
-from ...utils import send_transaction
 from ..elcontracts.reader import ELReader
-
+from ...utils import send_transaction
 
 
 class AvsRegistryWriter:

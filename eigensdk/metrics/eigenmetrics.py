@@ -1,10 +1,9 @@
-from prometheus_client import Counter, Gauge, make_asgi_app, start_http_server, REGISTRY
-from fastapi import FastAPI
 import logging
 import threading
 import time
-
 import uvicorn
+from fastapi import FastAPI
+from prometheus_client import Counter, Gauge, make_asgi_app, start_http_server, REGISTRY
 
 EIGEN_PROM_NAMESPACE = "eigen"
 

@@ -1,10 +1,10 @@
-import os
-import json
-import uuid
 import base64
 import binascii
-from ecdsa import SigningKey, SECP256k1
+import json
+import os
+import uuid
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from ecdsa import SigningKey, SECP256k1
 from eth_utils import to_checksum_address, keccak
 
 

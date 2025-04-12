@@ -1,10 +1,11 @@
-from typing import Tuple, Dict, Any
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
+import os
 from decimal import Decimal
-from web3 import Web3
 from eth_abi.codec import ABICodec
 from eth_typing import Address, ChecksumAddress
-import os
+from typing import Tuple, Dict, Any
+from web3 import Web3
+
+from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
 
 # Create an ABICodec instance at module level
 abi_codec = ABICodec(Web3().codec)
