@@ -10,10 +10,6 @@ anvil-reset: down
 basic-test:
 	docker compose run --no-deps test python3 -m pytest tests/public/test_imports.py tests//public/test_no_chain.py
 
-# Format code with black
-format:
-	docker compose run dev black .
-
 shell:
 	docker compose run test bash
 
@@ -34,14 +30,17 @@ get-addresses:
 
 # Update the .env file with contract addresses
 update-env:
-	docker compose run test python3 scripts/update_env.py
-
-# Simple setup for running tests without blockchain dependency
-simple-setup: build update-env basic-test 
+	docker compose run test scripts/update_env.py
 
 # Run tests against the running Anvil instance
 test: update-env
 	docker compose run --rm test python -m pytest tests/ -v
+
+# ********** dev targets **********
+
+# Format code with black
+format:
+	docker compose run dev black .
 
 mypy:
 	docker compose run dev mypy eigensdk
