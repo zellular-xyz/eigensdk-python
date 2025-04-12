@@ -1,16 +1,4 @@
 services:
-  app:
-    build: .
-    volumes:
-      - .:/app
-    environment:
-      - PYTHONPATH=/app
-      - ETH_HTTP_URL=http://anvil:8545
-    depends_on:
-      anvil:
-        condition: service_healthy
-    command: bash
-
   anvil:
     build: .
     ports:
@@ -29,3 +17,14 @@ services:
       interval: 2s
       timeout: 1s
       retries: 10
+  app:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - ETH_HTTP_URL=http://anvil:8545
+    depends_on:
+      anvil:
+        condition: service_healthy
+    command: bash
