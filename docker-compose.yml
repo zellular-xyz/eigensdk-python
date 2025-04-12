@@ -17,7 +17,16 @@ services:
       interval: 2s
       timeout: 1s
       retries: 10
-  app:
+  test:
+    build: .
+    environment:
+      - PYTHONPATH=/app
+      - ETH_HTTP_URL=http://anvil:8545
+    depends_on:
+      anvil:
+        condition: service_healthy
+    command: python -m pytest tests/ -v
+  dev:
     build: .
     volumes:
       - .:/app
@@ -28,3 +37,5 @@ services:
       anvil:
         condition: service_healthy
     command: bash
+    profiles:
+      - dev
