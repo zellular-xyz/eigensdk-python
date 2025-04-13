@@ -1,18 +1,16 @@
 import ecdsa
 import logging
-from eth_account import Account
-from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from typing import List, Optional, Tuple, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxReceipt
 
-from eigensdk.chainio.chainio_utils.utils import *
 from eigensdk.crypto.bls.attestation import *
 from ..elcontracts.reader import ELReader
-from ...utils import send_transaction
 
+
+from eigensdk.chainio.utils import *
 
 class AvsRegistryWriter:
     def __init__(
@@ -122,21 +120,21 @@ class AvsRegistryWriter:
             socket,
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def update_stakes_of_entire_operator_set_for_quorums(
-            self,
-            operators_per_quorum: List[List[str]],
-            quorum_numbers: List[int],
-            wait_for_receipt: bool,
-        ) -> Optional[Dict]:
-            return self.send(
-                self.registry_coordinator.functions.updateOperatorsForQuorum,
-                operators_per_quorum,
-                quorum_numbers,
-                wait_for_receipt=wait_for_receipt
-            )
+        self,
+        operators_per_quorum: List[List[str]],
+        quorum_numbers: List[int],
+        wait_for_receipt: bool,
+    ) -> Optional[Dict]:
+        return self.send(
+            self.registry_coordinator.functions.updateOperatorsForQuorum,
+            operators_per_quorum,
+            quorum_numbers,
+            wait_for_receipt=wait_for_receipt,
+        )
 
     def register_operator_with_churn(
         self,
@@ -231,7 +229,7 @@ class AvsRegistryWriter:
             operator_kick_params,
             churn_approver_signature_with_salt_and_expiry,
             operator_signature_with_salt_and_expiry,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def update_stakes_of_operator_subset_for_all_quorums(
@@ -240,7 +238,7 @@ class AvsRegistryWriter:
         return self.send(
             self.registry_coordinator.functions.updateOperators,
             operators,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def deregister_operator(
@@ -249,28 +247,27 @@ class AvsRegistryWriter:
         return self.send(
             self.registry_coordinator.functions.deregisterOperator0,
             quorum_numbers,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def update_socket(self, socket: str, wait_for_receipt: bool) -> Optional[Dict]:
         return self.send(
             self.registry_coordinator.functions.updateSocket,
             socket,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_rewards_initiator(
         self, rewards_initiator_addr: str, wait_for_receipt: bool
     ) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr, 
-            abi=self.service_manager_abi
+            address=self.service_manager_addr, abi=self.service_manager_abi
         )
-        
+
         return self.send(
             service_manager_contract.functions.setRewardsInitiator,
             rewards_initiator_addr,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_slashable_stake_lookahead(
@@ -280,7 +277,7 @@ class AvsRegistryWriter:
             self.stake_registry.functions.setSlashableStakeLookahead,
             quorum_number,
             look_ahead_period,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_minimum_stake_for_quorum(
@@ -290,7 +287,7 @@ class AvsRegistryWriter:
             self.stake_registry.functions.setMinimumStakeForQuorum,
             quorum_number,
             minimum_stake,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def create_total_delegated_stake_quorum(
@@ -305,7 +302,7 @@ class AvsRegistryWriter:
             operator_set_params,
             minimum_stake_required,
             strategy_params,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def create_slashable_stake_quorum(
@@ -323,7 +320,7 @@ class AvsRegistryWriter:
             minimum_stake_required,
             strategy_params,
             look_ahead_period,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def eject_operator(
@@ -333,7 +330,7 @@ class AvsRegistryWriter:
             self.registry_coordinator.functions.ejectOperator,
             operator_address,
             quorum_numbers,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_operator_set_params(
@@ -343,7 +340,7 @@ class AvsRegistryWriter:
             self.registry_coordinator.functions.setOperatorSetParams,
             quorum_number,
             operator_set_params,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_churn_approver(
@@ -352,14 +349,14 @@ class AvsRegistryWriter:
         return self.send(
             self.registry_coordinator.functions.setChurnApprover,
             churn_approver_address,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_ejector(self, ejector_address: str, wait_for_receipt: bool) -> Optional[Dict]:
         return self.send(
             self.registry_coordinator.functions.setEjector,
             ejector_address,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def modify_strategy_params(
@@ -374,7 +371,7 @@ class AvsRegistryWriter:
             quorum_number,
             strategy_indices,
             multipliers,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_account_identifier(
@@ -383,7 +380,7 @@ class AvsRegistryWriter:
         return self.send(
             self.registry_coordinator.functions.setAccountIdentifier,
             account_identifier_address,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def set_ejection_cooldown(
@@ -392,7 +389,7 @@ class AvsRegistryWriter:
         return self.send(
             self.registry_coordinator.functions.setEjectionCooldown,
             ejection_cooldown,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def add_strategies(
@@ -402,19 +399,18 @@ class AvsRegistryWriter:
             self.stake_registry.functions.addStrategies,
             quorum_number,
             strategy_params,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
-    
+
     def update_avs_metadata_uri(self, metadata_uri: str, wait_for_receipt: bool) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr,
-            abi=self.service_manager_abi
+            address=self.service_manager_addr, abi=self.service_manager_abi
         )
-        
+
         return self.send(
             service_manager_contract.functions.updateAVSMetadataURI,
             metadata_uri,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def remove_strategies(
@@ -424,7 +420,7 @@ class AvsRegistryWriter:
             self.stake_registry.functions.removeStrategies,
             quorum_number,
             indices_to_remove,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def create_avs_rewards_submission(
@@ -433,28 +429,26 @@ class AvsRegistryWriter:
         self.logger.info(
             "Creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission}
         )
-        
+
         service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr,
-            abi=self.service_manager_abi
+            address=self.service_manager_addr, abi=self.service_manager_abi
         )
-        
+
         return self.send(
             service_manager_contract.functions.createAVSRewardsSubmission,
             rewards_submission,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
     def create_operator_directed_avs_rewards_submission(
         self, operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
     ) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr,
-            abi=self.service_manager_abi
+            address=self.service_manager_addr, abi=self.service_manager_abi
         )
-        
+
         return self.send(
             service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission,
             operator_directed_rewards_submissions,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )

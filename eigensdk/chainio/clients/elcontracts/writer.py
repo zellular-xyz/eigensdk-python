@@ -1,10 +1,16 @@
 import logging
 from eth_typing import Address
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional, cast
 from web3 import Web3
 from web3.contract import Contract
 
-from eigensdk.chainio import chainio_utils as utils
+from eigensdk.chainio.utils import *
+
+from enum import IntEnum
+
+class RegistrationType(IntEnum):
+    NORMAL = 0
+    TRUSTED = 1
 
 
 class ELWriter:
@@ -58,155 +64,163 @@ class ELWriter:
         if strategy_manager is None:
             raise ValueError("StrategyManager contract not provided")
 
-
     def send(self, tx_func, *args, wait_for_receipt: bool = True):
         tx = tx_func(*args).build_transaction(self.tx_mgr.get_no_send_tx_opts())
         return self.tx_mgr.send(tx, wait_for_receipt)
-    
+
     def register_as_operator(self, operator, wait_for_receipt: bool):
         return self.send(
             self.delegation_manager.functions.registerAsOperator,
             Web3.to_checksum_address(operator.delegation_approver_address),
             operator.allocation_delay,
             operator.metadata_url,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-
-
-    
     def update_operator_details(self, operator, wait_for_receipt: bool):
         return self.send(
             self.delegation_manager.functions.modifyOperatorDetails,
             Web3.to_checksum_address(operator.address),
             Web3.to_checksum_address(operator.delegation_approver_address),
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def update_metadata_uri(self, operator_address: str, uri: str, wait_for_receipt: bool):
         return self.send(
             self.delegation_manager.functions.updateOperatorMetadataURI,
             Web3.to_checksum_address(operator_address),
             uri,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-
-    
     def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int, wait_for_receipt: bool):
-        _, token_contract, token_addr = self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
-        self.send(token_contract.functions.approve, self.strategy_manager.address, amount, wait_for_receipt=wait_for_receipt)
+        _, token_contract, token_addr = (
+            self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
+        )
+        self.send(
+            token_contract.functions.approve,
+            self.strategy_manager.address,
+            amount,
+            wait_for_receipt=wait_for_receipt,
+        )
         return self.send(
             self.strategy_manager.functions.depositIntoStrategy,
             Web3.to_checksum_address(strategy_addr),
             Web3.to_checksum_address(token_addr),
             amount,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-
-    
     def set_claimer_for(self, claimer: str, wait_for_receipt: bool):
         return self.send(
             self.rewards_coordinator.functions.setClaimerFor,
             Web3.to_checksum_address(claimer),
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def process_claim(self, claim: dict, recipient_address: str, wait_for_receipt: bool):
         return self.send(
             self.rewards_coordinator.functions.processClaim,
             claim,
             Web3.to_checksum_address(recipient_address),
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def set_operator_avs_split(self, operator: str, avs: str, split: int, wait_for_receipt: bool):
         return self.send(
             self.rewards_coordinator.functions.setOperatorAVSSplit,
             Web3.to_checksum_address(operator),
             Web3.to_checksum_address(avs),
             split,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def set_operator_pi_split(self, operator: str, split: int, wait_for_receipt: bool):
         return self.send(
             self.rewards_coordinator.functions.setOperatorPISplit,
             Web3.to_checksum_address(operator),
             split,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
-    def set_operator_set_split(self, operator: str, operator_set: dict, split: int, wait_for_receipt: bool):
+    def set_operator_set_split(
+        self, operator: str, operator_set: dict, split: int, wait_for_receipt: bool
+    ):
         return self.send(
             self.rewards_coordinator.functions.setOperatorSetSplit,
             Web3.to_checksum_address(operator),
             operator_set,
             split,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def process_claims(self, claims: list, recipient_address: str, wait_for_receipt: bool):
         return self.send(
             self.rewards_coordinator.functions.processClaims,
             claims,
             Web3.to_checksum_address(recipient_address),
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def modify_allocations(self, operator_address: str, allocations: list, wait_for_receipt: bool):
         return self.send(
             self.allocation_manager.functions.modifyAllocations,
             Web3.to_checksum_address(operator_address),
             allocations,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
-    def clear_deallocation_queue(self, operator_address: str, strategies: list, nums_to_clear: list, wait_for_receipt: bool):
+    def clear_deallocation_queue(
+        self, operator_address: str, strategies: list, nums_to_clear: list, wait_for_receipt: bool
+    ):
         return self.send(
             self.allocation_manager.functions.clearDeallocationQueue,
             Web3.to_checksum_address(operator_address),
             [Web3.to_checksum_address(s) for s in strategies],
             nums_to_clear,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def set_allocation_delay(self, operator_address: str, delay: int, wait_for_receipt: bool):
         return self.send(
             self.allocation_manager.functions.setAllocationDelay,
             Web3.to_checksum_address(operator_address),
             delay,
-            wait_for_receipt=wait_for_receipt
+            wait_for_receipt=wait_for_receipt,
         )
 
-    
     def deregister_from_operator_sets(self, operator: str, request: dict):
         return self.send(
             self.allocation_manager.functions.deregisterFromOperatorSets,
-            {"operator": Web3.to_checksum_address(operator), "avs": Web3.to_checksum_address(request["avs_address"]), "operatorSetIds": request["operator_set_ids"]},
-            wait_for_receipt=request["wait_for_receipt"]
+            {
+                "operator": Web3.to_checksum_address(operator),
+                "avs": Web3.to_checksum_address(request["avs_address"]),
+                "operatorSetIds": request["operator_set_ids"],
+            },
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict):
         return self.send(
             self.allocation_manager.functions.registerForOperatorSets,
             Web3.to_checksum_address(request["operator_address"]),
-            {"avs": Web3.to_checksum_address(request["avs_address"]), "operatorSetIds": request["operator_set_ids"], "data": utils.abi_encode_registration_params("RegistrationTypeNormal", request["socket"], utils.get_pubkey_registration_params(self.eth_client, Web3.to_checksum_address(registry_coordinator_addr), Web3.to_checksum_address(request["operator_address"]), request["bls_key_pair"]))},
-            wait_for_receipt=request["wait_for_receipt"]
+            {
+                "avs": Web3.to_checksum_address(request["avs_address"]),
+                "operatorSetIds": request["operator_set_ids"],
+                "data": abi_encode_registration_params(
+                    RegistrationType.NORMAL,  # ✅ FIXED
+                    request["socket"],
+                    get_pubkey_registration_params(
+                        self.eth_client,
+                        cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
+                        cast(Address, Web3.to_checksum_address(request["operator_address"])),
+                        request["bls_key_pair"],
+                    )
+                ),
+            },
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def remove_permission(self, request: dict):
         return self.send(
             self.permission_controller.functions.removeAppointee,
@@ -214,10 +228,9 @@ class ELWriter:
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def new_remove_permission_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.removeAppointee,
@@ -225,10 +238,9 @@ class ELWriter:
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    
     def new_set_permission_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.setAppointee,
@@ -236,10 +248,9 @@ class ELWriter:
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    
     def set_permission(self, request: dict):
         return self.send(
             self.permission_controller.functions.setAppointee,
@@ -247,75 +258,67 @@ class ELWriter:
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def new_accept_admin_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.acceptAdmin,
             Web3.to_checksum_address(request["account_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    
     def accept_admin(self, request: dict):
         return self.send(
             self.permission_controller.functions.acceptAdmin,
             Web3.to_checksum_address(request["account_address"]),
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def add_pending_admin(self, request: dict):
         return self.send(
             self.permission_controller.functions.addPendingAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def new_remove_admin_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.removeAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    
     def remove_admin(self, request: dict):
         return self.send(
             self.permission_controller.functions.removeAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def new_remove_pending_admin_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.removePendingAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    
     def remove_pending_admin(self, request: dict):
         return self.send(
             self.permission_controller.functions.removePendingAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"]
+            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    
     def new_add_pending_admin_tx(self, tx_opts, request: dict):
         return self.send(
             self.permission_controller.functions.addPendingAdmin,
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True)
+            wait_for_receipt=request.get("wait_for_receipt", True),
         )

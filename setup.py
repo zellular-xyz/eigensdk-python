@@ -14,11 +14,11 @@ setup(
         "pytest",
         "pytest-mock",
         "ecdsa",
-        "prometheus_client"
+        # "prometheus_client",
+        # "types-ecdsa",
     ],
     entry_points={
-        "console_scripts": [
-        ],
+        "console_scripts": [],
     },
     author="Abram Symons",
     author_email="abramsymons@gmail.com",

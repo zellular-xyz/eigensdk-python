@@ -642,11 +642,6 @@ class TestAvsRegistryReader:
         # Verify result
         assert result == expected_length
 
-    
-    
-
-    
-
     def test_strategy_params_by_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
         quorum_number = 2
@@ -735,8 +730,6 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    
-
     def test_get_stake_history_no_stake_registry(self, avs_registry_reader):
         # Mock data
         operator_id = 42
@@ -753,12 +746,6 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    
-
-    
-
-   
-
     def test_get_latest_stake_update_no_stake_registry(self, avs_registry_reader):
         # Mock data
         operator_id = 42
@@ -774,10 +761,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
-
-    
 
     def test_get_stake_update_at_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
@@ -1213,9 +1196,6 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    
-    
-
     def test_get_total_stake_update_at_index_no_stake_registry(self, avs_registry_reader):
         # Mock data
         quorum_number = 2
@@ -1370,9 +1350,6 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    
-
-    
     def test_get_total_stake_indices_at_block_number_no_stake_registry(self, avs_registry_reader):
         # Mock data
         quorum_numbers = [0, 1]
@@ -1953,9 +1930,6 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    
-    
-
     def test_get_operator_id_no_registry_coordinator(self, avs_registry_reader):
         # Mock data
         operator_address = "0xabc123def456"
@@ -1971,7 +1945,6 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    
     def test_get_operator_from_id_success(self, avs_registry_reader):
         # Mock data
         operator_id = 123456  # Example operator ID
@@ -2036,8 +2009,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_get_operator_from_id_zero(self, avs_registry_reader):
         # Test with operator_id = 0 (edge case)
@@ -2260,8 +2231,6 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    
-
     def test_is_operator_set_quorum_success_true(self, avs_registry_reader):
         # Mock data for a quorum that is an operator set quorum
         quorum_number = 3
@@ -2324,8 +2293,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_is_operator_set_quorum_edge_case_zero(self, avs_registry_reader):
         # Testing with quorum_number = 0 (edge case)
@@ -2423,8 +2390,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_get_operator_id_from_operator_address_zero_address(self, avs_registry_reader):
         # Testing with zero address (edge case)
@@ -2525,8 +2490,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_get_operator_address_from_operator_id_empty_pubkey_hash(self, avs_registry_reader):
         # Testing with empty pubkey hash (edge case)
@@ -2645,8 +2608,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_get_pubkey_from_operator_address_zero_address(self, avs_registry_reader, mocker):
         # Testing with zero address (edge case)
@@ -2785,8 +2746,6 @@ class TestAvsRegistryReader:
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
 
-    
-
     def test_get_current_apk_success(self, avs_registry_reader, mocker):
         # Mock data
         quorum_number = 3
@@ -2871,8 +2830,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
-    
 
     def test_get_current_apk_zero_coordinates(self, avs_registry_reader, mocker):
         # Testing with zero coordinates (edge case)

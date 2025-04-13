@@ -1227,10 +1227,7 @@ def test_new_accept_admin_tx(
 
     # Use a checksummed address
     account_address = Web3.to_checksum_address("0x1234567890abcdef1234567890abcdef12345678")
-    request_data = {
-        "account_address": account_address,
-        "wait_for_receipt": True
-    }
+    request_data = {"account_address": account_address, "wait_for_receipt": True}
 
     tx_opts = {"gas": 21000, "gasPrice": 1000000000}
 
@@ -1261,7 +1258,7 @@ def test_new_accept_admin_tx(
             mock_el_writer.send.assert_called_once_with(
                 mock_el_writer.permission_controller.functions.acceptAdmin,
                 account_address,
-                wait_for_receipt=True
+                wait_for_receipt=True,
             )
         elif test_scenario == "build_tx_fail":
             assert mock_el_writer.send.call_count == 0
@@ -1315,7 +1312,7 @@ def test_accept_admin(
             mock_el_writer.send.assert_called_once_with(
                 mock_el_writer.permission_controller.functions.acceptAdmin,
                 Web3.to_checksum_address(request_data["account_address"]),
-                wait_for_receipt=request_data["wait_for_receipt"]
+                wait_for_receipt=request_data["wait_for_receipt"],
             )
             assert receipt is not None
             assert receipt.transactionHash.hex() == "0xabc123"
@@ -1376,7 +1373,7 @@ def test_add_pending_admin(
                 mock_el_writer.permission_controller.functions.addPendingAdmin,
                 Web3.to_checksum_address(request_data["account_address"]),
                 Web3.to_checksum_address(request_data["admin_address"]),
-                wait_for_receipt=request_data["wait_for_receipt"]
+                wait_for_receipt=request_data["wait_for_receipt"],
             )
             assert receipt is not None
             assert receipt.transactionHash.hex() == "0xabc123"
@@ -1438,7 +1435,7 @@ def test_remove_admin(
                 mock_el_writer.permission_controller.functions.removeAdmin,
                 Web3.to_checksum_address(request_data["account_address"]),
                 Web3.to_checksum_address(request_data["admin_address"]),
-                wait_for_receipt=request_data["wait_for_receipt"]
+                wait_for_receipt=request_data["wait_for_receipt"],
             )
             assert receipt is not None
             assert receipt.transactionHash.hex() == "0xabc123"
@@ -1500,7 +1497,7 @@ def test_remove_pending_admin(
                 mock_el_writer.permission_controller.functions.removePendingAdmin,
                 Web3.to_checksum_address(request_data["account_address"]),
                 Web3.to_checksum_address(request_data["admin_address"]),
-                wait_for_receipt=request_data["wait_for_receipt"]
+                wait_for_receipt=request_data["wait_for_receipt"],
             )
             assert receipt is not None
             assert receipt.transactionHash.hex() == "0xabc123"
@@ -1508,4 +1505,3 @@ def test_remove_pending_admin(
             assert receipt[0] is None
             assert isinstance(receipt[1], Exception)
             assert expected_message in str(receipt[1])
-

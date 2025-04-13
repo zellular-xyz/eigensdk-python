@@ -138,8 +138,10 @@ class TestAvsRegistryWriter:
 
             # Verify transaction was built correctly
             avs_registry_writer.registry_coordinator.functions.registerOperator.assert_called_once()
-            call_args = avs_registry_writer.registry_coordinator.functions.registerOperator.call_args[0]
-            
+            call_args = (
+                avs_registry_writer.registry_coordinator.functions.registerOperator.call_args[0]
+            )
+
             # Verify the arguments
             assert call_args[0] == {"from": "0x1234"}  # tx_opts
             assert call_args[1] == quorum_numbers
@@ -165,11 +167,15 @@ class TestAvsRegistryWriter:
         mock_operator_private_key.to_string.return_value = b"mock_private_key_bytes"
 
         mock_churn_approval_private_key = Mock(spec=ecdsa.SigningKey)
-        mock_churn_approval_private_key.to_string.return_value = b"mock_churn_approval_private_key_bytes"
+        mock_churn_approval_private_key.to_string.return_value = (
+            b"mock_churn_approval_private_key_bytes"
+        )
 
         # Setup mock BLS key pair
         mock_g1_pubkey = Mock()
-        mock_g1_pubkey.get_operator_id = Mock(return_value="0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef")
+        mock_g1_pubkey.get_operator_id = Mock(
+            return_value="0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        )
 
         mock_bls_key_pair = Mock()
         mock_signature = Mock()
@@ -189,11 +195,17 @@ class TestAvsRegistryWriter:
         operators_to_kick = ["0xOperatorToKick1", "0xOperatorToKick2"]
 
         # Setup registry coordinator mock returns
-        avs_registry_writer.registry_coordinator.functions.pubkeyRegistrationMessageHash.return_value.call.return_value = "hashed_msg"
-        avs_registry_writer.registry_coordinator.functions.calculateOperatorChurnApprovalDigestHash.return_value.call.return_value = b"churn_msg_to_sign"
+        avs_registry_writer.registry_coordinator.functions.pubkeyRegistrationMessageHash.return_value.call.return_value = (
+            "hashed_msg"
+        )
+        avs_registry_writer.registry_coordinator.functions.calculateOperatorChurnApprovalDigestHash.return_value.call.return_value = (
+            b"churn_msg_to_sign"
+        )
 
         # Setup el_reader mock returns
-        avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.return_value = b"msg_to_sign"
+        avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.return_value = (
+            b"msg_to_sign"
+        )
 
         # Setup mock signatures
         mock_operator_signature = Mock()
@@ -209,7 +221,9 @@ class TestAvsRegistryWriter:
 
         # Setup transaction mocks
         mock_tx = {"gas": 1000000}
-        avs_registry_writer.registry_coordinator.functions.registerOperatorWithChurn.return_value.build_transaction.return_value = mock_tx
+        avs_registry_writer.registry_coordinator.functions.registerOperatorWithChurn.return_value.build_transaction.return_value = (
+            mock_tx
+        )
 
         # Mock os.urandom
         with patch("os.urandom", side_effect=[b"mock_salt" * 2, b"mock_churn_salt" * 2]):
@@ -260,7 +274,9 @@ class TestAvsRegistryWriter:
 
             # Verify transaction was built correctly
             avs_registry_writer.registry_coordinator.functions.registerOperatorWithChurn.assert_called_once()
-            call_args = avs_registry_writer.registry_coordinator.functions.registerOperatorWithChurn.call_args[0]
+            call_args = avs_registry_writer.registry_coordinator.functions.registerOperatorWithChurn.call_args[
+                0
+            ]
 
             assert call_args[0] == {"from": "0x1234"}
             assert call_args[1] == quorum_numbers
@@ -272,8 +288,6 @@ class TestAvsRegistryWriter:
 
             # Verify transaction was sent
             avs_registry_writer.tx_mgr.send.assert_called_once_with(mock_tx, True)
-
-    
 
     def test_update_stakes_of_operator_subset_for_all_quorums(self, avs_registry_writer):
         # Setup test data
@@ -300,8 +314,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was sent
         avs_registry_writer.tx_mgr.send.assert_called_once_with(mock_tx, True)
-
-    
 
     def test_update_socket(self, avs_registry_writer):
         # Setup test data
@@ -534,7 +546,6 @@ class TestAvsRegistryWriter:
         log_call = avs_registry_writer.logger.info.call_args_list[0]
         assert "Creating slashable stake quorum" in log_call[0][0]
 
-    
     def test_set_operator_set_params(self, avs_registry_writer):
         # Setup test data
         quorum_number = 2
@@ -731,7 +742,9 @@ class TestAvsRegistryWriter:
 
         # Setup transaction mocks
         mock_tx = {"gas": 1000000}
-        avs_registry_writer.stake_registry.functions.addStrategies.return_value.build_transaction.return_value = mock_tx
+        avs_registry_writer.stake_registry.functions.addStrategies.return_value.build_transaction.return_value = (
+            mock_tx
+        )
 
         # Call the function
         result = avs_registry_writer.add_strategies(

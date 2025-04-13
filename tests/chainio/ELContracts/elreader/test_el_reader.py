@@ -153,8 +153,8 @@ def operator_address():
 def operator_set():
     """Fixture that returns a valid operator_set dictionary."""
     return {
-        "Id": 1,  
-        "Avs": bytes.fromhex("2222222222222222222222222222222222222222"),  
+        "Id": 1,
+        "Avs": bytes.fromhex("2222222222222222222222222222222222222222"),
     }
 
 
@@ -162,9 +162,9 @@ def test_is_operator_registered_with_operator_set_success(mocker, operator_addre
     # Create a test operator_set with Avs field as bytes
     operator_set = {
         "Id": 1,
-        "Avs": bytes.fromhex("2222222222222222222222222222222222222222")  # Bytes, not string
+        "Avs": bytes.fromhex("2222222222222222222222222222222222222222"),  # Bytes, not string
     }
-    
+
     # Mock registered sets data
     mock_registered_sets = [
         (1, bytes.fromhex("2222222222222222222222222222222222222222")),  # Matching set
@@ -603,19 +603,16 @@ def claim():
     return {
         "rootIndex": 0,
         "earnerIndex": 0,
-        "earnerTreeProof": b'',
+        "earnerTreeProof": b"",
         "earnerLeaf": {
             "earner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-            "earnerTokenRoot": b'\x00' * 32
+            "earnerTokenRoot": b"\x00" * 32,
         },
         "tokenIndices": [0],
-        "tokenTreeProofs": [b''],
+        "tokenTreeProofs": [b""],
         "tokenLeaves": [
-            {
-                "token": "0x0000000000000000000000000000000000000000",
-                "cumulativeEarnings": 0
-            }
-        ]
+            {"token": "0x0000000000000000000000000000000000000000", "cumulativeEarnings": 0}
+        ],
     }
 
 
@@ -623,16 +620,12 @@ def test_check_claim(mocker, claim):
     # Mock the contract call to avoid actual blockchain interaction that might fail
     mock_func = mocker.MagicMock(return_value=mocker.MagicMock())
     mock_func.return_value.call.return_value = False
-    
-    mocker.patch.object(
-        el_reader.reward_coordinator.functions,
-        'checkClaim',
-        mock_func
-    )
-    
+
+    mocker.patch.object(el_reader.reward_coordinator.functions, "checkClaim", mock_func)
+
     result = el_reader.check_claim(claim)
     assert result is False
-    
+
     # Verify the contract was called
     mock_func.assert_called_once()
 
@@ -905,18 +898,15 @@ def operator_address():
 
 def test_get_num_operator_sets_for_operator(operator_address):
     result = el_reader.get_num_operator_sets_for_operator(operator_address)
-    
+
     # If the result is a list, use its length as the count
     if isinstance(result, list):
         result_int = len(result)
     else:
         # Otherwise try to convert to int if it's not already an int
         result_int = int(result) if not isinstance(result, int) else result
-    
+
     assert result_int >= 0
-
-
-
 
 
 @pytest.fixture
@@ -1070,100 +1060,99 @@ def test_get_genesis_rewards_timestamp(mocker):
 def operator_sets():
     """Fixture that returns a list of operator_sets with proper structure."""
     return [
-        {
-            "Id": 1,
-            "Avs": bytes.fromhex("2222222222222222222222222222222222222222")
-        },
-        {
-            "Id": 2,
-            "Avs": bytes.fromhex("3333333333333333333333333333333333333333")
-        }
+        {"Id": 1, "Avs": bytes.fromhex("2222222222222222222222222222222222222222")},
+        {"Id": 2, "Avs": bytes.fromhex("3333333333333333333333333333333333333333")},
     ]
+
 
 @pytest.fixture
 def future_block():
     """Fixture for a future block number."""
     return 12345
 
+
 def test_get_slashable_shares_for_operator_sets_before(mocker, operator_sets, future_block):
     """Test get_slashable_shares_for_operator_sets_before method with mocks."""
-    
+
     # Mock the operators and strategies returned for each set
     operators_set1 = [bytes.fromhex("4444444444444444444444444444444444444444")]
     operators_set2 = [bytes.fromhex("5555555555555555555555555555555555555555")]
-    
+
     strategies_set1 = [bytes.fromhex("6666666666666666666666666666666666666666")]
     strategies_set2 = [bytes.fromhex("7777777777777777777777777777777777777777")]
-    
+
     # Mock slashable stakes results
     stakes_set1 = [1000000000000000000]  # 1 ETH in wei
     stakes_set2 = [2000000000000000000]  # 2 ETH in wei
-    
+
     # Let's use simpler, direct mocks that replace the entire function call chains
-    mocker.patch('eigensdk.chainio.clients.elcontracts.reader.ELReader.get_operators_for_operator_set',
-                side_effect=[operators_set1, operators_set2])
-    
-    mocker.patch('eigensdk.chainio.clients.elcontracts.reader.ELReader.get_strategies_for_operator_set',
-                side_effect=[strategies_set1, strategies_set2])
-    
+    mocker.patch(
+        "eigensdk.chainio.clients.elcontracts.reader.ELReader.get_operators_for_operator_set",
+        side_effect=[operators_set1, operators_set2],
+    )
+
+    mocker.patch(
+        "eigensdk.chainio.clients.elcontracts.reader.ELReader.get_strategies_for_operator_set",
+        side_effect=[strategies_set1, strategies_set2],
+    )
+
     # Create a mock for the contract call
     mock_min_slashable = mocker.MagicMock()
     mock_min_slashable.call.side_effect = [stakes_set1, stakes_set2]
     mock_get_min_slashable = mocker.MagicMock(return_value=mock_min_slashable)
-    
+
     # Replace the allocation_manager entirely
     mock_allocation_manager = mocker.MagicMock()
     mock_allocation_manager.functions.getMinimumSlashableStake = mock_get_min_slashable
-    
+
     # Patch the allocation_manager
-    mocker.patch.object(el_reader, 'allocation_manager', mock_allocation_manager)
-    
+    mocker.patch.object(el_reader, "allocation_manager", mock_allocation_manager)
+
     # Call the function
     result = el_reader.get_slashable_shares_for_operator_sets_before(operator_sets, future_block)
-    
+
     # Verify results
     assert len(result) == 2
-    
+
     # Check that the result structure is correct
     assert result[0]["OperatorSet"] == operator_sets[0]
     assert result[0]["Operators"] == operators_set1
     assert result[0]["Strategies"] == strategies_set1
     assert result[0]["SlashableStakes"] == stakes_set1
-    
-    assert result[1]["OperatorSet"] == operator_sets[1] 
+
+    assert result[1]["OperatorSet"] == operator_sets[1]
     assert result[1]["Operators"] == operators_set2
     assert result[1]["Strategies"] == strategies_set2
     assert result[1]["SlashableStakes"] == stakes_set2
-    
+
     # Verify the minimum stake function was called twice
     assert mock_get_min_slashable.call_count == 2
-    
+
     # Verify the call method was called twice
     assert mock_min_slashable.call.call_count == 2
 
+
 def test_get_slashable_shares_for_operator_sets(mocker, operator_sets):
     """Test get_slashable_shares_for_operator_sets which calls the _before method."""
-    
+
     # Mock the block number
     current_block = 1000
     mock_eth_client = mocker.MagicMock()
     mock_eth_client.eth.block_number = current_block
     mocker.patch.object(el_reader, "eth_client", mock_eth_client)
-    
+
     # Mock the _before method that will be called
     mock_result = [{"some": "data"}]
     mock_before_method = mocker.MagicMock(return_value=mock_result)
     mocker.patch.object(
-        el_reader, 
-        "get_slashable_shares_for_operator_sets_before", 
-        mock_before_method
+        el_reader, "get_slashable_shares_for_operator_sets_before", mock_before_method
     )
-    
+
     # Call the function
     result = el_reader.get_slashable_shares_for_operator_sets(operator_sets)
-    
+
     # Verify results
     assert result == mock_result
-    
+
     # Verify the _before method was called with the current block
     mock_before_method.assert_called_once_with(operator_sets, current_block)
