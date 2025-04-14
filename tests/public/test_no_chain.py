@@ -1,6 +1,3 @@
-import os
-import pytest
-
 from eigensdk.chainio.clients.builder import BuildAllConfig
 from eigensdk.chainio.txmgr import txmanager
 from eigensdk.contracts import ABIs

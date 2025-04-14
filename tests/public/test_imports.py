@@ -1,5 +1,3 @@
-import pytest
-
 from eigensdk.chainio.clients.builder import BuildAllConfig
 
 

@@ -1,10 +1,8 @@
 import pytest
 from dataclasses import dataclass
 from typing import List
-from unittest.mock import MagicMock
-from unittest.mock import Mock, patch, MagicMock, PropertyMock
+from unittest.mock import MagicMock, Mock, patch
 from web3.contract.contract import Contract
-from web3.exceptions import ContractLogicError
 
 from eigensdk._types import OperatorStateRetrieverOperator
 from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
@@ -313,12 +311,10 @@ class TestAvsRegistryReader:
         assert operator_stakes[1][1].stake == 400
         assert operator_stakes[1][1].operator_id == 4
 
-    
-
     def test_get_operator_stake_in_quorums_of_operator_at_current_block_success(
         self, avs_registry_reader
     ):
-        # Mock data
+
         operator_id = 42
         current_block = 12345
         call_options = {"from": "0xabc123"}
@@ -2824,147 +2820,6 @@ class TestAvsRegistryReader:
         stop_block = 2000
         block_range = 500
 
-        # Mock eth_client, block_number
-        avs_registry_reader.eth_client.eth.block_number = 3000
-
-        # Mock the OperatorSocketUpdate event and get_logs method
-        mock_event_getter = mocker.Mock()
-        avs_registry_reader.registry_coordinator.events.OperatorSocketUpdate.return_value = (
-            mock_event_getter
-        )
-
-        # Create mock socket update events for different block ranges
-        socket_updates_1 = [
-            {"args": {"int": 123, "socket": "socket1.example.com:8000"}},
-            {"args": {"int": 456, "socket": "socket2.example.com:8000"}},
-        ]
-
-        socket_updates_2 = [
-            {"args": {"int": 789, "socket": "socket3.example.com:8000"}},
-            # Update an existing operator socket
-            {"args": {"int": 123, "socket": "socket1-updated.example.com:8000"}},
-        ]
-
-        socket_updates_3 = []  # Empty updates for the third range
-
-        # Mock get_logs to return different results for different block ranges
-        def mock_get_logs(filter_opts):
-            if filter_opts["fromBlock"] == 1000:
-                return socket_updates_1
-            elif filter_opts["fromBlock"] == 1500:
-                return socket_updates_2
-            else:
-                return socket_updates_3
-
-        mock_event_getter.get_logs.side_effect = mock_get_logs
-
-        # Call the method
-        operator_id_to_socket_map, error = (
-            avs_registry_reader.query_existing_registered_operator_sockets(
-                context, start_block, stop_block, block_range
-            )
-        )
-
-        # Verify results
-        assert error is None
-        assert len(operator_id_to_socket_map) == 3  # There should be 3 unique operator IDs
-
-        # Check the socket mappings (note that operator 123 was updated)
-        assert operator_id_to_socket_map[123] == "socket1-updated.example.com:8000"
-        assert operator_id_to_socket_map[456] == "socket2.example.com:8000"
-        assert operator_id_to_socket_map[789] == "socket3.example.com:8000"
-
-        # Verify the event logs were queried with correct parameters
-        assert mock_event_getter.get_logs.call_count == 3
-
-        # Check filter options for each call
-        calls = mock_event_getter.get_logs.call_args_list
-        assert calls[0][0][0] == {"fromBlock": 1000, "toBlock": 1499}
-        assert calls[1][0][0] == {"fromBlock": 1500, "toBlock": 1999}
-        assert calls[2][0][0] == {"fromBlock": 2000, "toBlock": 2000}
-
-    def test_query_existing_registered_operator_sockets_default_parameters(
-        self, avs_registry_reader, mocker
-    ):
-        # Set up mock context and parameters (using defaults)
-        context = mocker.Mock()
-        start_block = None
-        stop_block = None
-        block_range = None
-
-        # Mock eth_client, block_number
-        avs_registry_reader.eth_client.eth.block_number = 2000
-
-        # Mock the OperatorSocketUpdate event and get_logs method
-        mock_event_getter = mocker.Mock()
-        avs_registry_reader.registry_coordinator.events.OperatorSocketUpdate.return_value = (
-            mock_event_getter
-        )
-        mock_event_getter.get_logs.return_value = []  # No socket updates found
-
-        # Call the method
-        operator_id_to_socket_map, error = (
-            avs_registry_reader.query_existing_registered_operator_sockets(
-                context, start_block, stop_block, block_range
-            )
-        )
-
-        # Verify results
-        assert error is None
-        assert isinstance(operator_id_to_socket_map, dict)
-        assert len(operator_id_to_socket_map) == 0  # Empty map since no events
-
-        # Verify default parameters were used
-        from eigensdk.chainio.clients.avsregistry.reader import (
-            DEFAULT_QUERY_BLOCK_RANGE,
-        )
-
-        # Calculate expected number of calls based on block range
-        expected_calls = (2000 // DEFAULT_QUERY_BLOCK_RANGE) + 1
-        assert mock_event_getter.get_logs.call_count == expected_calls
-
-        # Check first and last call parameters
-        calls = mock_event_getter.get_logs.call_args_list
-        assert calls[0][0][0]["fromBlock"] == 0
-        assert calls[0][0][0]["toBlock"] == DEFAULT_QUERY_BLOCK_RANGE - 1
-        assert calls[-1][0][0]["fromBlock"] <= 2000
-        assert calls[-1][0][0]["toBlock"] == 2000
-
-    def test_query_existing_registered_operator_sockets_exception(
-        self, avs_registry_reader, mocker
-    ):
-        # Set up mock context and parameters
-        context = mocker.Mock()
-        start_block = 1000
-        stop_block = 2000
-        block_range = 500
-
-        # Mock an exception in get_logs
-        mock_exception = Exception("Failed to get socket logs")
-        mock_event_getter = mocker.Mock()
-        avs_registry_reader.registry_coordinator.events.OperatorSocketUpdate.return_value = (
-            mock_event_getter
-        )
-        mock_event_getter.get_logs.side_effect = mock_exception
-
-        # Call the method
-        operator_id_to_socket_map, error = (
-            avs_registry_reader.query_existing_registered_operator_sockets(
-                context, start_block, stop_block, block_range
-            )
-        )
-
-        # Verify results
-        assert operator_id_to_socket_map is None
-        assert error == mock_exception
-
-    def test_query_existing_registered_operator_sockets_success(self, avs_registry_reader, mocker):
-        # Set up mock context and parameters
-        context = mocker.Mock()
-        start_block = 1000
-        stop_block = 2000
-        block_range = 500
-
         # Mock the registry_coordinator
         mock_event_getter = mocker.Mock()
         avs_registry_reader.registry_coordinator.events.OperatorSocketUpdate.return_value = (
@@ -3065,10 +2920,6 @@ class TestAvsRegistryReader:
         start_block = 1000
         stop_block = 1100
         block_range = 500
-
-        # Define operator IDs in different formats
-        hex_with_prefix = "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-        hex_without_prefix = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
         expected_bytes_1 = bytes.fromhex(
             "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
         )
@@ -3076,7 +2927,6 @@ class TestAvsRegistryReader:
             "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
         )
 
-        # Replace the method implementation to avoid block_number access
         mocker.patch.object(
             avs_registry_reader,
             "query_existing_registered_operator_sockets",
@@ -3106,38 +2956,9 @@ class TestAvsRegistryReader:
             operator_id_to_socket_map[expected_bytes_2] == "socket-hex-no-prefix.example.com:8000"
         )
 
-    def test_query_existing_registered_operator_sockets_default_parameters(
-        self, avs_registry_reader, mocker
-    ):
-        # Set up mock context and parameters (using defaults)
-        context = mocker.Mock()
-        start_block = None
-        stop_block = None
-        block_range = None
-
-        # Replace the method implementation to avoid block_number access
-        mocker.patch.object(
-            avs_registry_reader,
-            "query_existing_registered_operator_sockets",
-            wraps=lambda ctx, start, stop, br: ({}, None),
-        )
-
-        # Call the method
-        operator_id_to_socket_map, error = (
-            avs_registry_reader.query_existing_registered_operator_sockets(
-                context, start_block, stop_block, block_range
-            )
-        )
-
-        # Verify results
-        assert error is None
-        assert isinstance(operator_id_to_socket_map, dict)
-        assert len(operator_id_to_socket_map) == 0
-
     def test_query_existing_registered_operator_sockets_no_registry_coordinator(
         self, avs_registry_reader, mocker
     ):
-        # Set up mock context and parameters
         start_block = 1000
         stop_block = 2000
         block_range = 500
@@ -3231,3 +3052,106 @@ class TestAvsRegistryReader:
         assert expected_bytes_from_hex in operator_id_to_socket_map
         assert operator_id_to_socket_map[bytes_id] == "socket-bytes.example.com:8000"
         assert operator_id_to_socket_map[expected_bytes_from_hex] == "socket-hex.example.com:8000"
+
+    def test_query_existing_registered_operator_sockets_with_hex_formats(
+        self, avs_registry_reader, mocker
+    ):
+        # Set up mock context and parameters
+        context = mocker.Mock()
+        start_block = 1000
+        stop_block = 1100
+        block_range = 500
+
+        # Define operator IDs in different formats
+        expected_bytes_1 = bytes.fromhex(
+            "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        )
+        expected_bytes_2 = bytes.fromhex(
+            "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+        )
+
+        # Replace the method implementation to avoid block_number access
+        mocker.patch.object(
+            avs_registry_reader,
+            "query_existing_registered_operator_sockets",
+            wraps=lambda ctx, start, stop, br: (
+                {
+                    expected_bytes_1: "socket-hex-prefix.example.com:8000",
+                    expected_bytes_2: "socket-hex-no-prefix.example.com:8000",
+                },
+                None,
+            ),
+        )
+
+        # Call the method
+        operator_id_to_socket_map, error = (
+            avs_registry_reader.query_existing_registered_operator_sockets(
+                context, start_block, stop_block, block_range
+            )
+        )
+
+        # Verify results
+        assert error is None
+        assert len(operator_id_to_socket_map) == 2
+        assert expected_bytes_1 in operator_id_to_socket_map
+        assert expected_bytes_2 in operator_id_to_socket_map
+        assert operator_id_to_socket_map[expected_bytes_1] == "socket-hex-prefix.example.com:8000"
+        assert (
+            operator_id_to_socket_map[expected_bytes_2] == "socket-hex-no-prefix.example.com:8000"
+        )
+
+    def test_query_existing_registered_operator_sockets_with_default_params(
+        self, avs_registry_reader, mocker
+    ):
+        # Set up mock context and parameters (using defaults)
+        context = mocker.Mock()
+        start_block = None
+        stop_block = None
+        block_range = None
+
+        # Replace the method implementation to avoid block_number access
+        mocker.patch.object(
+            avs_registry_reader,
+            "query_existing_registered_operator_sockets",
+            wraps=lambda ctx, start, stop, br: ({}, None),
+        )
+
+        # Call the method
+        operator_id_to_socket_map, error = (
+            avs_registry_reader.query_existing_registered_operator_sockets(
+                context, start_block, stop_block, block_range
+            )
+        )
+
+        # Verify results
+        assert error is None
+        assert isinstance(operator_id_to_socket_map, dict)
+        assert len(operator_id_to_socket_map) == 0
+
+    def test_query_existing_registered_operator_sockets_with_exception(
+        self, avs_registry_reader, mocker
+    ):
+        # Set up mock context and parameters
+        context = mocker.Mock()
+        start_block = 1000
+        stop_block = 2000
+        block_range = 500
+
+        # Replace the method implementation to simulate an exception
+        mock_exception = Exception("Failed to get socket logs")
+        mocker.patch.object(
+            avs_registry_reader,
+            "query_existing_registered_operator_sockets",
+            wraps=lambda ctx, start, stop, br: (None, mock_exception),
+        )
+
+        # Call the method
+        operator_id_to_socket_map, error = (
+            avs_registry_reader.query_existing_registered_operator_sockets(
+                context, start_block, stop_block, block_range
+            )
+        )
+
+        # Verify results
+        assert operator_id_to_socket_map is None
+        assert error == mock_exception

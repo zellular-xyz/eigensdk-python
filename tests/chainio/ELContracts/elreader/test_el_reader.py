@@ -1,21 +1,5 @@
 import pytest
-from eth_typing import Address as EthAddress
-from unittest.mock import MagicMock
-from web3 import Web3
-
-from tests.builder import *
-
-
-# Consolidated fixtures
-@pytest.fixture
-def operator_address():
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
-def strategy_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
+from tests.builder import el_reader
 
 
 def test_get_allocatable_magnitude(operator_address, strategy_address):
@@ -66,15 +50,6 @@ def test_get_allocation_info(allocation_operator_address, allocation_strategy_ad
 def operator_shares_operator_address():
     # Convert hex string to bytes, removing '0x' prefix
     return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
-def operator_shares_strategy_addresses():
-    return [
-        # Convert each hex string to bytes, removing '0x' prefix
-        bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef"),
-        bytes.fromhex("11223344556677889900aabbccddeeff11223344"),
-    ]
 
 
 def test_get_operator_shares(operator_shares_operator_address, operator_shares_strategy_addresses):
@@ -130,11 +105,6 @@ def avs_address():
     return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
 
 
-@pytest.fixture
-def operator_address():
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
 def test_calculate_operator_avs_registration_digestHash(
     operator_address, avs_address, salt, expiry
 ):
@@ -142,20 +112,6 @@ def test_calculate_operator_avs_registration_digestHash(
         operator_address, avs_address, salt, expiry
     )
     assert isinstance(result, bytes)
-
-
-@pytest.fixture
-def operator_address():
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
-def operator_set():
-    """Fixture that returns a valid operator_set dictionary."""
-    return {
-        "Id": 1,
-        "Avs": bytes.fromhex("2222222222222222222222222222222222222222"),
-    }
 
 
 def test_is_operator_registered_with_operator_set_success(mocker, operator_address):
@@ -200,16 +156,7 @@ def test_is_operator_registered_with_operator_set_success(mocker, operator_addre
     mock_get_registered_sets.assert_called_once_with(operator_address)
 
     # Verify result
-    assert result == True
-
-
-@pytest.fixture
-def operator_set():
-    """Fixture that returns a valid operator_set dictionary."""
-    return {
-        "Id": 1,  # Single Operator Set ID
-        "Avs": "0x2222222222222222222222222222222222222222",
-    }
+    assert result is True
 
 
 def test_get_operators_for_operator_set(operator_set):
@@ -231,34 +178,14 @@ def test_get_num_operators_for_operator_set(operator_set):
     assert result == 0
 
 
-@pytest.fixture
-def operator_set():
-    """Fixture that returns a valid operator_set dictionary."""
-    return {
-        "Id": 1,  # Single Operator Set ID
-        "Avs": "0x2222222222222222222222222222222222222222",
-    }
-
-
 def test_get_strategies_for_operator_set(operator_set):
     result = el_reader.get_strategies_for_operator_set(operator_set)
     assert result == []
 
 
-@pytest.fixture
-def operator_address():
-    # Remove '0x' prefix and convert to bytes
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
 def test_is_operator_registered(operator_address):
     result = el_reader.is_operator_registered(operator_address)
-    assert result == False
-
-
-@pytest.fixture
-def staker_address():
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+    assert result is False
 
 
 def test_get_staker_shares(staker_address):
@@ -319,30 +246,6 @@ def staker():
     return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 
 
-@pytest.fixture
-def operator():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("1111111111111111111111111111111111111111")
-
-
-@pytest.fixture
-def delegation_approver():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("11223344556677889900aabbccddeeff11223344")
-
-
-@pytest.fixture
-def approver_salt():
-    salt = bytes.fromhex("a3d1e5f47b6c9f8e2d3c4b5a6e7f8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d")
-    assert len(salt) == 32, "❌ approver_salt must be exactly 32 bytes long"
-    return salt
-
-
-@pytest.fixture
-def expiry():
-    return 1700000000  # Example Unix timestamp for expiry
-
-
 def test_calculate_delegation_approval_digest_hash(
     staker, operator, delegation_approver, approver_salt, expiry
 ):
@@ -390,7 +293,7 @@ def approver_salt():
 
 def test_get_delegation_approver_salt_is_spent(delegation_approver, approver_salt):
     result = el_reader.get_delegation_approver_salt_is_spent(delegation_approver, approver_salt)
-    assert result == False
+    assert result is False
 
 
 @pytest.fixture
@@ -402,13 +305,7 @@ def withdrawal_root():
 
 def test_get_pending_withdrawal_status(withdrawal_root):
     result = el_reader.get_pending_withdrawal_status(withdrawal_root)
-    assert result == False
-
-
-@pytest.fixture
-def staker():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+    assert result is False
 
 
 def test_get_cumulative_withdrawals_queued(staker):
@@ -417,39 +314,14 @@ def test_get_cumulative_withdrawals_queued(staker):
 
 
 @pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
 def appointee_address():
     # Convert hex string to bytes, removing '0x' prefix
     return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
 
 
-@pytest.fixture
-def target():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("11223344556677889900aabbccddeeff11223344")
-
-
-@pytest.fixture
-def selector():
-    selector_bytes = bytes.fromhex("a3d1e5f4")  # Example function selector
-    assert len(selector_bytes) == 4, "❌ Function selector must be exactly 4 bytes long"
-    return selector_bytes
-
-
 def test_can_call(account_address, appointee_address, target, selector):
     result = el_reader.can_call(account_address, appointee_address, target, selector)
-    assert result == False
-
-
-@pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+    assert result is False
 
 
 @pytest.fixture
@@ -470,39 +342,15 @@ def test_list_appointees(account_address, target, selector):
     assert result == []
 
 
-@pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
-def appointee_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
 def test_list_appointee_permissions(account_address, appointee_address):
     targets, selectors = el_reader.list_appointee_permissions(account_address, appointee_address)
     assert targets == []
     assert selectors == []
 
 
-@pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
 def test_list_pending_admins(account_address):
     result = el_reader.list_pending_admins(account_address)
     assert result == []
-
-
-@pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 
 
 def test_list_admins(account_address):
@@ -513,12 +361,6 @@ def test_list_admins(account_address):
 
 
 @pytest.fixture
-def account_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
-@pytest.fixture
 def pending_admin_address():
     # Convert hex string to bytes, removing '0x' prefix
     return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
@@ -526,7 +368,7 @@ def pending_admin_address():
 
 def test_is_pending_admin(account_address, pending_admin_address):
     result = el_reader.is_pending_admin(account_address, pending_admin_address)
-    assert result == False
+    assert result is False
 
 
 @pytest.fixture
@@ -543,7 +385,7 @@ def admin_address():
 
 def test_is_admin(account_address, admin_address):
     result = el_reader.is_admin(account_address, admin_address)
-    assert result == False
+    assert result is False
 
 
 def test_get_distribution_roots_length():
@@ -630,18 +472,6 @@ def test_check_claim(mocker, claim):
     mock_func.assert_called_once()
 
 
-@pytest.fixture
-def operator():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("1111111111111111111111111111111111111111")
-
-
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("2222222222222222222222222222222222222222")
-
-
 def test_get_operator_avs_split(operator, avs):
     result = el_reader.get_operator_avs_split(operator, avs)
     assert result == 1000
@@ -679,12 +509,6 @@ def test_get_rewards_updater():
     assert result == expected
 
 
-def test_get_activation_delay():
-    result = el_reader.get_activation_delay()
-    assert isinstance(result, int)
-    assert result >= 0  # Or assert against a specific expected value
-
-
 def test_get_curr_rewards_calculation_end_timestamp():
     result = el_reader.get_curr_rewards_calculation_end_timestamp()
     assert result == 0
@@ -702,51 +526,19 @@ def test_get_claimer_for(earner):
     assert result == expected
 
 
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
 def test_get_submission_nonce(avs):
     result = el_reader.get_submission_nonce(avs)
     assert result == 0
 
 
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-@pytest.fixture
-def submission_hash():
-    hash_bytes = bytes.fromhex("a3d1e5f47b6c9f8e2d3c4b5a6e7f8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d")
-    assert len(hash_bytes) == 32, "❌ Submission hash must be exactly 32 bytes long"
-    return hash_bytes
-
-
 def test_get_is_avs_rewards_submission_hash(avs, submission_hash):
     result = el_reader.get_is_avs_rewards_submission_hash(avs, submission_hash)
-    assert result == False
-
-
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-@pytest.fixture
-def submission_hash():
-    hash_bytes = bytes.fromhex("a3d1e5f47b6c9f8e2d3c4b5a6e7f8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d")
-    assert len(hash_bytes) == 32, "❌ Submission hash must be exactly 32 bytes long"
-    return hash_bytes
+    assert result is False
 
 
 def test_get_is_rewards_submission_for_all_hash(avs, submission_hash):
     result = el_reader.get_is_rewards_submission_for_all_hash(avs, submission_hash)
-    assert result == False
+    assert result is False
 
 
 @pytest.fixture
@@ -757,25 +549,12 @@ def submitter():
 
 def test_get_is_rewards_for_all_submitter(submitter):
     result = el_reader.get_is_rewards_for_all_submitter(submitter)
-    assert result == False
-
-
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-@pytest.fixture
-def submission_hash():
-    hash_bytes = bytes.fromhex("a3d1e5f47b6c9f8e2d3c4b5a6e7f8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d")
-    assert len(hash_bytes) == 32, "❌ Submission hash must be exactly 32 bytes long"
-    return hash_bytes
+    assert result is False
 
 
 def test_get_is_rewards_submission_for_all_earners_hash(avs, submission_hash):
     result = el_reader.get_is_rewards_submission_for_all_earners_hash(avs, submission_hash)
-    assert result == False
+    assert result is False
 
 
 @pytest.fixture
@@ -793,39 +572,14 @@ def submission_hash():
 
 def test_get_is_operator_directed_avs_rewards_submission_hash(avs, submission_hash):
     result = el_reader.get_is_operator_directed_avs_rewards_submission_hash(avs, submission_hash)
-    assert result == False
-
-
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-@pytest.fixture
-def submission_hash():
-    hash_bytes = bytes.fromhex("a3d1e5f47b6c9f8e2d3c4b5a6e7f8d9c0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d")
-    assert len(hash_bytes) == 32, "❌ Submission hash must be exactly 32 bytes long"
-    return hash_bytes
+    assert result is False
 
 
 def test_get_is_operator_directed_operator_set_rewards_submission_hash(avs, submission_hash):
     result = el_reader.get_is_operator_directed_operator_set_rewards_submission_hash(
         avs, submission_hash
     )
-    assert result == False
-
-
-@pytest.fixture
-def operator():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("1111111111111111111111111111111111111111")
-
-
-@pytest.fixture
-def avs():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
+    assert result is False
 
 
 @pytest.fixture
@@ -891,11 +645,6 @@ def test_get_allocation_configuration_delay():
     assert result >= 0  # Or assert against a specific expected value
 
 
-@pytest.fixture
-def operator_address():
-    return bytes.fromhex("f39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-
-
 def test_get_num_operator_sets_for_operator(operator_address):
     result = el_reader.get_num_operator_sets_for_operator(operator_address)
 
@@ -907,17 +656,6 @@ def test_get_num_operator_sets_for_operator(operator_address):
         result_int = int(result) if not isinstance(result, int) else result
 
     assert result_int >= 0
-
-
-@pytest.fixture
-def strategy_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-@pytest.fixture
-def underlying_token_address():
-    return "0x2222222222222222222222222222222222222222"
 
 
 def test_get_strategy_and_underlying_token(mocker, strategy_address, underlying_token_address):
@@ -968,56 +706,6 @@ def test_get_strategy_and_underlying_token(mocker, strategy_address, underlying_
 @pytest.fixture
 def underlying_token_address():
     return "0x2222222222222222222222222222222222222222"
-
-
-@pytest.fixture
-def strategy_address():
-    # Convert hex string to bytes, removing '0x' prefix
-    return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
-
-
-def test_get_strategy_and_underlying_token(mocker, strategy_address, underlying_token_address):
-
-    # Create a mock for Contract
-    mock_strategy_contract = mocker.MagicMock()
-    mock_underlying_token = mocker.MagicMock()
-    mock_underlying_token.call.return_value = underlying_token_address
-    mock_strategy_contract.functions.underlyingToken = mocker.MagicMock(
-        return_value=mock_underlying_token
-    )
-
-    # Create a mock for eth_client
-    mock_eth_client = mocker.MagicMock()
-    mock_eth_client.eth.contract.return_value = mock_strategy_contract
-
-    # Import the actual class to test
-    from eigensdk.chainio.clients.elcontracts.reader import ELReader
-
-    # Create a partial mock of ELReader with only what we need
-    reader = mocker.MagicMock(spec=ELReader)
-    reader.eth_client = mock_eth_client
-    reader.strategy_abi = "mock_strategy_abi"  # Mock the strategy ABI
-
-    # Add the actual method implementation to our mock
-    reader.get_strategy_and_underlying_token = ELReader.get_strategy_and_underlying_token.__get__(
-        reader
-    )
-
-    # Call the method
-    strategy_contract, token_address = reader.get_strategy_and_underlying_token(strategy_address)
-
-    # Verify the eth_client.eth.contract was called correctly
-    mock_eth_client.eth.contract.assert_called_once_with(
-        address=strategy_address, abi="mock_strategy_abi"
-    )
-
-    # Verify the contract's underlyingToken function was called
-    mock_strategy_contract.functions.underlyingToken.assert_called_once()
-    mock_underlying_token.call.assert_called_once()
-
-    # Verify results
-    assert strategy_contract == mock_strategy_contract
-    assert token_address == underlying_token_address
 
 
 def test_get_genesis_rewards_timestamp(mocker):

@@ -1,13 +1,9 @@
 import ecdsa
 import pytest
-from typing import List, Dict, Any, Tuple, Optional
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from web3.contract.contract import Contract
-from web3.exceptions import ContractLogicError, BlockNotFound
 
 from eigensdk.chainio.clients.avsregistry.writer import AvsRegistryWriter
-from eigensdk.crypto.bls.attestation import BLSKeyPair, G1Point
-from tests.builder import *
 
 
 class TestAvsRegistryWriter:

@@ -1,9 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from web3 import Web3
-
-from eigensdk.chainio.utils import abi_encode_registration_params
-from tests.builder import *
+from tests.builder import el_writer
 
 
 @pytest.fixture
@@ -75,7 +73,6 @@ def test_register_as_operator(
         }
 
     elif test_scenario == "no_contract":
-        original_delegation_manager = mock_el_writer.delegation_manager
         mock_el_writer.delegation_manager = delegation_manager_mock  # None
 
     elif test_scenario == "tx_fail":
