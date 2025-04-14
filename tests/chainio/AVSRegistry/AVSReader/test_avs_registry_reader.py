@@ -313,8 +313,6 @@ class TestAvsRegistryReader:
         assert operator_stakes[1][1].stake == 400
         assert operator_stakes[1][1].operator_id == 4
 
-    
-
     def test_get_operator_stake_in_quorums_of_operator_at_current_block_success(
         self, avs_registry_reader
     ):

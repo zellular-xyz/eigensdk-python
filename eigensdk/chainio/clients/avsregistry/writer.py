@@ -10,7 +10,7 @@ from eigensdk.chainio.utils import (
     BN254G1Point,
     convert_to_bn254_g2_point,
     convert_to_bn254_g1_point,
-    convert_bn254_geth_to_gnark
+    convert_bn254_geth_to_gnark,
 )
 from eigensdk.crypto.bls.attestation import BLSKeyPair
 from ..elcontracts.reader import ELReader
