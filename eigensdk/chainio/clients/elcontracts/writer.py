@@ -1,4 +1,5 @@
 import logging
+from enum import IntEnum
 from eth_typing import Address
 from typing import List, Any, Dict, cast
 from web3 import Web3
@@ -8,8 +9,6 @@ from eigensdk.chainio.utils import (
     abi_encode_registration_params,
     get_pubkey_registration_params
 )
-
-from enum import IntEnum
 
 
 class RegistrationType(IntEnum):

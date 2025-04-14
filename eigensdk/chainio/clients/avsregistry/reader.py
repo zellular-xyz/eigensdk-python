@@ -1,10 +1,11 @@
 import logging
 from eth_typing import Address
 from typing import Dict, List, Optional, Tuple, Any
+from typing import cast
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxParams
-from typing import cast
+
 from eigensdk._types import (
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
@@ -15,7 +16,6 @@ from eigensdk._types import (
     BLSApkRegistryTypesApkUpdate,
 )
 from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
-
 from eigensdk.crypto.bls.attestation import G1Point
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
