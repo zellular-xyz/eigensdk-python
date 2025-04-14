@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from web3 import Web3
 
-from eigensdk.chainio.chainio_utils.utils import abi_encode_registration_params
+from eigensdk.chainio.utils import abi_encode_registration_params
 from tests.builder import *
 
 

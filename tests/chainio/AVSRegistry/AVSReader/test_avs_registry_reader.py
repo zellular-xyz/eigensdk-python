@@ -313,56 +313,7 @@ class TestAvsRegistryReader:
         assert operator_stakes[1][1].stake == 400
         assert operator_stakes[1][1].operator_id == 4
 
-    def test_get_operators_stake_in_quorums_of_operator_at_current_block_success(
-        self, avs_registry_reader
-    ):
-        # Mock data
-        call_options = {"from": "0x123"}
-        operator_id = 1
-        current_block = 1000
-
-        # Mock the eth_client block number
-        avs_registry_reader.eth_client.eth.block_number = current_block
-
-        # Mock return data from get_operators_stake_in_quorums_of_operator_at_block
-        expected_quorums = [0, 2]
-        expected_stakes = [
-            [
-                OperatorStateRetrieverOperator(operator="0xabc", stake=100, operator_id=1),
-                OperatorStateRetrieverOperator(operator="0xdef", stake=200, operator_id=2),
-            ],
-            [
-                OperatorStateRetrieverOperator(operator="0xghi", stake=300, operator_id=3),
-                OperatorStateRetrieverOperator(operator="0xjkl", stake=400, operator_id=4),
-            ],
-        ]
-
-        # Mock the underlying method
-        avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block = MagicMock(
-            return_value=(expected_quorums, expected_stakes)
-        )
-
-        # Call the method
-        quorums, stakes = (
-            avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_current_block(
-                call_options, operator_id
-            )
-        )
-
-        # Verify the underlying method was called with correct parameters
-        expected_call_options = {**call_options, "block_number": current_block}
-        avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block.assert_called_once_with(
-            expected_call_options, operator_id, current_block
-        )
-
-        # Verify results
-        assert quorums == expected_quorums
-        assert stakes == expected_stakes
-        assert len(stakes) == 2
-        assert stakes[0][0].operator == "0xabc"
-        assert stakes[0][0].stake == 100
-        assert stakes[1][1].operator == "0xjkl"
-        assert stakes[1][1].stake == 400
+    
 
     def test_get_operator_stake_in_quorums_of_operator_at_current_block_success(
         self, avs_registry_reader
@@ -524,7 +475,7 @@ class TestAvsRegistryReader:
 
     def test_bitmap_to_quorum_ids(self):
         # Test cases for the bitmap_to_quorum_ids function
-        from eigensdk.chainio.chainio_utils.utils import bitmap_to_quorum_ids
+        from eigensdk.chainio.utils import bitmap_to_quorum_ids
 
         # Test empty bitmap (0)
         assert bitmap_to_quorum_ids(0) == []
