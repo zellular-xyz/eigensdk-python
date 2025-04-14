@@ -1,8 +1,5 @@
 import logging
-from eth_account import Account
-from eth_account.signers.local import LocalAccount
 from eth_typing import Address
-from typing import Any, Tuple, Optional, Dict
 from web3 import Web3
 
 from eigensdk.chainio.clients.avsregistry import reader as avs_reader

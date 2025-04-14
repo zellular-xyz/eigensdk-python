@@ -3,10 +3,7 @@
 Script to extract contract addresses from the EigenLayer deployment.
 This can be used to update the .env file with the correct contract addresses.
 """
-
-import glob
 import json
-import os
 import sys
 from pathlib import Path
 

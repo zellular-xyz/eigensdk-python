@@ -1,5 +1,4 @@
 import logging
-import math
 from eth_typing import Address
 from typing import Dict, List, Optional, Tuple, Any
 from web3 import Web3
@@ -15,9 +14,9 @@ from eigensdk._types import (
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
 )
-from eigensdk.chainio.utils import *
+from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
 
-from eigensdk.crypto.bls.attestation import G1Point, G2Point
+from eigensdk.crypto.bls.attestation import G1Point
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 
@@ -106,7 +105,6 @@ class AvsRegistryReader:
             opts, operator_id, block_number
         )
 
-    
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[Dict[int, int]]:
@@ -382,8 +380,6 @@ class AvsRegistryReader:
             update_block_number=update["updateBlockNumber"],
             next_update_block_number=update["nextUpdateBlockNumber"],
         )
-
-
 
     def get_current_apk(
         self, call_options: Optional[TxParams], quorum_number: int

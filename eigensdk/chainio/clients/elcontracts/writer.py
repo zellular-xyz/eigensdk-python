@@ -1,12 +1,16 @@
 import logging
 from eth_typing import Address
-from typing import List, Any, Dict, Optional, cast
+from typing import List, Any, Dict, cast
 from web3 import Web3
 from web3.contract import Contract
 
-from eigensdk.chainio.utils import *
+from eigensdk.chainio.utils import (
+    abi_encode_registration_params,
+    get_pubkey_registration_params
+)
 
 from enum import IntEnum
+
 
 class RegistrationType(IntEnum):
     NORMAL = 0

@@ -156,13 +156,10 @@ class ELReader:
     def get_operators_for_operator_set(self, operator_set: dict) -> List[Address]:
         return self.allocation_manager.functions.getMembers(
             (
-                Web3.to_checksum_address(operator_set.get("Avs",None)),
+                Web3.to_checksum_address(operator_set.get("Avs", None)),
                 operator_set.get("Id", None),
             )
         ).call()
-    
-
-
 
     def get_num_operators_for_operator_set(self, operator_set: dict) -> int:
         return self.allocation_manager.functions.getMemberCount(
@@ -199,9 +196,11 @@ class ELReader:
         is_set, delay = self.allocation_manager.functions.getAllocationDelay(addr).call()
         return dict(
             Address=addr,
-            DelegationApproverAddress=self.delegation_manager.functions.delegationApproverSaltIsSpent(
-                addr, b"\x00" * 32
-            ).call(),
+            DelegationApproverAddress=(
+                self.delegation_manager.functions.delegationApproverSaltIsSpent(
+                    addr, b"\x00" * 32
+                ).call()
+            ),
             AllocationDelay=delay if is_set else 0,
         )
 
@@ -232,7 +231,6 @@ class ELReader:
     def get_delegation_approver_salt_is_spent(
         self, delegation_approver: Address, approver_salt: bytes
     ) -> bool:
-
         return self.delegation_manager.functions.delegationApproverSaltIsSpent(
             delegation_approver, approver_salt
         ).call()

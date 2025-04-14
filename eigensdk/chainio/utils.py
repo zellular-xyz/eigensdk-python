@@ -3,23 +3,14 @@ from typing import List
 from web3 import Web3
 from web3.contract.contract import ContractFunction
 from web3.types import TxReceipt
-from eth_abi.codec import ABICodec
 from typing import Tuple, Dict, Any
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
 from eth_abi import encode
-# from eth_abi.codec import ABICodec
-# from eth_abi.registry import registry as default_registry
 from web3.types import Address
-
-# abi_codec = ABICodec(default_registry)
-
 
 
 def nums_to_bytes(nums: List[int]) -> bytes:
     return "".join(map(chr, nums)).encode()
-
-
-
 
 
 def send_transaction(
@@ -50,10 +41,6 @@ def send_transaction(
     tx_hash = eth_http_client.eth.send_raw_transaction(signed_tx.raw_transaction)
     receipt = eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
     return receipt
-
-
-
-
 
 
 class BN254G1Point:

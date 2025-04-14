@@ -57,13 +57,13 @@ class TxManager:
                 return self.send(tx, wait_for_receipt=True)
             except TransactionNotFound:
                 self.logger.warning(
-                    f"Transaction {tx} not found. Retrying ({attempt+1}/{max_retries})..."
+                    f"Transaction {tx} not found. Retrying ({attempt + 1}/{max_retries})..."
                 )
             except Exception as e:
                 if "revert" in str(e).lower():
                     raise RuntimeError(f"Transaction reverted: {e}")
-                self.logger.warning(f"Attempt {attempt+1} failed: {e}")
-            time.sleep(delay * (2**attempt))  # Exponential backoff
+                self.logger.warning(f"Attempt {attempt + 1} failed: {e}")
+            time.sleep(delay * (2 ** attempt))  # Exponential backoff
         raise RuntimeError("Transaction failed after multiple retries")
 
     def wait_for_receipt(self, tx_hash, timeout=120, poll_interval=2):

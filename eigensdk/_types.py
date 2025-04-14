@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from eth_typing import Address
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 
@@ -16,9 +16,7 @@ class Operator:
 
 @dataclass
 class OperatorPubkeys:
-    # G1 signatures are used to verify signatures onchain (since G1 is cheaper to verify onchain via precompiles)
     g1_pub_key: G1Point
-    # G2 is used to verify signatures offchain (signatures are on G1)
     g2_pub_key: G2Point
 
 

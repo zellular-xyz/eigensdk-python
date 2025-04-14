@@ -122,10 +122,7 @@ class NodeApi:
             return {}, 503
 
     def services_handler(self):
-        """
-        Handles GET requests for the node services endpoint.
-        Mirrors https://docs.eigenlayer.xyz/eigenlayer/avs-guides/spec/api/#get-eigennodeservices
-        """
+
         try:
             services = [asdict(service) for service in self.node_services]
             return {"services": services}, 200
@@ -134,10 +131,7 @@ class NodeApi:
             return {"error": "Internal Server Error"}, 500
 
     def service_health_handler(self, service_id: str):
-        """
-        Handles GET requests for a specific service's health endpoint.
-        Mirrors https://docs.eigenlayer.xyz/eigenlayer/avs-guides/spec/api/#get-eigennodeservicesservice_idhealth
-        """
+
         for service in self.node_services:
             if service.id == service_id:
                 if service.status == ServiceStatus.UP:

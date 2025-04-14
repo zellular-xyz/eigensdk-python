@@ -1,9 +1,7 @@
 import logging
-import threading
-import time
 import uvicorn
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, make_asgi_app, start_http_server, REGISTRY
+from prometheus_client import Counter, Gauge, make_asgi_app, REGISTRY
 
 EIGEN_PROM_NAMESPACE = "eigen"
 
@@ -23,7 +21,7 @@ class EigenMetrics:
         )
         self.performance_score = Gauge(
             "performance_score",
-            "The performance metric is a score between 0 and 100 and each developer can define their own way of calculating the score. The score is calculated based on the performance of the Node and the performance of the backing services.",
+            "The performance metric is a score between 0 and 100.",
             namespace=EIGEN_PROM_NAMESPACE,
             registry=reg,
         )
@@ -61,8 +59,6 @@ class EigenMetrics:
 
 # Usage example:
 if __name__ == "__main__":
-    import queue
-    import signal
 
     logging.basicConfig(level=logging.INFO)
 
