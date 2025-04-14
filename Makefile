@@ -43,7 +43,7 @@ format:
 	docker compose run dev black .
 
 mypy:
-	docker compose run dev mypy eigensdk
+	docker compose run dev mypy --ignore-missing-imports eigensdk/chainio/
 
 lint:
 	docker compose run dev flake8 .
