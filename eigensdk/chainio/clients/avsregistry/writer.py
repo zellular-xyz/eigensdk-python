@@ -1,18 +1,19 @@
-import os
 import ecdsa
 import logging
+import os
 from eth_typing import Address
 from typing import List, Optional, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
-from eigensdk.crypto.bls.attestation import BLSKeyPair
-from ..elcontracts.reader import ELReader
+
 from eigensdk.chainio.utils import (
     BN254G1Point,
     convert_to_bn254_g2_point,
     convert_to_bn254_g1_point,
-    convert_bn254_geth_to_gnark
+    convert_bn254_geth_to_gnark,
 )
+from eigensdk.crypto.bls.attestation import BLSKeyPair
+from ..elcontracts.reader import ELReader
 
 
 class AvsRegistryWriter:

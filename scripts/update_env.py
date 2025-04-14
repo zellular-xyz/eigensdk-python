@@ -46,9 +46,7 @@ def main():
             "16778642697926432730636765260015002075875516459203485013999501605376283193328"
         ),
         "SENDER_ADDRESS": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        "PRIVATE_KEY": (
-            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-        ),
+        "PRIVATE_KEY": ("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"),
         "ETH_HTTP_URL": "http://anvil:8545",
         "AVS_NAME": "test1",
         "PROM_METRICS_IP_PORT_ADDRESS": "localhost:9090",

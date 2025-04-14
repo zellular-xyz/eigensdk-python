@@ -55,9 +55,7 @@ class Collector(registry.Collector):
 
         # Collect registeredStake metric
         if not self.init_operator_id():
-            self.logger.warn(
-                "Failed to fetch and cache operator id."
-            )
+            self.logger.warn("Failed to fetch and cache operator id.")
         else:
             quorum_stake_map = self.avs_registry_reader.get_operator_stake_in_quorums(
                 self.operator_id

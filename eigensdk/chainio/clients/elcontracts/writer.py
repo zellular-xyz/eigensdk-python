@@ -1,15 +1,11 @@
 import logging
+from enum import IntEnum
 from eth_typing import Address
 from typing import List, Any, Dict, cast
 from web3 import Web3
 from web3.contract import Contract
 
-from eigensdk.chainio.utils import (
-    abi_encode_registration_params,
-    get_pubkey_registration_params
-)
-
-from enum import IntEnum
+from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
 
 
 class RegistrationType(IntEnum):
@@ -219,7 +215,7 @@ class ELWriter:
                         cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
                         cast(Address, Web3.to_checksum_address(request["operator_address"])),
                         request["bls_key_pair"],
-                    )
+                    ),
                 ),
             },
             wait_for_receipt=request["wait_for_receipt"],

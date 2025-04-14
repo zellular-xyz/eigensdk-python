@@ -63,7 +63,7 @@ class TxManager:
                 if "revert" in str(e).lower():
                     raise RuntimeError(f"Transaction reverted: {e}")
                 self.logger.warning(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(delay * (2 ** attempt))  # Exponential backoff
+            time.sleep(delay * (2**attempt))  # Exponential backoff
         raise RuntimeError("Transaction failed after multiple retries")
 
     def wait_for_receipt(self, tx_hash, timeout=120, poll_interval=2):
