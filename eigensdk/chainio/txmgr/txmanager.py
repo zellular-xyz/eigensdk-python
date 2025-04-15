@@ -17,6 +17,10 @@ class TxManager:
         gas_limit_multiplier=FALLBACK_GAS_LIMIT_MULTIPLIER,
     ):
         self.w3 = w3
+        
+        if sender_address is None or sender_address == "None":
+            raise ValueError("Sender address cannot be None. Please provide a valid Ethereum address or set the SENDER_ADDRESS environment variable.")
+            
         self.sender_address = Web3.to_checksum_address(sender_address)
         self.private_key = private_key
         self.gas_limit_multiplier = gas_limit_multiplier
