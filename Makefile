@@ -3,6 +3,9 @@
 build:
 	COMPOSE_BAKE=true docker compose build
 
+rebuild:
+	COMPOSE_BAKE=true docker compose build --no-cache
+
 anvil-reset: down
 	docker compose up anvil
 
