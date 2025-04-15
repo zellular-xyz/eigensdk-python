@@ -30,6 +30,4 @@ class Collector:
         ).observe(duration)
 
     def add_rpc_request_total(self, method, client_version):
-        self.rpc_request_total.labels(
-            method=method, client_version=client_version
-        ).inc()
+        self.rpc_request_total.labels(method=method, client_version=client_version).inc()

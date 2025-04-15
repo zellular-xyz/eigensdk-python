@@ -6,21 +6,24 @@ setup(
     packages=find_packages(),
     install_requires=[
         "mcl @ git+https://github.com/sadeghte/mcl-python.git",
-        "web3==7.4.0",
+        "web3",
         "python-dotenv==1.0.1",
         "fastapi",
         "pydantic",
-        "uvicorn"
+        "uvicorn",
+        "pytest",
+        "pytest-mock",
+        "ecdsa",
+        # "prometheus_client",
+        # "types-ecdsa",
     ],
     entry_points={
-        "console_scripts": [
-            # Define any CLI scripts here
-        ],
+        "console_scripts": [],
     },
     author="Abram Symons",
     author_email="abramsymons@gmail.com",
     description="A SDK for developing EigenLayer AVS in Python",
-    long_description=open("README.md").read(),
+    # long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/abramsymons/eigensdk-python",
     classifiers=[
@@ -29,4 +32,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
+    include_package_data=True,
+    package_data={
+        "eigensdk": ["**/*.json"],
+    },
 )

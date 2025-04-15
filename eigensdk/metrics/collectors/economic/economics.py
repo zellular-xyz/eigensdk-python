@@ -1,6 +1,7 @@
 from logging import Logger
-from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 from prometheus_client import registry
+from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
+
 from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
 from eigensdk.chainio.clients.elcontracts.reader import ELReader
 
@@ -38,9 +39,7 @@ class Collector(registry.Collector):
 
     def init_operator_id(self):
         if self.operator_id is None:
-            self.operator_id = self.avs_registry_reader.get_operator_id(
-                self.operator_addr
-            )
+            self.operator_id = self.avs_registry_reader.get_operator_id(self.operator_addr)
 
         return self.operator_id is not None  # true means success
 
@@ -56,9 +55,7 @@ class Collector(registry.Collector):
 
         # Collect registeredStake metric
         if not self.init_operator_id():
-            self.logger.warn(
-                "Failed to fetch and cache operator id. Skipping collection of registeredStake metric."
-            )
+            self.logger.warn("Failed to fetch and cache operator id.")
         else:
             quorum_stake_map = self.avs_registry_reader.get_operator_stake_in_quorums(
                 self.operator_id
