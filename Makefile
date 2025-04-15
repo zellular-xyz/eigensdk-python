@@ -46,8 +46,4 @@ mypy:
 	docker compose run dev mypy --ignore-missing-imports eigensdk/chainio/
 
 lint:
-<<<<<<< HEAD
-	docker compose run dev flake8 . 
-=======
 	docker compose run dev flake8 eigensdk/chainio/
->>>>>>> 5246a434591fa8eba9734fbf89260827a876d990
