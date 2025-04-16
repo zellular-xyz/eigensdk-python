@@ -3,6 +3,8 @@ services:
     build: .
     ports:
       - "8546:8545"
+    volumes:
+      - ./eigenlayer-contracts:/app/eigenlayer-contracts
     command: >
       bash -c "
         # Start Anvil

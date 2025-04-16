@@ -31,12 +31,12 @@ anvil-logs:
 get-addresses:
 	docker compose run test python3 scripts/get_contract_addresses.py
 
-# Update the .env file with contract addresses
-update-env:
-	docker compose run test scripts/update_env.py
+# create the .env file with contract addresses
+create-env:
+	docker compose run test scripts/create_env.py
 
 # Run tests against the running Anvil instance
-test: update-env
+test: create-env
 	docker compose run --rm test python -m pytest tests/ -v
 
 # ********** dev targets **********

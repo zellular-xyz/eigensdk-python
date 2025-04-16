@@ -9,8 +9,6 @@ from pathlib import Path
 
 
 def get_contract_addresses(quiet=False):
-    """Get contract addresses from the deployment file."""
-    # Look for the most recent run file
     broadcast_dir = Path("/app/eigenlayer-contracts/broadcast")
 
     if not broadcast_dir.exists():
@@ -135,7 +133,7 @@ def main():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--output-only":
         # Output only the env lines without any other text
-        env_lines = get_contract_addresses(quiet=True)
+        env_lines = get_contract_addresses(quiet=False)
         for line in env_lines:
             print(line)
     else:
