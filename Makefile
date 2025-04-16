@@ -1,9 +1,9 @@
 .PHONY: $(MAKECMDGOALS)
 
-build: update-env
+build:
 	COMPOSE_BAKE=true docker compose build
 
-rebuild: update-env
+rebuild:
 	COMPOSE_BAKE=true docker compose build --no-cache
 
 anvil-reset: down
