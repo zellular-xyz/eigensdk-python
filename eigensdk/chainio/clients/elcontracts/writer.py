@@ -4,7 +4,7 @@ from eth_typing import Address
 from typing import List, Any, Dict, cast
 from web3 import Web3
 from web3.contract import Contract
-
+from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
 
 
@@ -68,7 +68,7 @@ class ELWriter:
         tx = tx_func(*args).build_transaction(self.tx_mgr.get_no_send_tx_opts())
         return self.tx_mgr.send(tx, wait_for_receipt)
 
-    def register_as_operator(self, operator, wait_for_receipt: bool):
+    def register_as_operator(self, operator: Operator, wait_for_receipt: bool):
         return self.send(
             self.delegation_manager.functions.registerAsOperator,
             Web3.to_checksum_address(operator.delegation_approver_address),
@@ -77,7 +77,7 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def update_operator_details(self, operator, wait_for_receipt: bool):
+    def update_operator_details(self, operator: Operator, wait_for_receipt: bool):
         return self.send(
             self.delegation_manager.functions.modifyOperatorDetails,
             Web3.to_checksum_address(operator.address),

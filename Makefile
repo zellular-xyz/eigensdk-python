@@ -24,16 +24,12 @@ down:
 anvil-logs:
 	docker compose logs anvil
 
-# Get the contract addresses from the deployment
-get-addresses:
-	docker compose run test python3 scripts/get_contract_addresses.py
-
-# Update the .env file with contract addresses
-update-env:
-	docker compose run test scripts/update_env.py
+# create the .env file with contract addresses
+create-env:
+	docker compose run test scripts/create_env.py
 
 # Run tests against the running Anvil instance
-test: update-env
+test: create-env
 	docker compose run --rm test python -m pytest tests/ -v
 
 # ********** dev targets **********
@@ -46,8 +42,4 @@ mypy:
 	docker compose run dev mypy --ignore-missing-imports eigensdk/chainio/
 
 lint:
-<<<<<<< HEAD
-	docker compose run dev flake8 . 
-=======
 	docker compose run dev flake8 eigensdk/chainio/
->>>>>>> 5246a434591fa8eba9734fbf89260827a876d990

@@ -11,6 +11,7 @@ class Operator:
     earnings_receiver_address: Optional[Address] = field(default=None)
     delegation_approver_address: Optional[Address] = field(default=None)
     staker_opt_out_window_blocks: Optional[int] = field(default=None)
+    allocation_delay: Optional[int] = field(default=None)
     metadata_url: str = field(default="")
 
 
