@@ -5,8 +5,8 @@ import sys
 
 def main():
     script_path = "scripts/get_contract_addresses.py"
-    contract_lines = subprocess.check_output(
-        [sys.executable, str(script_path), "--output-only"], universal_newlines=True
+    env_lines = subprocess.check_output(
+        [sys.executable, script_path, "--output-only"], universal_newlines=True
     ).strip().split("\n")
 
     required_vars = {
@@ -24,18 +24,12 @@ def main():
         "IERC20_ADDR": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
         "ISTRATEGY_ADDR": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
     }
-
     
-    env_lines = contract_lines[:]
-
-
     for var, default_value in required_vars.items():
-        if not any(line.startswith(f"{var}=") for line in env_lines):
-            env_lines.append(f"{var}={default_value}")
+        env_lines.append(f"{var}={default_value}")
 
     with open("tests/.env", "w") as f:
-        for line in env_lines:
-            f.write(f"{line}\n")
+        f.writelines(env_lines)
 
     print(env_lines)
 
