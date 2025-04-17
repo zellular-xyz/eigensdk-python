@@ -5,6 +5,7 @@ from eth_typing import Address
 from typing import List, Optional, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
+from web3.types import TxParams
 
 from eigensdk.chainio.utils import (
     BN254G1Point,
@@ -80,8 +81,9 @@ class AvsRegistryWriter:
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
+        g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
+            convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
         ).g1_point
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
@@ -158,8 +160,9 @@ class AvsRegistryWriter:
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
+        g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
+            convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
         ).g1_point
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
