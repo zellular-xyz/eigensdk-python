@@ -18,6 +18,8 @@ class G1Point(G1):
         self.setStr(f"1 {x} {y}".encode("utf-8"))
         if x == 0 and y == 0:
             self.clear()
+        self.X = x
+        self.Y = y
 
     def add(self, a: "G1Point"):
         return self + a
@@ -46,6 +48,10 @@ class G2Point(G2):
         self.setStr(f"1 {xb} {xa} {yb} {ya}".encode("utf-8"))
         if xa == 0 and xb == 0 and ya == 0 and yb == 0:
             self.clear()
+        self.Xa = xa
+        self.Xb = xb
+        self.Ya = ya
+        self.Yb = yb
 
     def add(self, a: "G2Point"):
         return self + a
@@ -153,7 +159,7 @@ class BLSKeyPair:
         return Signature.from_g1_point(sig)
 
     def get_pub_g1(self) -> G1Point:
-        return bn256Utils.mul_by_generator_g1(self)
+        return bn256Utils.mul_by_generator_g1(self.priv_key)
 
     def get_pub_g2(self) -> G2Point:
         return bn256Utils.mul_by_generator_g2(self.priv_key)

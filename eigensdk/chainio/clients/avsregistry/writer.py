@@ -75,7 +75,7 @@ class AvsRegistryWriter:
         wait_for_receipt: bool,
     ) -> Optional[Dict]:
         operator_addr = self.web3.eth.account.from_key(
-            operator_ecdsa_private_key.to_string()
+            operator_ecdsa_private_key
         ).address
 
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
@@ -84,7 +84,7 @@ class AvsRegistryWriter:
         g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
             convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
-        ).g1_point
+        )
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
         ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
