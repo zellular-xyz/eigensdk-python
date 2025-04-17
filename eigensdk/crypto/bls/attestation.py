@@ -20,6 +20,12 @@ class G1Point(G1):
             self.clear()
         self.X = x
         self.Y = y
+        _x = Fp()
+        _x.setStr(x)
+        self.X = _x
+        _y = Fp()
+        _y.setStr(y)
+        self.Y = _y
 
     def add(self, a: "G1Point"):
         return self + a
