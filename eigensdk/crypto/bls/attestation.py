@@ -21,10 +21,10 @@ class G1Point(G1):
         self.X = x
         self.Y = y
         _x = Fp()
-        _x.setStr(x)
+        _x.setInt(x)
         self.X = _x
         _y = Fp()
-        _y.setStr(y)
+        _y.setInt(y)
         self.Y = _y
 
     def add(self, a: "G1Point"):
