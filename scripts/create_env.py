@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-import subprocess
-import sys
-
+# import subprocess
+# import sys
+from scripts.get_contract_addresses import get_contract_addresses
 
 def main():
-    script_path = "scripts/get_contract_addresses.py"
-    env_lines = subprocess.check_output(
-        [sys.executable, script_path, "--output-only"], universal_newlines=True
-    ).strip().split("\n")
+    # script_path = "scripts/get_contract_addresses.py"
+    env_lines = get_contract_addresses()
+    # env_lines = subprocess.check_output(
+    #     [sys.executable, script_path], universal_newlines=True
+    # ).strip().split("\n")
 
     required_vars = {
         "OPERATOR_ECDSA_PRIVATE_KEY": (
