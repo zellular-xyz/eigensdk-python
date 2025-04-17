@@ -29,9 +29,13 @@ def main():
         env_lines.append(f"{var}={default_value}")
 
     with open("tests/.env", "w") as f:
-        f.writelines(env_lines)
+        for line in env_lines:
+            f.write(f"{line}\n")
+        #f.writelines(env_lines)
 
-    print(env_lines)
+    with open("tests/.env", "r") as f:
+        print('**************')
+        print(f.read())
 
     print(f"✅ Env created with configuration variables and contract addresses")
 
