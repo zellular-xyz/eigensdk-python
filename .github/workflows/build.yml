@@ -11,24 +11,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
+
       - name: Build Docker images
         run: make build
-        
-      - name: Start Anvil
+
+      - name: Start Anvil (detached)
         run: docker compose up -d anvil
-        
+
       - name: Wait for Anvil to be ready
         run: |
-          echo "Waiting for Anvil to be ready..."
-          sleep 20
-        
+          echo "Waiting for Anvil on port 8546..."
+          for i in {1..20}; do
+            nc -z localhost 8546 && echo "Anvil ready!" && exit 0
+            sleep 2
+          done
+          echo "Anvil not responding on port 8546" && exit 1
+
       - name: Run Tests
-        run: make test
-          
+        run: docker compose run --rm test
+
       - name: Cleanup
         if: always()
-        run: make down 
+        run: docker compose down -v --remove-orphans
