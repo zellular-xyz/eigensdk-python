@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Basic Tests (No Anvil dependency)
+        run: make basic-test
+        
+      - name: Run Full Tests with Anvil
+        run: |
+          # Start Anvil in the background
+          make anvil-reset &
+          # Wait for Anvil to be ready
+          sleep 15
+          # Run full test suite
+          make test 
