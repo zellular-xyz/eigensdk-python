@@ -308,7 +308,7 @@ class AvsRegistryReader:
         self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[bytes]:
         return self.registry_coordinator.functions.getOperatorId(operator_address).call(
-            call_options or {}
+            call_options
         )
 
     def get_operator_from_id(

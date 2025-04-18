@@ -62,8 +62,7 @@ class AvsRegistryWriter:
             raise ValueError("StakeRegistry contract not provided")
 
     def send(self, tx_func, *args, wait_for_receipt: bool = True):
-        tx_opts = self.tx_mgr.get_no_send_tx_opts()
-        tx = tx_func(tx_opts, *args).build_transaction()
+        tx = tx_func(*args).build_transaction()
         return self.tx_mgr.send(tx, wait_for_receipt)
 
     def register_operator(
@@ -77,7 +76,6 @@ class AvsRegistryWriter:
         operator_addr = self.web3.eth.account.from_key(
             operator_ecdsa_private_key
         ).address
-
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
@@ -85,10 +83,10 @@ class AvsRegistryWriter:
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
             convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
         )
+
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
         ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-
         pubkey_reg_params = {
             "pubkeyRegistrationSignature": signed_msg,
             "pubkeyG1": g1_pubkey_bn254,
@@ -98,11 +96,10 @@ class AvsRegistryWriter:
             os.urandom(32),
             self.web3.eth.block_number,
             60 * 60,
-        )  # 1 hour
+        )
         signature_expiry = (
             self.web3.eth.get_block(cur_block_num)["timestamp"] + sig_valid_for_seconds
         )
-
         msg_to_sign = self.el_reader.calculate_operator_avs_registration_digestHash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
@@ -365,6 +362,8 @@ class AvsRegistryWriter:
             ejector_address,
             wait_for_receipt=wait_for_receipt,
         )
+    
+
 
     def modify_strategy_params(
         self,

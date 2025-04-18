@@ -62,15 +62,15 @@ def convert_bn254_geth_to_gnark(input_point: BN254G1Point) -> G1Point:
 
 def convert_to_bn254_g1_point(input_point: G1Point) -> BN254G1Point:
     return BN254G1Point(
-        x=input_point.x,
-        y=input_point.y,
+        x=int(input_point.x.getStr().decode("utf-8")),
+        y=int(input_point.y.getStr().decode("utf-8")),
     )
 
 
 def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
     return BN254G2Point(
-        x=(input_point.Xa, input_point.Xb),
-        y=(input_point.Ya, input_point.Yb),
+        x=(int(input_point.getX().get_a().getStr().decode("utf-8")), int(input_point.getX().get_b().getStr().decode("utf-8"))),
+        y=(int(input_point.getY().get_a().getStr().decode("utf-8")), int(input_point.getY().get_b().getStr().decode("utf-8"))),
     )
 
 

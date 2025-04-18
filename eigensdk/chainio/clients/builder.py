@@ -174,6 +174,8 @@ class BuildAllConfig:
 
     def build_avs_registry_writer_clients(
         self,
+        sender_address: Address,
+        private_key: str,
         registry_coordinator: Address,
         operator_state_retriever: Address,
         service_manager: Address,
@@ -209,6 +211,7 @@ class BuildAllConfig:
             el_reader=el_chain_reader,
             logger=self.logger,
             eth_client=self.eth_client,
+            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
         )
 
         return avs_writer_instance
