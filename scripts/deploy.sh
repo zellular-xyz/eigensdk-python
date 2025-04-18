@@ -17,6 +17,6 @@ echo "Verifying contract deployment..."
 
 echo "Updating environment variables..."
 
-python3 scripts/update_env.py
+python3 scripts/create_env.py
 
 echo "Anvil setup complete! You can now run tests against this instance."
