@@ -60,6 +60,8 @@ avs_registry_reader = config.build_avs_registry_reader_clients(
 
 # Build AVS registry writer client
 avs_registry_writer = config.build_avs_registry_writer_clients(
+    sender_address=SENDER_ADDRESS,
+    private_key=PRIVATE_KEY,
     registry_coordinator=os.getenv("REGISTRY_COORDINATOR_ADDR"),
     operator_state_retriever=os.getenv("OPERATOR_STATE_RETRIEVER_ADDR"),
     service_manager=os.getenv("SERVICE_MANAGER_ADDR"),

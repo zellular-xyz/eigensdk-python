@@ -109,13 +109,6 @@ class ELReader:
             for s in self.allocation_manager.functions.getRegisteredSets(operator_addr).call()
         ]
 
-    def calculate_operator_avs_registration_digestHash(
-        self, operator_addr: Address, avs_addr: Address, salt: bytes, expiry: int
-    ) -> bytes:
-        return self.avs_directory.functions.calculateOperatorAVSRegistrationDigestHash(
-            operator_addr, avs_addr, salt, expiry
-        ).call()
-
     def is_operator_registered_with_avs(
         self, operator_address: Address, avs_address: Address
     ) -> bool:

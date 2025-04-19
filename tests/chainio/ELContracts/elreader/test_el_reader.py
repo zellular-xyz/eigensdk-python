@@ -105,10 +105,10 @@ def avs_address():
     return bytes.fromhex("09635F643e140090A9A8Dcd712eD6285858ceBef")
 
 
-def test_calculate_operator_avs_registration_digestHash(
+def test_calculate_operator_avs_registration_digest_hash(
     operator_address, avs_address, salt, expiry
 ):
-    result = el_reader.calculate_operator_avs_registration_digestHash(
+    result = el_reader.calculate_operator_avs_registration_digest_hash(
         operator_address, avs_address, salt, expiry
     )
     assert isinstance(result, bytes)

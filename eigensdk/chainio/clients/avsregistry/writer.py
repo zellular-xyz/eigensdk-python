@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxParams
-
+from eth_account.messages import encode_defunct
 from eigensdk.chainio.utils import (
     BN254G1Point,
     convert_to_bn254_g2_point,
@@ -87,39 +87,43 @@ class AvsRegistryWriter:
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
         ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-        pubkey_reg_params = {
-            "pubkeyRegistrationSignature": signed_msg,
-            "pubkeyG1": g1_pubkey_bn254,
-            "pubkeyG2": g2_pubkey_bn254,
-        }
-        signature_salt, cur_block_num, sig_valid_for_seconds = (
-            os.urandom(32),
-            self.web3.eth.block_number,
+        
+        # Convert from dictionary to properly structured tuple for contract
+        pubkey_reg_params = (
+            (signed_msg.X, signed_msg.Y),  # pubkeyRegistrationSignature as tuple
+            (g1_pubkey_bn254.X, g1_pubkey_bn254.Y),  # pubkeyG1 as tuple
+            (g2_pubkey_bn254.X, g2_pubkey_bn254.Y),  # pubkeyG2 as tuple
+        )
+
+        signature_salt, sig_valid_for_seconds = (
+            '0x' + os.urandom(32).hex(),
             60 * 60,
         )
-        signature_expiry = (
-            self.web3.eth.get_block(cur_block_num)["timestamp"] + sig_valid_for_seconds
-        )
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digestHash(
+        
+        # Get the latest block instead of using block_number to avoid BlockNotFound errors
+        current_timestamp = self.web3.eth.get_block('latest')["timestamp"]
+        signature_expiry = current_timestamp + sig_valid_for_seconds
+        
+        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
         operator_signature_bytes = self.web3.eth.account.sign_message(
-            msg_to_sign, operator_ecdsa_private_key
+            encode_defunct(msg_to_sign), operator_ecdsa_private_key
         ).signature
         operator_signature_bytes = operator_signature_bytes[:-1] + bytes(
             [operator_signature_bytes[-1] + 27]
         )
-
-        operator_signature_with_salt_and_expiry = {
-            "signature": operator_signature_bytes,
-            "salt": signature_salt,
-            "expiry": signature_expiry,
-        }
-
-        # Updated to use the send method
+        
+        # Convert from dictionary to properly structured tuple for contract
+        operator_signature_with_salt_and_expiry = (
+            operator_signature_bytes,  # signature as bytes
+            signature_salt,  # salt as bytes32
+            signature_expiry,  # expiry as uint256
+        )
+        
         return self.send(
             self.registry_coordinator.functions.registerOperator,
-            quorum_numbers,
+            bytes(quorum_numbers),
             socket,
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
@@ -179,7 +183,7 @@ class AvsRegistryWriter:
             self.web3.eth.get_block(cur_block_num)["timestamp"] + sig_valid_for_seconds
         )
 
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digestHash(
+        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
         operator_signature_bytes = self.web3.eth.account.sign_message(

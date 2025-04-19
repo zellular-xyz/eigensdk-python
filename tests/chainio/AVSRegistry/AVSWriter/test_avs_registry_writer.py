@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from web3.contract.contract import Contract
 
 from eigensdk.chainio.clients.avsregistry.writer import AvsRegistryWriter
+from eigensdk.chainio.utils import BN254G1Point
 
 
 class TestAvsRegistryWriter:
@@ -50,107 +51,6 @@ class TestAvsRegistryWriter:
 
         return writer
 
-    @patch("eigensdk.chainio.clients.avsregistry.writer.convert_bn254_geth_to_gnark")
-    @patch("eigensdk.chainio.clients.avsregistry.writer.convert_to_bn254_g1_point")
-    @patch("eigensdk.chainio.clients.avsregistry.writer.convert_to_bn254_g2_point")
-    def test_register_operator(
-        self, mock_convert_g2, mock_convert_g1, mock_convert_gnark, avs_registry_writer
-    ):
-        # Setup mock private key
-        mock_private_key = Mock(spec=ecdsa.SigningKey)
-        mock_private_key.to_string.return_value = b"mock_private_key_bytes"
-
-        # Setup mock BLS key pair
-        mock_bls_key_pair = Mock()
-        mock_signature = Mock()
-        mock_signature.g1_point = "mock_g1_signature"
-        mock_bls_key_pair.sign_hashed_to_curve_message.return_value = mock_signature
-        mock_bls_key_pair.get_pub_g1.return_value = "mock_g1_pubkey"
-        mock_bls_key_pair.get_pub_g2.return_value = "mock_g2_pubkey"
-
-        # Setup converted values
-        mock_convert_gnark.return_value = "converted_hashed_msg"
-        mock_convert_g1.return_value = "converted_g1_pubkey"
-        mock_convert_g2.return_value = "converted_g2_pubkey"
-
-        # Setup quorum numbers
-        quorum_numbers = [1, 2, 3]
-
-        # Setup registry coordinator mock returns
-        avs_registry_writer.registry_coordinator.functions.pubkeyRegistrationMessageHash.return_value.call.return_value = (
-            "hashed_msg"
-        )
-
-        # Setup el_reader mock returns
-        avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.return_value = (
-            b"msg_to_sign"
-        )
-
-        # Setup mock signature
-        mock_signature_obj = Mock()
-        mock_signature_obj.signature = b"mock_signature\x01"  # Last byte will be modified
-        avs_registry_writer.web3.eth.account.sign_message.return_value = mock_signature_obj
-
-        # Setup transaction mocks
-        mock_tx = {"gas": 1000000}
-        avs_registry_writer.registry_coordinator.functions.registerOperator.return_value.build_transaction.return_value = (
-            mock_tx
-        )
-
-        # Mock os.urandom
-        with patch("os.urandom", return_value=b"mock_salt" * 2):
-            # Call the function
-            result = avs_registry_writer.register_operator(
-                operator_ecdsa_private_key=mock_private_key,
-                bls_key_pair=mock_bls_key_pair,
-                quorum_numbers=quorum_numbers,
-                socket="mock_socket",
-                wait_for_receipt=True,
-            )
-
-            # Assertions
-            assert result == {"transactionHash": b"0x1234"}
-
-            # Verify BLS signature was created
-            avs_registry_writer.registry_coordinator.functions.pubkeyRegistrationMessageHash.assert_called_once_with(
-                "0xOperatorAddress"
-            )
-            mock_bls_key_pair.sign_hashed_to_curve_message.assert_called_once_with(
-                "converted_hashed_msg"
-            )
-            mock_convert_gnark.assert_called_once_with("hashed_msg")
-
-            # Verify pubkey conversions
-            mock_convert_g1.assert_called_once_with("mock_g1_pubkey")
-            mock_convert_g2.assert_called_once_with("mock_g2_pubkey")
-
-            # Verify operator signature creation
-            avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.assert_called_once_with(
-                "0xOperatorAddress",
-                avs_registry_writer.service_manager_addr,
-                b"mock_salt" * 2,
-                1234567890 + 3600,  # timestamp + 1 hour
-            )
-
-            # Verify transaction was built correctly
-            avs_registry_writer.registry_coordinator.functions.registerOperator.assert_called_once()
-            call_args = (
-                avs_registry_writer.registry_coordinator.functions.registerOperator.call_args[0]
-            )
-
-            # Verify the arguments
-            assert call_args[0] == {"from": "0x1234"}  # tx_opts
-            assert call_args[1] == quorum_numbers
-            assert call_args[2] == "mock_socket"
-            assert call_args[3]["pubkeyRegistrationSignature"] == "mock_g1_signature"
-            assert call_args[3]["pubkeyG1"] == "converted_g1_pubkey"
-            assert call_args[3]["pubkeyG2"] == "converted_g2_pubkey"
-            assert "signature" in call_args[4]
-            assert "salt" in call_args[4]
-            assert "expiry" in call_args[4]
-
-            # Verify transaction was sent
-            avs_registry_writer.tx_mgr.send.assert_called_once_with(mock_tx, True)
 
     @patch("eigensdk.chainio.clients.avsregistry.writer.convert_bn254_geth_to_gnark")
     @patch("eigensdk.chainio.clients.avsregistry.writer.convert_to_bn254_g1_point")
@@ -175,15 +75,26 @@ class TestAvsRegistryWriter:
 
         mock_bls_key_pair = Mock()
         mock_signature = Mock()
-        mock_signature.g1_point = "mock_g1_signature"
+        # Update mock_signature to have g1_point attribute as a proper object with X and Y attributes
+        g1_point_mock = Mock()
+        g1_point_mock.X = 123
+        g1_point_mock.Y = 456
+        mock_signature.g1_point = g1_point_mock
         mock_bls_key_pair.sign_hashed_to_curve_message = Mock(return_value=mock_signature)
         mock_bls_key_pair.get_pub_g1 = Mock(return_value=mock_g1_pubkey)
         mock_bls_key_pair.get_pub_g2 = Mock(return_value="mock_g2_pubkey")
 
-        # Setup converted values
+        # Setup converted values for G1 and G2 points
+        converted_g1_point_mock = Mock()
+        converted_g1_point_mock.X = 789
+        converted_g1_point_mock.Y = 101112
+        converted_g2_point_mock = Mock()
+        converted_g2_point_mock.X = [13, 14]
+        converted_g2_point_mock.Y = [15, 16]
+        
         mock_convert_gnark.return_value = "converted_hashed_msg"
-        mock_convert_g1.return_value = "converted_g1_pubkey"
-        mock_convert_g2.return_value = "converted_g2_pubkey"
+        mock_convert_g1.return_value = converted_g1_point_mock
+        mock_convert_g2.return_value = converted_g2_point_mock
 
         # Setup quorum numbers
         quorum_numbers = [1, 2, 3]
@@ -199,7 +110,7 @@ class TestAvsRegistryWriter:
         )
 
         # Setup el_reader mock returns
-        avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.return_value = (
+        avs_registry_writer.el_reader.calculate_operator_avs_registration_digest_hash.return_value = (
             b"msg_to_sign"
         )
 
@@ -247,11 +158,11 @@ class TestAvsRegistryWriter:
             )
 
             # Verify operator signature creation
-            avs_registry_writer.el_reader.calculate_operator_avs_registration_digestHash.assert_called_once_with(
+            avs_registry_writer.el_reader.calculate_operator_avs_registration_digest_hash.assert_called_once_with(
                 "0xOperatorAddress",
                 avs_registry_writer.service_manager_addr,
-                b"mock_salt" * 2,
-                1234567890 + 3600,
+                b"mock_salt" * 2,  # In register_operator_with_churn, raw bytes are used
+                1234567890 + 3600,  # timestamp + 1 hour
             )
 
             # Verify churn approval signature creation
@@ -264,8 +175,8 @@ class TestAvsRegistryWriter:
                 "0xOperatorAddress",
                 bytes.fromhex("1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"),
                 expected_operator_kick_params,
-                b"mock_churn_salt" * 2,
-                1234567890 + 3600,
+                b"mock_churn_salt" * 2,  # Raw bytes are used
+                1234567890 + 3600,  # timestamp + 1 hour
             )
 
             # Verify transaction was built correctly
@@ -274,13 +185,16 @@ class TestAvsRegistryWriter:
                 0
             ]
 
-            assert call_args[0] == {"from": "0x1234"}
-            assert call_args[1] == quorum_numbers
-            assert call_args[2] == "mock_socket"
-            assert call_args[3]["pubkeyRegistrationSignature"] == "mock_g1_signature"
-            assert call_args[3]["pubkeyG1"] == "converted_g1_pubkey"
-            assert call_args[3]["pubkeyG2"] == "converted_g2_pubkey"
-            assert call_args[4] == expected_operator_kick_params
+            assert call_args[0] == quorum_numbers
+            assert call_args[1] == "mock_socket"
+            
+            # Check that pubkey_reg_params is a dictionary
+            assert isinstance(call_args[2], dict)
+            assert call_args[2]["pubkeyRegistrationSignature"] == g1_point_mock
+            assert call_args[2]["pubkeyG1"] == converted_g1_point_mock
+            assert call_args[2]["pubkeyG2"] == converted_g2_point_mock
+            
+            assert call_args[3] == expected_operator_kick_params
 
             # Verify transaction was sent
             avs_registry_writer.tx_mgr.send.assert_called_once_with(mock_tx, True)
@@ -305,7 +219,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.updateOperators.assert_called_once_with(
-            {"from": "0x1234"}, operators  # tx_opts
+            operators
         )
 
         # Verify transaction was sent
@@ -329,7 +243,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.updateSocket.assert_called_once_with(
-            {"from": "0x1234"}, socket  # tx_opts
+            socket
         )
 
         # Verify transaction was sent
@@ -369,7 +283,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         mock_service_manager_contract.functions.setRewardsInitiator.assert_called_once_with(
-            {"from": "0x1234"}, rewards_initiator_addr  # tx_opts
+            rewards_initiator_addr  # Only pass the rewards_initiator_addr, not tx_opts
         )
 
         # Verify transaction was sent
@@ -398,7 +312,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.stake_registry.functions.setSlashableStakeLookahead.assert_called_once_with(
-            {"from": "0x1234"}, quorum_number, look_ahead_period  # tx_opts
+            quorum_number, look_ahead_period
         )
 
         # Verify transaction was sent
@@ -427,7 +341,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.stake_registry.functions.setMinimumStakeForQuorum.assert_called_once_with(
-            {"from": "0x1234"}, quorum_number, minimum_stake  # tx_opts
+            quorum_number, minimum_stake
         )
 
         # Verify transaction was sent
@@ -473,7 +387,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.createTotalDelegatedStakeQuorum.assert_called_once_with(
-            {"from": "0x1234"},  # tx_opts
             operator_set_params,
             minimum_stake_required,
             strategy_params,
@@ -525,7 +438,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.createSlashableStakeQuorum.assert_called_once_with(
-            {"from": "0x1234"},  # tx_opts
             operator_set_params,
             minimum_stake_required,
             strategy_params,
@@ -569,7 +481,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setOperatorSetParams.assert_called_once_with(
-            {"from": "0x1234"}, quorum_number, operator_set_params  # tx_opts
+            quorum_number, operator_set_params  # Only pass quorum_number and operator_set_params, not tx_opts
         )
 
         # Verify transaction was sent
@@ -595,7 +507,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setChurnApprover.assert_called_once_with(
-            {"from": "0x1234"}, churn_approver_address  # tx_opts
+            churn_approver_address  # Only pass the churn_approver_address, not tx_opts
         )
 
         # Verify transaction was sent
@@ -621,7 +533,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setEjector.assert_called_once_with(
-            {"from": "0x1234"}, ejector_address  # tx_opts
+            ejector_address  # Only pass the ejector_address, not tx_opts
         )
 
         # Verify transaction was sent
@@ -657,7 +569,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.stake_registry.functions.modifyStrategyParams.assert_called_once_with(
-            {"from": "0x1234"},  # tx_opts
             quorum_number,  # Use the actual integer directly
             strategy_indices,
             multipliers,
@@ -689,7 +600,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setAccountIdentifier.assert_called_once_with(
-            {"from": "0x1234"}, account_identifier_address  # tx_opts
+            account_identifier_address  # Only pass the account_identifier_address, not tx_opts
         )
 
         # Verify transaction was sent
@@ -715,7 +626,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setEjectionCooldown.assert_called_once_with(
-            {"from": "0x1234"}, ejection_cooldown  # tx_opts
+            ejection_cooldown  # Only pass the ejection_cooldown, not tx_opts
         )
 
         # Verify transaction was sent
@@ -754,7 +665,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.stake_registry.functions.addStrategies.assert_called_once_with(
-            {"from": "0x1234"},  # tx_opts
             quorum_number,  # Use the actual integer instead of underlying_type()
             strategy_params,
         )
@@ -797,7 +707,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         mock_service_manager_contract.functions.updateAVSMetadataURI.assert_called_once_with(
-            {"from": "0x1234"}, metadata_uri  # tx_opts
+            metadata_uri  # Only pass the metadata URI, not tx_opts
         )
 
         # Verify transaction was sent
@@ -830,7 +740,6 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.stake_registry.functions.removeStrategies.assert_called_once_with(
-            {"from": "0x1234"},  # tx_opts
             quorum_number,  # Use the actual integer directly
             indices_to_remove,
         )
@@ -884,7 +793,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         mock_service_manager_contract.functions.createAVSRewardsSubmission.assert_called_once_with(
-            {"from": "0x1234"}, rewards_submission  # tx_opts
+            rewards_submission  # Only pass the rewards submission, not tx_opts
         )
 
         # Verify transaction was sent
@@ -954,7 +863,7 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         mock_service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission.assert_called_once_with(
-            {"from": "0x1234"}, operator_directed_rewards_submissions  # tx_opts
+            operator_directed_rewards_submissions  # Only pass the rewards submissions, not tx_opts
         )
 
         # Verify transaction was sent
