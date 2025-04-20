@@ -89,17 +89,19 @@ class AvsRegistryWriter:
         ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
         
         # Convert from dictionary to properly structured tuple for contract
+
         pubkey_reg_params = (
-            (signed_msg.X, signed_msg.Y),  # pubkeyRegistrationSignature as tuple
-            (g1_pubkey_bn254.X, g1_pubkey_bn254.Y),  # pubkeyG1 as tuple
-            (g2_pubkey_bn254.X, g2_pubkey_bn254.Y),  # pubkeyG2 as tuple
+            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),  
+            (int(g1_pubkey_bn254.X), int(g1_pubkey_bn254.Y)),  # pubkeyG1 as tuple
+            ((int(g2_pubkey_bn254.X[0]),int(g2_pubkey_bn254.X[1])), (int(g2_pubkey_bn254.Y[0]),int(g2_pubkey_bn254.Y[1]))),  # pubkeyG2 as tuple
         )
 
         signature_salt, sig_valid_for_seconds = (
             '0x' + os.urandom(32).hex(),
             60 * 60,
         )
-        
+
+
         # Get the latest block instead of using block_number to avoid BlockNotFound errors
         current_timestamp = self.web3.eth.get_block('latest')["timestamp"]
         signature_expiry = current_timestamp + sig_valid_for_seconds
