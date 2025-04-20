@@ -1,0 +1,2 @@
+def test_is_operator_registered_with_avs(): pass
+def test_calculate_operator_avs_registration_digest_hash(): pass

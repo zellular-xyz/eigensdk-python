@@ -1,0 +1,12 @@
+def test_remove_permission(): pass
+def test_new_remove_permission_tx(): pass
+def test_new_set_permission_tx(): pass
+def test_set_permission(): pass
+def test_new_accept_admin_tx(): pass
+def test_accept_admin(): pass
+def test_add_pending_admin(): pass
+def test_new_remove_admin_tx(): pass
+def test_remove_admin(): pass
+def test_new_remove_pending_admin_tx(): pass
+def test_remove_pending_admin(): pass
+def test_new_add_pending_admin_tx(): pass
