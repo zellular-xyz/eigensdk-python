@@ -18,21 +18,9 @@ jobs:
       - name: Build Docker images
         run: make build
 
-      - name: Start Anvil (detached)
-        run: docker compose up -d anvil
-
-      - name: Wait for Anvil to be ready
-        run: |
-          echo "Waiting for Anvil on port 8546..."
-          for i in {1..20}; do
-            nc -z localhost 8546 && echo "Anvil ready!" && exit 0
-            sleep 2
-          done
-          echo "Anvil not responding on port 8546" && exit 1
-
-      - name: Run Tests
-        run: docker compose run --rm test python -m pytest tests/ -v
+      - name: Start Anvil and Run Tests
+        run: make test
 
       - name: Cleanup
         if: always()
-        run: docker compose down -v --remove-orphans
+        run: make down
