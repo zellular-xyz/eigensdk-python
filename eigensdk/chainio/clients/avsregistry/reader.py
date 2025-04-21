@@ -98,7 +98,7 @@ class AvsRegistryReader:
     def get_operators_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
-        opts = cast(TxParams, dict(call_options or {}))
+        opts = cast(TxParams, call_options or {})
         block_number = self.eth_client.eth.block_number
 
         return self.get_operators_stake_in_quorums_of_operator_at_block(
@@ -108,12 +108,12 @@ class AvsRegistryReader:
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[Dict[int, int]]:
-        opts = dict(call_options or {})
+        opts = call_options or {}
 
-        if "block_hash" not in opts:
+        if "block_hash" not in opts: # FIXME what if "block_identifier" in opts, compare with go code
             opts["block_identifier"] = self.eth_client.eth.block_number  # ✅ valid key
 
-        tx_params = cast(TxParams, opts)
+        tx_params = cast(TxParams, opts) # todo why cast?
 
         quorums = bitmap_to_quorum_ids(
             self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(tx_params)
