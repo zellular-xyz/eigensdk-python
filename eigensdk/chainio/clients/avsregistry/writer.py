@@ -5,7 +5,6 @@ from eth_typing import Address
 from typing import List, Optional, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
-from web3.types import TxParams
 from eth_account.messages import encode_defunct
 from eigensdk.chainio.utils import (
     BN254G1Point,
@@ -87,25 +86,19 @@ class AvsRegistryWriter:
         g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
             bls_key_pair.get_pub_g1()
         ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-        
-        # Convert from dictionary to properly structured tuple for contract
-
         pubkey_reg_params = (
-            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),  
+            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
             (int(g1_pubkey_bn254.X), int(g1_pubkey_bn254.Y)),  # pubkeyG1 as tuple
-            ((int(g2_pubkey_bn254.X[0]),int(g2_pubkey_bn254.X[1])), (int(g2_pubkey_bn254.Y[0]),int(g2_pubkey_bn254.Y[1]))),  # pubkeyG2 as tuple
+            ((int(g2_pubkey_bn254.X[0]), int(g2_pubkey_bn254.X[1])),
+             (int(g2_pubkey_bn254.Y[0]), int(g2_pubkey_bn254.Y[1]))),
         )
-
         signature_salt, sig_valid_for_seconds = (
-            '0x' + os.urandom(32).hex(),
+            os.urandom(32),
             60 * 60,
         )
 
-
-        # Get the latest block instead of using block_number to avoid BlockNotFound errors
         current_timestamp = self.web3.eth.get_block('latest')["timestamp"]
         signature_expiry = current_timestamp + sig_valid_for_seconds
-        
         msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
@@ -115,14 +108,11 @@ class AvsRegistryWriter:
         operator_signature_bytes = operator_signature_bytes[:-1] + bytes(
             [operator_signature_bytes[-1] + 27]
         )
-        
-        # Convert from dictionary to properly structured tuple for contract
         operator_signature_with_salt_and_expiry = (
             operator_signature_bytes,  # signature as bytes
             signature_salt,  # salt as bytes32
             signature_expiry,  # expiry as uint256
         )
-        
         return self.send(
             self.registry_coordinator.functions.registerOperator,
             bytes(quorum_numbers),
@@ -368,8 +358,6 @@ class AvsRegistryWriter:
             ejector_address,
             wait_for_receipt=wait_for_receipt,
         )
-    
-
 
     def modify_strategy_params(
         self,

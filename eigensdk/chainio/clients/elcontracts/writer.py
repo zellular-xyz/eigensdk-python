@@ -69,6 +69,9 @@ class ELWriter:
         return self.tx_mgr.send(tx, wait_for_receipt)
 
     def register_as_operator(self, operator: Operator, wait_for_receipt: bool):
+        if operator.delegation_approver_address is None:
+            raise ValueError("operator.delegation_approver_address cannot be None")
+        
         return self.send(
             self.delegation_manager.functions.registerAsOperator,
             Web3.to_checksum_address(operator.delegation_approver_address),
@@ -78,6 +81,11 @@ class ELWriter:
         )
 
     def update_operator_details(self, operator: Operator, wait_for_receipt: bool):
+        if operator.delegation_approver_address is None:
+            raise ValueError("operator.delegation_approver_address cannot be None")
+        if operator.address is None:
+            raise ValueError("operator.address cannot be None")
+        
         return self.send(
             self.delegation_manager.functions.modifyOperatorDetails,
             Web3.to_checksum_address(operator.address),

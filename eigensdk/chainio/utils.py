@@ -69,8 +69,14 @@ def convert_to_bn254_g1_point(input_point: G1Point) -> BN254G1Point:
 
 def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
     return BN254G2Point(
-        x=(int(input_point.getX().get_a().getStr().decode("utf-8")), int(input_point.getX().get_b().getStr().decode("utf-8"))),
-        y=(int(input_point.getY().get_a().getStr().decode("utf-8")), int(input_point.getY().get_b().getStr().decode("utf-8"))),
+        x=(
+            int(input_point.getX().get_a().getStr().decode("utf-8")),
+            int(input_point.getX().get_b().getStr().decode("utf-8"))
+        ),
+        y=(
+            int(input_point.getY().get_a().getStr().decode("utf-8")),
+            int(input_point.getY().get_b().getStr().decode("utf-8"))
+        ),
     )
 
 
