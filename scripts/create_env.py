@@ -55,8 +55,15 @@ def get_contract_addresses():
 def main():
     env_lines = get_contract_addresses()
     env_lines += [f"{k}={v}" for k, v in DEFAULTS.items()]
-    open("tests/.env", "w").write("\n".join(env_lines) + "\n")
-    print("✅ Env created with configuration variables and contract addresses")
+    
+    # Ensure the tests directory exists
+    tests_dir = Path("tests")
+    tests_dir.mkdir(exist_ok=True)
+    
+    # Create the .env file
+    env_file = tests_dir / ".env"
+    env_file.write_text("\n".join(env_lines) + "\n")
+    print(f"✅ Env created at {env_file.absolute()} with configuration variables and contract addresses")
 
 if __name__ == "__main__":
     main()

@@ -19,6 +19,8 @@ services:
       retries: 10
   test:
     build: .
+    volumes:
+      - .:/app
     environment:
       - PYTHONPATH=/app
       - ETH_HTTP_URL=http://anvil:8545

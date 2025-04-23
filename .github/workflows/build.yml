@@ -16,7 +16,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker images
-        run: make build
+        run: make rebuild
 
       - name: Start Anvil and Run Tests
         run: make test

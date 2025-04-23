@@ -17,16 +17,18 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install MCL
-RUN wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip \
+RUN apt-get update && apt-get install -y clang wget unzip cmake make \
+    && wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip \
     && unzip v1.93.zip \
     && cd mcl-1.93 \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -DCMAKE_CXX_COMPILER=clang++ .. \
     && make -j8 \
     && make install \
     && cd /app \
     && rm -rf mcl-1.93 v1.93.zip
+
 
 # Install Foundry (for Anvil)
 RUN curl -L https://foundry.paradigm.xyz | bash \
