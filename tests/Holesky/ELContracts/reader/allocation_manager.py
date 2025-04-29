@@ -1,5 +1,3 @@
-#Done
-#0xe03d546ada84b5624b50aa22ff8b87badef44ee2
 from tests.builder import holesky_el_reader
 from eth_typing import Address
 
