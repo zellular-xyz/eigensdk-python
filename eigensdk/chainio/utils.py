@@ -17,10 +17,6 @@ def nums_to_bytes(nums: List[int]) -> bytes:
 def send_transaction(
     func: ContractFunction, pk_wallet: LocalAccount, eth_http_client: Web3
 ) -> TxReceipt:
-    # try:
-    #     eth_http_client.middleware_onion.inject(geth_poa_middleware, layer=0)
-    # except Exception:
-    #     pass
 
     try:
         gas_estimate = func.estimate_gas({"from": pk_wallet.address})
@@ -57,7 +53,7 @@ class BN254G2Point:
 
 
 def convert_bn254_geth_to_gnark(input_point: BN254G1Point) -> G1Point:
-    return G1Point(input_point.X, input_point.Y)
+    return G1Point(input_point[0], input_point[1])
 
 
 def convert_to_bn254_g1_point(input_point: G1Point) -> BN254G1Point:
@@ -191,18 +187,7 @@ def get_pubkey_registration_params(
     operator_address: Address,
     bls_key_pair: BLSKeyPair,
 ) -> Dict[str, Any]:
-    """
-    Returns the pubkey registration params for the operator given by `operator_address`.
 
-    Args:
-        eth_client: Web3 client
-        registry_coordinator_addr: Address of the RegistryCoordinator contract
-        operator_address: Address of the operator
-        bls_key_pair: BLS key pair for the operator
-
-    Returns:
-        Dictionary containing pubkey registration parameters
-    """
     # Create contract instance for registry coordinator
     registry_coordinator = eth_client.eth.contract(
         address=registry_coordinator_addr,
@@ -234,17 +219,15 @@ def get_pubkey_registration_params(
 
     # Convert the hashed message to the format expected by BLSKeyPair
     gnark_msg = convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
-
     # Sign the message
     signed_msg = bls_key_pair.sign_hashed_to_curve_message(gnark_msg)
-
     # Convert public keys to BN254 format
     g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
     g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
 
     # Create and return the pubkey registration params
     pubkey_reg_params = {
-        "pubkeyRegistrationSignature": convert_to_bn254_g1_point(signed_msg.g1_point),
+        "pubkeyRegistrationSignature": convert_to_bn254_g1_point(G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))),
         "pubkeyG1": g1_pubkey_bn254,
         "pubkeyG2": g2_pubkey_bn254,
     }

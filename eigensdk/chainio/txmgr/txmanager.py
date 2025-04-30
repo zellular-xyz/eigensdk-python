@@ -4,8 +4,10 @@ from eth_account import Account
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 
-FALLBACK_GAS_TIP_CAP = Web3.to_wei(5, "gwei")
-FALLBACK_GAS_LIMIT_MULTIPLIER = 1.2
+FALLBACK_GAS_TIP_CAP = Web3.to_wei(20, "gwei")
+FALLBACK_GAS_LIMIT_MULTIPLIER = 3
+FALLBACK_GAS = 1000_000
+
 
 
 class TxManager:
@@ -40,16 +42,22 @@ class TxManager:
         }
         return tx_opts
 
+    def check_balance(self):
+        balance = self.w3.eth.get_balance(self.sender_address)
+        eth_balance = self.w3.from_wei(balance, "ether")
+        if eth_balance < 0.01:  # Adjust this based on expected gas usage
+            raise RuntimeError(f"Insufficient balance: {eth_balance} ETH")
+        return eth_balance
+
     def send(self, tx, wait_for_receipt=True):
         tx = self.estimate_gas_and_nonce(tx)
         signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=self.private_key)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+        receipt = self.wait_for_receipt(tx_hash.hex())
+        return (tx_hash.hex(), receipt['status'] == 1)
 
-        self.logger.info(f"Transaction sent: {tx_hash.hex()}")
 
-        if wait_for_receipt:
-            return self.wait_for_receipt(tx_hash.hex())
-        return tx_hash.hex()
+    
 
     def send_with_retry(self, tx, max_retries=3, delay=2):
         for attempt in range(max_retries):
@@ -88,11 +96,10 @@ class TxManager:
         try:
             estimated_gas = self.w3.eth.estimate_gas(tx)
         except Exception as e:
-            self.logger.warning(f"Gas estimation failed, using fallback (500,000 gas): {e}")
-            estimated_gas = 500000
+            estimated_gas = FALLBACK_GAS
 
-        gas_fee_cap = base_fee * 2 + FALLBACK_GAS_TIP_CAP
-        gas_limit = int(estimated_gas * self.gas_limit_multiplier)
+        gas_fee_cap = base_fee * 3 + FALLBACK_GAS_TIP_CAP
+        gas_limit = int(tx.get("gas", estimated_gas * self.gas_limit_multiplier))
 
         tx.update(
             {

@@ -190,12 +190,13 @@ class ELWriter:
         )
 
     def set_allocation_delay(self, operator_address: str, delay: int, wait_for_receipt: bool):
-        return self.send(
+        result = self.send(
             self.allocation_manager.functions.setAllocationDelay,
             Web3.to_checksum_address(operator_address),
             delay,
             wait_for_receipt=wait_for_receipt,
         )
+        return result
 
     def deregister_from_operator_sets(self, operator: str, request: dict):
         return self.send(
@@ -216,7 +217,7 @@ class ELWriter:
                 "avs": Web3.to_checksum_address(request["avs_address"]),
                 "operatorSetIds": request["operator_set_ids"],
                 "data": abi_encode_registration_params(
-                    RegistrationType.NORMAL,  # ✅ FIXED
+                    RegistrationType.NORMAL,
                     request["socket"],
                     get_pubkey_registration_params(
                         self.eth_client,
@@ -249,16 +250,7 @@ class ELWriter:
             wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    def new_set_permission_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.setAppointee,
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["appointee_address"]),
-            request["target"],
-            request["selector"],
-            wait_for_receipt=request.get("wait_for_receipt", True),
-        )
-
+    
     def set_permission(self, request: dict):
         return self.send(
             self.permission_controller.functions.setAppointee,

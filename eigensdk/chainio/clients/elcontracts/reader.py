@@ -113,7 +113,7 @@ class ELReader:
         self, operator_address: Address, avs_address: Address
     ) -> bool:
         return (
-            self.avs_directory.functions.AvsOperatorStatus(avs_address, operator_address).call()
+            self.avs_directory.functions.avsOperatorStatus(avs_address, operator_address).call()
             == 1
         )
 
@@ -146,13 +146,26 @@ class ELReader:
         ).call()
         return stakes
 
-    def get_operators_for_operator_set(self, operator_set: dict) -> List[Address]:
-        return self.allocation_manager.functions.getMembers(
-            (
-                Web3.to_checksum_address(operator_set.get("Avs", None)),
-                operator_set.get("Id", None),
-            )
+    def get_operators_for_operator_set(self, operator_set: dict) -> list:
+    
+        if operator_set.get("id", 0) == 0:
+            raise ValueError("Legacy AVSs not supported")
+        
+        if not self.allocation_manager:
+            raise ValueError("AllocationManager contract not provided")
+        
+        # Create the operator set tuple expected by the contract
+        operator_set_tuple = (
+            Web3.to_checksum_address(operator_set["avs"]),
+            operator_set.get("quorumNumber", 0)
+        )
+        
+        # Call the contract function
+        operators = self.allocation_manager.functions.getMembers(
+            operator_set_tuple
         ).call()
+        
+        return operators
 
     def get_num_operators_for_operator_set(self, operator_set: dict) -> int:
         return self.allocation_manager.functions.getMemberCount(
@@ -160,9 +173,25 @@ class ELReader:
         ).call()
 
     def get_strategies_for_operator_set(self, operator_set: dict) -> List[Address]:
-        return self.allocation_manager.functions.getStrategiesInOperatorSet(
-            (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"])
+
+        if operator_set.get("id", 0) == 0:
+            raise ValueError("Legacy AVSs not supported")
+        
+        if not self.allocation_manager:
+            raise ValueError("AllocationManager contract not provided")
+        
+        # Create the operator set tuple expected by the contract
+        operator_set_tuple = (
+            Web3.to_checksum_address(operator_set["avs"]),
+            operator_set.get("quorumNumber", 0)
+        )
+        
+        # Call the contract function
+        strategies = self.allocation_manager.functions.getStrategiesInOperatorSet(
+            operator_set_tuple
         ).call()
+        
+        return strategies
 
     def is_operator_registered(self, operator_address: Address) -> bool:
         return self.delegation_manager.functions.isOperator(operator_address).call()
@@ -386,6 +415,7 @@ class ELReader:
         strategy_contract = self.eth_client.eth.contract(
             address=Web3.to_checksum_address(strategy_addr), abi=self.strategy_abi
         )
+
         token_addr = Web3.to_checksum_address(strategy_contract.functions.underlyingToken().call())
         return (
             strategy_contract,
@@ -399,6 +429,7 @@ class ELReader:
         return self.avs_directory.functions.calculateOperatorAVSRegistrationDigestHash(
             operator, avs, salt, expiry
         ).call()
+
 
     def get_encumbered_magnitude(self, operator_address: Address, strategy_address: Address) -> int:
         return self.allocation_manager.functions.getEncumberedMagnitude(
@@ -470,3 +501,5 @@ class ELReader:
         return self.get_slashable_shares_for_operator_sets_before(
             operator_sets, self.eth_client.eth.block_number
         )
+
+

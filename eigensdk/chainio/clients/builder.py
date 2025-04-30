@@ -65,7 +65,7 @@ class BuildAllConfig:
             strategy_manager=strategy_manager_instance,
             logger=self.logger,
             eth_client=self.eth_client,
-            strategy_abi=ABIs.STRATEGY_MANAGER_ABI,
+            strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
         )
 
@@ -122,7 +122,7 @@ class BuildAllConfig:
             logger=self.logger,
             tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
             eth_client=self.eth_client,
-            strategy_abi=ABIs.STRATEGY_MANAGER_ABI,
+            strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
         )
 
