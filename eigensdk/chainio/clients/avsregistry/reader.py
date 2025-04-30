@@ -85,20 +85,21 @@ class AvsRegistryReader:
         stakes = self.operator_state_retriever.functions.getOperatorState(
             self.registry_coordinator_addr, quorum_numbers, self.eth_client.eth.block_number
         ).call(call_options)
-        return [[op["operator"] for op in quorum] for quorum in stakes]
+        
+        return [[op[0] for op in quorum] for quorum in stakes]  # Access first element of tuple (operator address)
 
     def get_operators_stake_in_quorums_of_operator_at_block(
         self, call_options: Optional[TxParams], operator_id: int, block_number: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
-        bitmap, stakes = self.operator_state_retriever.functions.getOperatorState0(
+        bitmap, stakes = self.operator_state_retriever.functions.getOperatorState(
             self.registry_coordinator_addr, operator_id, block_number
-        ).call(call_options or {})
+        ).call(call_options)
         return bitmap_to_quorum_ids(bitmap), stakes
 
     def get_operators_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
-        opts = cast(TxParams, call_options or {})
+        opts = cast(TxParams, call_options)
         block_number = self.eth_client.eth.block_number
 
         return self.get_operators_stake_in_quorums_of_operator_at_block(
@@ -108,7 +109,7 @@ class AvsRegistryReader:
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[Dict[int, int]]:
-        opts = call_options or {}
+        opts = call_options
 
         if "block_hash" not in opts: # FIXME what if "block_identifier" in opts, compare with go code
             opts["block_identifier"] = self.eth_client.eth.block_number  # ✅ valid key
@@ -128,41 +129,41 @@ class AvsRegistryReader:
     ) -> Optional[int]:
         return self.stake_registry.functions.weightOfOperatorForQuorum(
             quorum_number, operator_addr
-        ).call(call_options or {})
+        ).call(call_options)
 
     def strategy_params_length(
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.strategyParamsLength(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def strategy_params_by_index(
         self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
         return self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call(
-            call_options or {}
+            call_options
         )
 
     def get_stake_history_length(
         self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.getStakeHistoryLength(operator_id, quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_stake_history(
         self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[List[StakeRegistryTypesStakeUpdate]]:
         return self.stake_registry.functions.getStakeHistory(operator_id, quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_latest_stake_update(
         self, call_options: Optional[TxParams], operator_id: int, quorum_number: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
         return self.stake_registry.functions.getLatestStakeUpdate(operator_id, quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_stake_update_at_index(
@@ -170,7 +171,7 @@ class AvsRegistryReader:
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
         return self.stake_registry.functions.getStakeUpdateAtIndex(
             quorum_number, operator_id, index
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_stake_at_block_number(
         self,
@@ -181,7 +182,7 @@ class AvsRegistryReader:
     ) -> Optional[int]:
         return self.stake_registry.functions.getStakeAtBlockNumber(
             operator_id, quorum_number, block_number
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_stake_update_index_at_block_number(
         self,
@@ -192,7 +193,7 @@ class AvsRegistryReader:
     ) -> Optional[int]:
         return self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
             operator_id, quorum_number, block_number
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_stake_at_block_number_and_index(
         self,
@@ -204,13 +205,13 @@ class AvsRegistryReader:
     ) -> Optional[int]:
         return self.stake_registry.functions.getStakeAtBlockNumberAndIndex(
             quorum_number, block_number, operator_id, index
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_total_stake_history_length(
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.getTotalStakeHistoryLength(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_check_signatures_indices(
@@ -225,20 +226,20 @@ class AvsRegistryReader:
             reference_block_number,
             quorum_numbers,
             non_signer_operator_ids,
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_current_total_stake(
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.getCurrentTotalStake(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_total_stake_update_at_index(
         self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
         return self.stake_registry.functions.getTotalStakeUpdateAtIndex(quorum_number, index).call(
-            call_options or {}
+            call_options
         )
 
     def get_total_stake_at_block_number_from_index(
@@ -246,39 +247,39 @@ class AvsRegistryReader:
     ) -> Optional[int]:
         return self.stake_registry.functions.getTotalStakeAtBlockNumberFromIndex(
             quorum_number, block_number, index
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_total_stake_indices_at_block_number(
         self, call_options: Optional[TxParams], quorum_numbers: List[int], block_number: int
     ) -> Optional[List[int]]:
         return self.stake_registry.functions.getTotalStakeIndicesAtBlockNumber(
             block_number, quorum_numbers
-        ).call(call_options or {})
+        ).call(call_options)
 
     def get_minimum_stake_for_quorum(
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_strategy_params_at_index(
         self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
         return self.stake_registry.functions.strategyParams(quorum_number, index).call(
-            call_options or {}
+            call_options
         )
 
     def get_strategy_per_quorum_at_index(
         self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[str]:
         return self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call(
-            call_options or {}
+            call_options
         )
 
     def get_restakeable_strategies(self, call_options: Optional[TxParams]) -> List[str]:
         return remove_duplicate_strategies(
-            self.service_manager.functions.getRestakeableStrategies().call(call_options or {})
+            self.service_manager.functions.getRestakeableStrategies().call(call_options)
         )
 
     def get_operator_restaked_strategies(
@@ -286,7 +287,7 @@ class AvsRegistryReader:
     ) -> List[str]:
         return remove_duplicate_strategies(
             self.service_manager.functions.getOperatorRestakedStrategies(operator).call(
-                call_options or {}
+                call_options
             )
         )
 
@@ -294,14 +295,14 @@ class AvsRegistryReader:
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_slashable_stake_look_ahead_per_quorum(
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[int]:
         return self.stake_registry.functions.slashableStakeLookAheadPerQuorum(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_operator_id(
@@ -315,18 +316,18 @@ class AvsRegistryReader:
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[str]:
         return self.registry_coordinator.functions.getOperatorFromId(operator_id).call(
-            call_options or {}
+            call_options
         )
 
     def query_registration_detail(
         self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[List[bool]]:
-        operator_id = self.get_operator_id(call_options or {}, operator_address)
+        operator_id = self.get_operator_id(call_options, operator_address)
         if operator_id is None:
             return None
 
         value = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(
-            call_options or {}
+            call_options
         )
         return [(value & (1 << i)) != 0 for i in range(value.bit_length())]
 
@@ -335,7 +336,7 @@ class AvsRegistryReader:
     ) -> bool:
         return (
             self.registry_coordinator.functions.getOperatorStatus(operator_address).call(
-                call_options or {}
+                call_options
             )
             == 1
         )
@@ -344,36 +345,36 @@ class AvsRegistryReader:
         self, call_options: Optional[TxParams], quorum_number: int
     ) -> Optional[bool]:
         return self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call(
-            call_options or {}
+            call_options
         )
 
     def get_operator_id_from_operator_address(
         self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[bytes]:
         return self.bls_apk_registry.functions.operatorToPubkeyHash(operator_address).call(
-            call_options or {}
+            call_options
         )
 
     def get_operator_address_from_operator_id(
         self, call_options: Optional[TxParams], operator_pubkey_hash: bytes
     ) -> Optional[str]:
         return self.bls_apk_registry.functions.pubkeyHashToOperator(operator_pubkey_hash).call(
-            call_options or {}
+            call_options
         )
 
     def get_pubkey_from_operator_address(
         self, call_options: Optional[TxParams], operator_address: str
     ) -> Optional[G1Point]:
         operator_pubkey = self.bls_apk_registry.functions.operatorToPubkey(operator_address).call(
-            call_options or {}
+            call_options
         )
-        return G1Point(operator_pubkey["x"], operator_pubkey["y"])
+        return G1Point(operator_pubkey[0], operator_pubkey[1])
 
     def get_apk_update(
         self, call_options: Optional[TxParams], quorum_number: int, index: int
     ) -> Optional[BLSApkRegistryTypesApkUpdate]:
         update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call(
-            call_options or {}
+            call_options
         )
         return BLSApkRegistryTypesApkUpdate(
             apk_hash=bytes(update["apkHash"]),
