@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from web3 import Web3
 from eigensdk.chainio.clients.builder import BuildAllConfig
 from eth_utils import to_checksum_address
+from eth_keys import keys
+from eth_utils import to_checksum_address, keccak
 
 # Load environment variables from both .env files
 load_dotenv()
@@ -44,8 +46,7 @@ el_reader = config.build_el_reader_clients(
 
 # Build EL writer client
 el_writer = config.build_el_writer_clients(
-    sender_address=ANVIL_SENDER_ADDRESS,
-    private_key=ANVIL_PRIVATE_KEY,
+    operator_ecdsa_private_key=ANVIL_PRIVATE_KEY,
     allocation_manager=os.getenv("ALLOCATION_MANAGER_ADDR"),
     avs_directory=os.getenv("AVS_DIRECTORY_ADDR"),
     delegation_manager=os.getenv("DELEGATION_MANAGER_ADDR"),
@@ -59,8 +60,7 @@ el_writer = config.build_el_writer_clients(
 
 # Build AVS registry reader client
 avs_registry_reader = config.build_avs_registry_reader_clients(
-    sender_address=ANVIL_SENDER_ADDRESS,
-    private_key=ANVIL_PRIVATE_KEY,
+    operator_ecdsa_private_key=ANVIL_PRIVATE_KEY,
     registry_coordinator=os.getenv("REGISTRY_COORDINATOR_ADDR"),
     registry_coordinator_addr=os.getenv("REGISTRY_COORDINATOR_ADDR"),
     bls_apk_registry=os.getenv("BLS_APK_REGISTRY_ADDR"),
@@ -72,8 +72,7 @@ avs_registry_reader = config.build_avs_registry_reader_clients(
 
 # Build AVS registry writer client
 avs_registry_writer = config.build_avs_registry_writer_clients(
-    sender_address=ANVIL_SENDER_ADDRESS,
-    private_key=ANVIL_PRIVATE_KEY,
+    operator_ecdsa_private_key=ANVIL_PRIVATE_KEY,
     registry_coordinator=os.getenv("REGISTRY_COORDINATOR_ADDR"),
     operator_state_retriever=os.getenv("OPERATOR_STATE_RETRIEVER_ADDR"),
     service_manager=os.getenv("SERVICE_MANAGER_ADDR"),
@@ -96,8 +95,7 @@ holesky_el_reader = holesky_config.build_el_reader_clients(
 
 # Build EL writer client
 holesky_el_writer = holesky_config.build_el_writer_clients(
-    sender_address=HOLESKY_SENDER_ADDRESS,
-    private_key=HOLESKY_PRIVATE_KEY,
+    operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
     allocation_manager=to_checksum_address(os.getenv("HOLESKY_ALLOCATION_MANAGER_ADDR").lower()),
     avs_directory=to_checksum_address(os.getenv("HOLESKY_AVS_DIRECTORY_ADDR").lower()),
     delegation_manager=to_checksum_address(os.getenv("HOLESKY_DELEGATION_MANAGER_ADDR").lower()),
@@ -111,8 +109,7 @@ holesky_el_writer = holesky_config.build_el_writer_clients(
 
 # Build AVS registry reader client
 holesky_avs_registry_reader = holesky_config.build_avs_registry_reader_clients(
-    sender_address=HOLESKY_SENDER_ADDRESS,
-    private_key=HOLESKY_PRIVATE_KEY,
+    operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
     registry_coordinator=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
     registry_coordinator_addr=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
     bls_apk_registry=to_checksum_address(os.getenv("HOLESKY_BLS_APK_REGISTRY_ADDR").lower()),
@@ -124,8 +121,7 @@ holesky_avs_registry_reader = holesky_config.build_avs_registry_reader_clients(
 
 # Build AVS registry writer client
 holesky_avs_registry_writer = holesky_config.build_avs_registry_writer_clients(
-    sender_address=HOLESKY_SENDER_ADDRESS,
-    private_key=HOLESKY_PRIVATE_KEY,
+    operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
     registry_coordinator=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
     operator_state_retriever=to_checksum_address(os.getenv("HOLESKY_OPERATOR_STATE_RETRIEVER_ADDR").lower()),
     service_manager=to_checksum_address(os.getenv("HOLESKY_SERVICE_MANAGER_ADDR").lower()),

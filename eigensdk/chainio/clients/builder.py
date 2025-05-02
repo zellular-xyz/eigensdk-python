@@ -1,13 +1,15 @@
 import logging
 from eth_typing import Address
 from web3 import Web3
-
+from typing import Any, Optional
 from eigensdk.chainio.clients.avsregistry import reader as avs_reader
 from eigensdk.chainio.clients.avsregistry import writer as avs_writer
 from eigensdk.chainio.clients.elcontracts import reader as el_reader
 from eigensdk.chainio.clients.elcontracts import writer as el_writer
 from eigensdk.chainio.txmgr import txmanager
 from eigensdk.contracts import ABIs
+from eth_account.signers.local import LocalAccount
+from eth_account import Account
 
 
 class BuildAllConfig:
@@ -73,8 +75,7 @@ class BuildAllConfig:
 
     def build_el_writer_clients(
         self,
-        sender_address: Address,
-        private_key: str,
+        operator_ecdsa_private_key: str,
         allocation_manager: Address,
         avs_directory: Address,
         delegation_manager: Address,
@@ -85,6 +86,8 @@ class BuildAllConfig:
         strategy_manager_addr: Address,
         el_chain_reader: el_reader.ELReader,
     ) -> el_writer.ELWriter:
+
+        pk_wallet = Account.from_key(operator_ecdsa_private_key)
 
         allocation_manager_instance = self.eth_client.eth.contract(
             address=allocation_manager, abi=ABIs.ALLOCATION_MANAGER_ABI
@@ -120,7 +123,7 @@ class BuildAllConfig:
             strategy_manager_addr=strategy_manager_addr,
             el_chain_reader=el_chain_reader,
             logger=self.logger,
-            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
+            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
             eth_client=self.eth_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
@@ -130,8 +133,7 @@ class BuildAllConfig:
 
     def build_avs_registry_reader_clients(
         self,
-        sender_address: Address,
-        private_key: str,
+        operator_ecdsa_private_key: str,
         registry_coordinator: Address,
         registry_coordinator_addr: Address,
         bls_apk_registry: Address,
@@ -140,6 +142,8 @@ class BuildAllConfig:
         service_manager: Address,
         stake_registry: Address,
     ) -> avs_reader.AvsRegistryReader:
+
+        pk_wallet = Account.from_key(operator_ecdsa_private_key)
 
         registry_coordinator_instance = self.eth_client.eth.contract(
             address=registry_coordinator, abi=ABIs.REGISTRY_COORDINATOR_ABI
@@ -167,15 +171,14 @@ class BuildAllConfig:
             stake_registry=stake_registry_instance,
             logger=self.logger,
             eth_client=self.eth_client,
-            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
+            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
         )
 
         return avs_reader_instance
 
     def build_avs_registry_writer_clients(
         self,
-        sender_address: Address,
-        private_key: str,
+        operator_ecdsa_private_key: str,
         registry_coordinator: Address,
         operator_state_retriever: Address,
         service_manager: Address,
@@ -184,6 +187,8 @@ class BuildAllConfig:
         bls_apk_registry: Address,
         el_chain_reader: el_reader.ELReader,
     ) -> avs_writer.AvsRegistryWriter:
+
+        pk_wallet = Account.from_key(operator_ecdsa_private_key)
 
         registry_coordinator_instance = self.eth_client.eth.contract(
             address=registry_coordinator, abi=ABIs.REGISTRY_COORDINATOR_ABI
@@ -211,7 +216,117 @@ class BuildAllConfig:
             el_reader=el_chain_reader,
             logger=self.logger,
             eth_client=self.eth_client,
-            tx_mgr=txmanager.TxManager(self.eth_client, str(sender_address), private_key),
+            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
         )
 
         return avs_writer_instance
+    
+
+class Clients:
+    def __init__(
+        self,
+        avs_registry_reader: avs_reader.AvsRegistryReader,
+        avs_registry_writer: avs_writer.AvsRegistryWriter,
+        el_reader: el_reader.ELReader,
+        el_writer: el_writer.ELWriter,
+        eth_http_client: Web3,
+        wallet: LocalAccount,
+        metrics: Optional[Any],
+    ):
+        self.avs_registry_reader = avs_registry_reader
+        self.avs_registry_writer = avs_registry_writer
+        self.el_reader = el_reader
+        self.el_writer = el_writer
+        self.eth_http_client = eth_http_client
+        self.wallet = wallet
+        self.metrics = metrics
+
+
+
+
+def build_all(
+    config: BuildAllConfig,
+    operator_ecdsa_private_key: str,
+    allocation_manager: Address,
+    avs_directory: Address,
+    delegation_manager: Address,
+    permission_controller: Address,
+    reward_coordinator: Address,
+    registry_coordinator_addr: Address,
+    strategy_manager: Address,
+    registry_coordinator: Address,
+    strategy_manager_addr: Address,
+    service_manager: Address,
+    service_manager_addr: Address,
+    stake_registry: Address,
+    bls_apk_registry: Address,
+    bls_apk_registry_addr: Address,
+    operator_state_retriever: Address,
+
+) -> Clients:
+    eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
+    pk_wallet: LocalAccount = Account.from_key(operator_ecdsa_private_key) if operator_ecdsa_private_key else None
+
+    el_reader = config.build_el_reader_clients()
+    el_writer = config.build_el_writer_clients()
+    avs_registry_reader = config.build_avs_registry_reader_clients()
+    avs_registry_writer = config.build_avs_registry_writer_clients() 
+
+
+    # Build EL reader client
+    el_reader = config.build_el_reader_clients(
+        allocation_manager=allocation_manager,
+        avs_directory=avs_directory,
+        delegation_manager=delegation_manager,
+        permission_controller=permission_controller,
+        reward_coordinator=reward_coordinator,
+        strategy_manager=strategy_manager,
+    )
+
+    # Build EL writer client
+    el_writer = config.build_el_writer_clients(
+        operator_ecdsa_private_key=operator_ecdsa_private_key,
+        allocation_manager=allocation_manager,
+        avs_directory=avs_directory,
+        delegation_manager=delegation_manager,
+        permission_controller=permission_controller,
+        reward_coordinator=reward_coordinator,
+        registry_coordinator=registry_coordinator,
+        strategy_manager=strategy_manager,
+        strategy_manager_addr=strategy_manager_addr,
+        el_chain_reader=el_reader,
+    )
+
+    # Build AVS registry reader client
+    avs_registry_reader = config.build_avs_registry_reader_clients(
+        operator_ecdsa_private_key=operator_ecdsa_private_key,
+        registry_coordinator=registry_coordinator,
+        registry_coordinator_addr=registry_coordinator_addr,
+        bls_apk_registry=bls_apk_registry,
+        bls_apk_registry_addr=bls_apk_registry_addr,
+        operator_state_retriever=operator_state_retriever,
+        service_manager=service_manager,
+        stake_registry=stake_registry,
+    )
+
+    # Build AVS registry writer client
+    avs_registry_writer = config.build_avs_registry_writer_clients(
+        operator_ecdsa_private_key=operator_ecdsa_private_key,
+        registry_coordinator=registry_coordinator,
+        operator_state_retriever=operator_state_retriever,
+        service_manager=service_manager,
+        service_manager_addr=service_manager_addr,
+        stake_registry=stake_registry,
+        bls_apk_registry=bls_apk_registry,
+        el_chain_reader=el_reader,
+    )
+
+    return Clients(
+        avs_registry_reader=avs_registry_reader,
+        avs_registry_writer=avs_registry_writer,
+        el_reader=el_reader,
+        el_writer=el_writer,
+        eth_http_client=eth_http_client,
+        wallet=pk_wallet,
+        metrics=None,
+    )

@@ -1,1 +1,0 @@
-def test_deposit_erc20_into_strategy(): pass
