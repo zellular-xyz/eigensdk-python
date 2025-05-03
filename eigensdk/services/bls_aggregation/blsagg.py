@@ -3,11 +3,7 @@ from dataclasses import dataclass
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 import eigensdk.crypto.bls.attestation as bls
 from eigensdk.services.avsregistry.avsregistry import AvsRegistryService
-from eigensdk._types import (
-    OperatorAvsState,
-    QuorumAvsState,
-    SignedTaskResponseDigest
-)
+from eigensdk._types import OperatorAvsState, QuorumAvsState, SignedTaskResponseDigest
 import json
 import queue
 
@@ -155,7 +151,6 @@ class BlsAggregationService(BlsAggregationServiceInterface):
     responses: dict[int, TaskListItem]
     aggregated_responses: queue.Queue
 
-
     def __init__(
         self,
         avs_registry_service: AvsRegistryService,
@@ -184,25 +179,20 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         for i, qn in enumerate(quorum_numbers):
             quorum_threshold_percentages_map[qn] = quorum_threshold_percentages[i]
 
-        operators_avs_state_dict = (
-            self.avs_registry_service.get_operators_avs_state_at_block(
-                quorum_numbers, task_created_block
-            )
+        operators_avs_state_dict = self.avs_registry_service.get_operators_avs_state_at_block(
+            quorum_numbers, task_created_block
         )
-        quorums_avs_state_dict = (
-            self.avs_registry_service.get_quorums_avs_state_at_block(
-                quorum_numbers, task_created_block
-            )
+        quorums_avs_state_dict = self.avs_registry_service.get_quorums_avs_state_at_block(
+            quorum_numbers, task_created_block
         )
-
 
         total_stake_per_quorum = {}
         for quorum_num, quorum_avs_state in quorums_avs_state_dict.items():
-            total_stake_per_quorum[quorum_num] = quorum_avs_state['total_stake']
+            total_stake_per_quorum[quorum_num] = quorum_avs_state["total_stake"]
 
         quorum_apks_g1 = []
         for i, qn in enumerate(quorum_numbers):
-            quorum_apks_g1.append(quorums_avs_state_dict[qn]['agg_pubkey_g1'])
+            quorum_apks_g1.append(quorums_avs_state_dict[qn]["agg_pubkey_g1"])
 
         self.responses[task_index] = self.TaskListItem(
             task_created_block=task_created_block,
@@ -229,9 +219,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             raise ValueError("Operator is not registered")
 
         cd = self.responses[task_index]
-        operators_avs_state_dict: dict[int, OperatorAvsState] = (
-            cd.operators_avs_state_dict
-        )
+        operators_avs_state_dict: dict[int, OperatorAvsState] = cd.operators_avs_state_dict
 
         err = self.__verify_signature(
             task_index=task_index,
@@ -247,9 +235,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         if task_response_digest not in cd.aggregated_operators_dict:
             digest_aggregated_operators: AggregatedOperators = AggregatedOperators(
                 signers_apk_g2=bls.new_zero_g2_point()
-                + operators_avs_state_dict[
-                    operator_id
-                ].operator_info.pub_keys.g2_pub_key,
+                + operators_avs_state_dict[operator_id].operator_info.pub_keys.g2_pub_key,
                 signers_agg_sig_g1=bls_sign,
                 signers_operator_ids_set={operator_id: True},
                 signers_total_stake_per_quorum=operators_avs_state_dict[
@@ -257,32 +243,23 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 ].stake_per_quorum,
             )
         else:
-            digest_aggregated_operators: AggregatedOperators = (
-                cd.aggregated_operators_dict[task_response_digest]
-            )
+            digest_aggregated_operators: AggregatedOperators = cd.aggregated_operators_dict[
+                task_response_digest
+            ]
 
             digest_aggregated_operators.signers_agg_sig_g1 = (
                 digest_aggregated_operators.signers_agg_sig_g1 + bls_sign
             )
             digest_aggregated_operators.signers_apk_g2 = (
                 digest_aggregated_operators.signers_apk_g2
-                + operators_avs_state_dict[
-                    operator_id
-                ].operator_info.pub_keys.g2_pub_key
+                + operators_avs_state_dict[operator_id].operator_info.pub_keys.g2_pub_key
             )
             digest_aggregated_operators.signers_operator_ids_set[operator_id] = True
             for quorum_num, stake_amount in operators_avs_state_dict[
                 operator_id
             ].stake_per_quorum.items():
-                if (
-                    digest_aggregated_operators.signers_total_stake_per_quorum[
-                        quorum_num
-                    ]
-                    is None
-                ):
-                    digest_aggregated_operators.signers_total_stake_per_quorum[
-                        quorum_num
-                    ] = 0
+                if digest_aggregated_operators.signers_total_stake_per_quorum[quorum_num] is None:
+                    digest_aggregated_operators.signers_total_stake_per_quorum[quorum_num] = 0
                 digest_aggregated_operators.signers_total_stake_per_quorum[
                     quorum_num
                 ] += stake_amount
@@ -299,10 +276,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         ):
             non_signers_operator_ids: list[int] = []
             for operator_id in operators_avs_state_dict:
-                if (
-                    operator_id
-                    not in digest_aggregated_operators.signers_operator_ids_set
-                ):
+                if operator_id not in digest_aggregated_operators.signers_operator_ids_set:
                     non_signers_operator_ids.append(operator_id)
             non_signers_operator_ids.sort()
 
@@ -372,9 +346,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
         if operator_id not in operators_avs_state_dict:
             raise ValueError(f"Operator {operator_id} is not part of task quorum")
 
-        task_response_digest = self.hash_function(
-            signed_task_response_digest.task_response
-        )
+        task_response_digest = self.hash_function(signed_task_response_digest.task_response)
 
         operator_g2_pub_key = operators_avs_state_dict[
             operator_id

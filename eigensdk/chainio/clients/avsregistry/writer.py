@@ -72,9 +72,7 @@ class AvsRegistryWriter:
         socket: str,
         wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        operator_addr = self.web3.eth.account.from_key(
-            operator_ecdsa_private_key
-        ).address
+        operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
@@ -89,15 +87,17 @@ class AvsRegistryWriter:
         pubkey_reg_params = (
             (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
             (int(g1_pubkey_bn254.X), int(g1_pubkey_bn254.Y)),  # pubkeyG1 as tuple
-            ((int(g2_pubkey_bn254.X[0]), int(g2_pubkey_bn254.X[1])),
-             (int(g2_pubkey_bn254.Y[0]), int(g2_pubkey_bn254.Y[1]))),
+            (
+                (int(g2_pubkey_bn254.X[0]), int(g2_pubkey_bn254.X[1])),
+                (int(g2_pubkey_bn254.Y[0]), int(g2_pubkey_bn254.Y[1])),
+            ),
         )
         signature_salt, sig_valid_for_seconds = (
             os.urandom(32),
             60 * 60,
         )
 
-        current_timestamp = self.web3.eth.get_block('latest')["timestamp"]
+        current_timestamp = self.web3.eth.get_block("latest")["timestamp"]
         signature_expiry = current_timestamp + sig_valid_for_seconds
         msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry

@@ -123,7 +123,9 @@ class BuildAllConfig:
             strategy_manager_addr=strategy_manager_addr,
             el_chain_reader=el_chain_reader,
             logger=self.logger,
-            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
+            tx_mgr=txmanager.TxManager(
+                self.eth_client, pk_wallet.address, operator_ecdsa_private_key
+            ),
             eth_client=self.eth_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
@@ -171,7 +173,9 @@ class BuildAllConfig:
             stake_registry=stake_registry_instance,
             logger=self.logger,
             eth_client=self.eth_client,
-            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
+            tx_mgr=txmanager.TxManager(
+                self.eth_client, pk_wallet.address, operator_ecdsa_private_key
+            ),
         )
 
         return avs_reader_instance
@@ -216,11 +220,13 @@ class BuildAllConfig:
             el_reader=el_chain_reader,
             logger=self.logger,
             eth_client=self.eth_client,
-            tx_mgr=txmanager.TxManager(self.eth_client, pk_wallet.address, operator_ecdsa_private_key),
+            tx_mgr=txmanager.TxManager(
+                self.eth_client, pk_wallet.address, operator_ecdsa_private_key
+            ),
         )
 
         return avs_writer_instance
-    
+
 
 class Clients:
     def __init__(
@@ -242,8 +248,6 @@ class Clients:
         self.metrics = metrics
 
 
-
-
 def build_all(
     config: BuildAllConfig,
     config_operator_ecdsa_private_key: str,
@@ -262,11 +266,13 @@ def build_all(
     config_bls_apk_registry: Address,
     config_bls_apk_registry_addr: Address,
     config_operator_state_retriever: Address,
-
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_client))
-    pk_wallet: LocalAccount = Account.from_key(config_operator_ecdsa_private_key) if config_operator_ecdsa_private_key else None
-
+    pk_wallet: LocalAccount = (
+        Account.from_key(config_operator_ecdsa_private_key)
+        if config_operator_ecdsa_private_key
+        else None
+    )
 
     # Build EL reader client
     el_reader = config.build_el_reader_clients(

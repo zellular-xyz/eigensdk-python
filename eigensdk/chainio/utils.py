@@ -67,11 +67,11 @@ def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
     return BN254G2Point(
         x=(
             int(input_point.getX().get_a().getStr().decode("utf-8")),
-            int(input_point.getX().get_b().getStr().decode("utf-8"))
+            int(input_point.getX().get_b().getStr().decode("utf-8")),
         ),
         y=(
             int(input_point.getY().get_a().getStr().decode("utf-8")),
-            int(input_point.getY().get_b().getStr().decode("utf-8"))
+            int(input_point.getY().get_b().getStr().decode("utf-8")),
         ),
     )
 
@@ -227,7 +227,9 @@ def get_pubkey_registration_params(
 
     # Create and return the pubkey registration params
     pubkey_reg_params = {
-        "pubkeyRegistrationSignature": convert_to_bn254_g1_point(G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))),
+        "pubkeyRegistrationSignature": convert_to_bn254_g1_point(
+            G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))
+        ),
         "pubkeyG1": g1_pubkey_bn254,
         "pubkeyG2": g2_pubkey_bn254,
     }

@@ -147,24 +147,22 @@ class ELReader:
         return stakes
 
     def get_operators_for_operator_set(self, operator_set: dict) -> list:
-    
+
         if operator_set.get("id", 0) == 0:
             raise ValueError("Legacy AVSs not supported")
-        
+
         if not self.allocation_manager:
             raise ValueError("AllocationManager contract not provided")
-        
+
         # Create the operator set tuple expected by the contract
         operator_set_tuple = (
             Web3.to_checksum_address(operator_set["avs"]),
-            operator_set.get("quorumNumber", 0)
+            operator_set.get("quorumNumber", 0),
         )
-        
+
         # Call the contract function
-        operators = self.allocation_manager.functions.getMembers(
-            operator_set_tuple
-        ).call()
-        
+        operators = self.allocation_manager.functions.getMembers(operator_set_tuple).call()
+
         return operators
 
     def get_num_operators_for_operator_set(self, operator_set: dict) -> int:
@@ -176,21 +174,21 @@ class ELReader:
 
         if operator_set.get("id", 0) == 0:
             raise ValueError("Legacy AVSs not supported")
-        
+
         if not self.allocation_manager:
             raise ValueError("AllocationManager contract not provided")
-        
+
         # Create the operator set tuple expected by the contract
         operator_set_tuple = (
             Web3.to_checksum_address(operator_set["avs"]),
-            operator_set.get("quorumNumber", 0)
+            operator_set.get("quorumNumber", 0),
         )
-        
+
         # Call the contract function
         strategies = self.allocation_manager.functions.getStrategiesInOperatorSet(
             operator_set_tuple
         ).call()
-        
+
         return strategies
 
     def is_operator_registered(self, operator_address: Address) -> bool:
@@ -430,7 +428,6 @@ class ELReader:
             operator, avs, salt, expiry
         ).call()
 
-
     def get_encumbered_magnitude(self, operator_address: Address, strategy_address: Address) -> int:
         return self.allocation_manager.functions.getEncumberedMagnitude(
             operator_address, strategy_address
@@ -501,5 +498,3 @@ class ELReader:
         return self.get_slashable_shares_for_operator_sets_before(
             operator_sets, self.eth_client.eth.block_number
         )
-
-

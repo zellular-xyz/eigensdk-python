@@ -42,7 +42,9 @@ class AvsRegistryService:
                 try:
                     info = self.get_operator_info(operator.operator_id)
                 except:
-                    self.logger.error(f"Operator {operator.operator_id} info not found. The operator is skipped.")
+                    self.logger.error(
+                        f"Operator {operator.operator_id} info not found. The operator is skipped."
+                    )
                     continue
 
                 if operator.operator_id not in operators_avs_state:
@@ -61,9 +63,7 @@ class AvsRegistryService:
     def get_quorums_avs_state_at_block(
         self, quorum_numbers: List[int], block_number: int
     ) -> Dict[int, Dict[str, Union[int, G1Point]]]:
-        operators_avs_state = self.get_operators_avs_state_at_block(
-            quorum_numbers, block_number
-        )
+        operators_avs_state = self.get_operators_avs_state_at_block(quorum_numbers, block_number)
 
         quorums_avs_state: Dict[int, Dict[str, Union[int, G1Point]]] = {}
         for quorum_num in quorum_numbers:

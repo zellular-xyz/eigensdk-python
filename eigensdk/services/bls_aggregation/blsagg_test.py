@@ -129,9 +129,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
             block_number, [operator_1, operator_2, operator_3]
         )
 
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         await bls_aggregation_service.initialize_new_task(
             task_index,
@@ -216,13 +214,9 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
         quorum_threshold_percentages = [100, 100]
         task_response = "sample text response for tast case 3"
         task_response_digest = hash_function(task_response)
-        fake_avs_registry_service = FakeAvsRegistryService(
-            block_number, [operator_1, operator_2]
-        )
+        fake_avs_registry_service = FakeAvsRegistryService(block_number, [operator_1, operator_2])
 
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         await bls_aggregation_service.initialize_new_task(
             task_index,
@@ -256,8 +250,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
             ],
-            signers_apk_g2=operator_1.bls_key_pair.pub_g2
-            + operator_2.bls_key_pair.pub_g2,
+            signers_apk_g2=operator_1.bls_key_pair.pub_g2 + operator_2.bls_key_pair.pub_g2,
             signers_agg_sig_g1=sign_1 + sign_2,
             non_signer_quorum_bitmap_indices=[],
             quorum_apk_indices=[],
@@ -296,13 +289,9 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
         quorum_numbers = [1, 2]
         quorum_threshold_percentages = [100, 100]
 
-        fake_avs_registry_service = FakeAvsRegistryService(
-            block_number, [operator_1, operator_2]
-        )
+        fake_avs_registry_service = FakeAvsRegistryService(block_number, [operator_1, operator_2])
 
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         task_index_1 = 1
         task_response_1 = "sample text response for tast case 4.1"
@@ -388,8 +377,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
             ],
-            signers_apk_g2=operator_1.bls_key_pair.pub_g2
-            + operator_2.bls_key_pair.pub_g2,
+            signers_apk_g2=operator_1.bls_key_pair.pub_g2 + operator_2.bls_key_pair.pub_g2,
             signers_agg_sig_g1=task_1_sign_1 + task_1_sign_2,
             non_signer_quorum_bitmap_indices=[],
             quorum_apk_indices=[],
@@ -407,8 +395,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
                 operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1,
             ],
-            signers_apk_g2=operator_1.bls_key_pair.pub_g2
-            + operator_2.bls_key_pair.pub_g2,
+            signers_apk_g2=operator_1.bls_key_pair.pub_g2 + operator_2.bls_key_pair.pub_g2,
             signers_agg_sig_g1=task_2_sign_1 + task_2_sign_2,
             non_signer_quorum_bitmap_indices=[],
             quorum_apk_indices=[],
@@ -452,9 +439,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
         block_number = 1
 
         fake_avs_registry_service = FakeAvsRegistryService(block_number, [operator_1])
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         await bls_aggregation_service.initialize_new_task(
             task_index=task_index,
@@ -503,12 +488,8 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
         bls_sign = operator_1.bls_key_pair.sign_message(task_response_digest)
         block_number = 1
 
-        fake_avs_registry_service = FakeAvsRegistryService(
-            block_number, [operator_1, operator_2]
-        )
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        fake_avs_registry_service = FakeAvsRegistryService(block_number, [operator_1, operator_2])
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         await bls_aggregation_service.initialize_new_task(
             task_index=task_index,
@@ -536,9 +517,7 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
             task_response=task_response,
             task_response_digest=task_response_digest,
             non_signers_pubkeys_g1=[operator_2.bls_key_pair.pub_g1],
-            quorum_apks_g1=[
-                operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1
-            ],
+            quorum_apks_g1=[operator_1.bls_key_pair.pub_g1 + operator_2.bls_key_pair.pub_g1],
             signers_apk_g2=operator_1.bls_key_pair.pub_g2,
             signers_agg_sig_g1=bls_sign,
             non_signer_quorum_bitmap_indices=[],
@@ -582,12 +561,8 @@ class TestBlsAggregationService(unittest.IsolatedAsyncioTestCase):
         bls_sign = operator_1.bls_key_pair.sign_message(task_response_digest)
         block_number = 1
 
-        fake_avs_registry_service = FakeAvsRegistryService(
-            block_number, [operator_1, operator_2]
-        )
-        bls_aggregation_service = BlsAggregationService(
-            fake_avs_registry_service, hash_function
-        )
+        fake_avs_registry_service = FakeAvsRegistryService(block_number, [operator_1, operator_2])
+        bls_aggregation_service = BlsAggregationService(fake_avs_registry_service, hash_function)
 
         await bls_aggregation_service.initialize_new_task(
             task_index=task_index,

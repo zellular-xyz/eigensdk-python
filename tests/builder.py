@@ -95,12 +95,22 @@ if HOLESKY_PRIVATE_KEY != "":
     # Build EL writer client
     holesky_el_writer = holesky_config.build_el_writer_clients(
         operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
-        allocation_manager=to_checksum_address(os.getenv("HOLESKY_ALLOCATION_MANAGER_ADDR").lower()),
+        allocation_manager=to_checksum_address(
+            os.getenv("HOLESKY_ALLOCATION_MANAGER_ADDR").lower()
+        ),
         avs_directory=to_checksum_address(os.getenv("HOLESKY_AVS_DIRECTORY_ADDR").lower()),
-        delegation_manager=to_checksum_address(os.getenv("HOLESKY_DELEGATION_MANAGER_ADDR").lower()),
-        permission_controller=to_checksum_address(os.getenv("HOLESKY_PERMISSION_CONTROL_ADDR").lower()),
-        reward_coordinator=to_checksum_address(os.getenv("HOLESKY_REWARDS_COORDINATOR_ADDR").lower()),
-        registry_coordinator=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
+        delegation_manager=to_checksum_address(
+            os.getenv("HOLESKY_DELEGATION_MANAGER_ADDR").lower()
+        ),
+        permission_controller=to_checksum_address(
+            os.getenv("HOLESKY_PERMISSION_CONTROL_ADDR").lower()
+        ),
+        reward_coordinator=to_checksum_address(
+            os.getenv("HOLESKY_REWARDS_COORDINATOR_ADDR").lower()
+        ),
+        registry_coordinator=to_checksum_address(
+            os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()
+        ),
         strategy_manager=to_checksum_address(os.getenv("HOLESKY_STRATEGY_MANAGER_ADDR").lower()),
         strategy_manager_addr=to_checksum_address(os.getenv("HOLESKY_STRATEGY_ADDR").lower()),
         el_chain_reader=holesky_el_reader,
@@ -109,11 +119,19 @@ if HOLESKY_PRIVATE_KEY != "":
     # Build AVS registry reader client
     holesky_avs_registry_reader = holesky_config.build_avs_registry_reader_clients(
         operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
-        registry_coordinator=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
-        registry_coordinator_addr=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
+        registry_coordinator=to_checksum_address(
+            os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()
+        ),
+        registry_coordinator_addr=to_checksum_address(
+            os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()
+        ),
         bls_apk_registry=to_checksum_address(os.getenv("HOLESKY_BLS_APK_REGISTRY_ADDR").lower()),
-        bls_apk_registry_addr=to_checksum_address(os.getenv("HOLESKY_BLS_APK_REGISTRY_ADDR").lower()),
-        operator_state_retriever=to_checksum_address(os.getenv("HOLESKY_OPERATOR_STATE_RETRIEVER_ADDR").lower()),
+        bls_apk_registry_addr=to_checksum_address(
+            os.getenv("HOLESKY_BLS_APK_REGISTRY_ADDR").lower()
+        ),
+        operator_state_retriever=to_checksum_address(
+            os.getenv("HOLESKY_OPERATOR_STATE_RETRIEVER_ADDR").lower()
+        ),
         service_manager=to_checksum_address(os.getenv("HOLESKY_SERVICE_MANAGER_ADDR").lower()),
         stake_registry=to_checksum_address(os.getenv("HOLESKY_STAKE_REGISTRY_ADDR").lower()),
     )
@@ -121,8 +139,12 @@ if HOLESKY_PRIVATE_KEY != "":
     # Build AVS registry writer client
     holesky_avs_registry_writer = holesky_config.build_avs_registry_writer_clients(
         operator_ecdsa_private_key=HOLESKY_PRIVATE_KEY,
-        registry_coordinator=to_checksum_address(os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()),
-        operator_state_retriever=to_checksum_address(os.getenv("HOLESKY_OPERATOR_STATE_RETRIEVER_ADDR").lower()),
+        registry_coordinator=to_checksum_address(
+            os.getenv("HOLESKY_REGISTRY_COORDINATOR_ADDR").lower()
+        ),
+        operator_state_retriever=to_checksum_address(
+            os.getenv("HOLESKY_OPERATOR_STATE_RETRIEVER_ADDR").lower()
+        ),
         service_manager=to_checksum_address(os.getenv("HOLESKY_SERVICE_MANAGER_ADDR").lower()),
         service_manager_addr=to_checksum_address(os.getenv("HOLESKY_SERVICE_MANAGER_ADDR").lower()),
         stake_registry=to_checksum_address(os.getenv("HOLESKY_STAKE_REGISTRY_ADDR").lower()),

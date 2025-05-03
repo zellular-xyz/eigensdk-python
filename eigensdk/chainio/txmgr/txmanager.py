@@ -9,7 +9,6 @@ FALLBACK_GAS_LIMIT_MULTIPLIER = 3
 FALLBACK_GAS = 1000_000
 
 
-
 class TxManager:
     def __init__(
         self,
@@ -54,10 +53,7 @@ class TxManager:
         signed_tx = self.w3.eth.account.sign_transaction(tx, private_key=self.private_key)
         tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         receipt = self.wait_for_receipt(tx_hash.hex())
-        return (tx_hash.hex(), receipt['status'] == 1)
-
-
-    
+        return (tx_hash.hex(), receipt["status"] == 1)
 
     def send_with_retry(self, tx, max_retries=3, delay=2):
         for attempt in range(max_retries):

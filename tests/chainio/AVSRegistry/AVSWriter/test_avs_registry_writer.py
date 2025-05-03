@@ -51,7 +51,6 @@ class TestAvsRegistryWriter:
 
         return writer
 
-
     @patch("eigensdk.chainio.clients.avsregistry.writer.convert_bn254_geth_to_gnark")
     @patch("eigensdk.chainio.clients.avsregistry.writer.convert_to_bn254_g1_point")
     @patch("eigensdk.chainio.clients.avsregistry.writer.convert_to_bn254_g2_point")
@@ -91,7 +90,7 @@ class TestAvsRegistryWriter:
         converted_g2_point_mock = Mock()
         converted_g2_point_mock.X = [13, 14]
         converted_g2_point_mock.Y = [15, 16]
-        
+
         mock_convert_gnark.return_value = "converted_hashed_msg"
         mock_convert_g1.return_value = converted_g1_point_mock
         mock_convert_g2.return_value = converted_g2_point_mock
@@ -187,13 +186,13 @@ class TestAvsRegistryWriter:
 
             assert call_args[0] == quorum_numbers
             assert call_args[1] == "mock_socket"
-            
+
             # Check that pubkey_reg_params is a dictionary
             assert isinstance(call_args[2], dict)
             assert call_args[2]["pubkeyRegistrationSignature"] == g1_point_mock
             assert call_args[2]["pubkeyG1"] == converted_g1_point_mock
             assert call_args[2]["pubkeyG2"] == converted_g2_point_mock
-            
+
             assert call_args[3] == expected_operator_kick_params
 
             # Verify transaction was sent
@@ -481,7 +480,8 @@ class TestAvsRegistryWriter:
 
         # Verify transaction was built correctly
         avs_registry_writer.registry_coordinator.functions.setOperatorSetParams.assert_called_once_with(
-            quorum_number, operator_set_params  # Only pass quorum_number and operator_set_params, not tx_opts
+            quorum_number,
+            operator_set_params,  # Only pass quorum_number and operator_set_params, not tx_opts
         )
 
         # Verify transaction was sent

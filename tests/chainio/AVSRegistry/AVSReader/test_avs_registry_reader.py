@@ -199,8 +199,6 @@ class TestAvsRegistryReader:
         assert result[1][1].stake == 400
         assert result[1][1].operator_id == 4
 
-
-    
     def test_get_operator_stake_in_quorums_of_operator_at_current_block_success(
         self, avs_registry_reader
     ):
@@ -2355,8 +2353,6 @@ class TestAvsRegistryReader:
             call_options
         )
 
-    
-
     def test_get_pubkey_from_operator_address_no_bls_apk_registry(self, avs_registry_reader):
         # Mock data
         operator_address = "0xabc123def456"
@@ -2371,7 +2367,6 @@ class TestAvsRegistryReader:
 
         # Verify the error message refers to NoneType
         assert "'NoneType' object has no attribute 'functions'" in str(excinfo.value)
-
 
     def test_get_apk_update_success(self, avs_registry_reader, mocker):
         # Mock data

@@ -57,8 +57,7 @@ class FakeAvsRegistryService(ARSInterface):
             total_stake = 0
             for operator_id, operator_avs_state in self.operators[block_number].items():
                 agg_pub_key_g1 = (
-                    agg_pub_key_g1
-                    + operator_avs_state.operator_info.pub_keys.g1_pub_key
+                    agg_pub_key_g1 + operator_avs_state.operator_info.pub_keys.g1_pub_key
                 )
                 total_stake += operator_avs_state.stake_per_quorum[qn]
             state[qn] = QuorumAvsState(
