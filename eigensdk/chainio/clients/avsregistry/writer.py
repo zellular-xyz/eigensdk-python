@@ -93,7 +93,7 @@ class AvsRegistryWriter:
             ),
         )
         signature_salt, sig_valid_for_seconds = (
-            os.urandom(32),
+            b'\x01\xfd\xb4\xcd\xd36\xe2\xc6\x1ft\xf00\x07)a=WL\xe5\x9f\x80\x8c\xe5\x1e\x05U\xd6\xb6\xb0\xe1\x04\xf9',
             60 * 60,
         )
 
@@ -113,6 +113,13 @@ class AvsRegistryWriter:
             signature_salt,  # salt as bytes32
             signature_expiry,  # expiry as uint256
         )
+
+        print("quorum_numbers", bytes(quorum_numbers),"\n")
+        print("socket", socket,"\n")
+        print("pubkey_reg_params", pubkey_reg_params,"\n")
+        print("operator_signature_with_salt_and_expiry", operator_signature_with_salt_and_expiry,"\n")
+        print("wait_for_receipt", wait_for_receipt,"\n")
+
         return self.send(
             self.registry_coordinator.functions.registerOperator,
             bytes(quorum_numbers),
