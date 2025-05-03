@@ -91,7 +91,7 @@ class TxManager:
 
         try:
             estimated_gas = self.w3.eth.estimate_gas(tx)
-        except Exception as e:
+        except Exception:
             estimated_gas = FALLBACK_GAS
 
         gas_fee_cap = base_fee * 3 + FALLBACK_GAS_TIP_CAP
