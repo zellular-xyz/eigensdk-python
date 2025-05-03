@@ -246,78 +246,73 @@ class Clients:
 
 def build_all(
     config: BuildAllConfig,
-    operator_ecdsa_private_key: str,
-    allocation_manager: Address,
-    avs_directory: Address,
-    delegation_manager: Address,
-    permission_controller: Address,
-    reward_coordinator: Address,
-    registry_coordinator_addr: Address,
-    strategy_manager: Address,
-    registry_coordinator: Address,
-    strategy_manager_addr: Address,
-    service_manager: Address,
-    service_manager_addr: Address,
-    stake_registry: Address,
-    bls_apk_registry: Address,
-    bls_apk_registry_addr: Address,
-    operator_state_retriever: Address,
+    config_operator_ecdsa_private_key: str,
+    config_allocation_manager: Address,
+    config_avs_directory: Address,
+    config_delegation_manager: Address,
+    config_permission_controller: Address,
+    config_reward_coordinator: Address,
+    config_registry_coordinator_addr: Address,
+    config_strategy_manager: Address,
+    config_registry_coordinator: Address,
+    config_strategy_manager_addr: Address,
+    config_service_manager: Address,
+    config_service_manager_addr: Address,
+    config_stake_registry: Address,
+    config_bls_apk_registry: Address,
+    config_bls_apk_registry_addr: Address,
+    config_operator_state_retriever: Address,
 
 ) -> Clients:
-    eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
-    pk_wallet: LocalAccount = Account.from_key(operator_ecdsa_private_key) if operator_ecdsa_private_key else None
-
-    el_reader = config.build_el_reader_clients()
-    el_writer = config.build_el_writer_clients()
-    avs_registry_reader = config.build_avs_registry_reader_clients()
-    avs_registry_writer = config.build_avs_registry_writer_clients() 
+    eth_http_client = Web3(Web3.HTTPProvider(config.eth_client))
+    pk_wallet: LocalAccount = Account.from_key(config_operator_ecdsa_private_key) if config_operator_ecdsa_private_key else None
 
 
     # Build EL reader client
     el_reader = config.build_el_reader_clients(
-        allocation_manager=allocation_manager,
-        avs_directory=avs_directory,
-        delegation_manager=delegation_manager,
-        permission_controller=permission_controller,
-        reward_coordinator=reward_coordinator,
-        strategy_manager=strategy_manager,
+        allocation_manager=config_allocation_manager,
+        avs_directory=config_avs_directory,
+        delegation_manager=config_delegation_manager,
+        permission_controller=config_permission_controller,
+        reward_coordinator=config_reward_coordinator,
+        strategy_manager=config_strategy_manager,
     )
 
     # Build EL writer client
     el_writer = config.build_el_writer_clients(
-        operator_ecdsa_private_key=operator_ecdsa_private_key,
-        allocation_manager=allocation_manager,
-        avs_directory=avs_directory,
-        delegation_manager=delegation_manager,
-        permission_controller=permission_controller,
-        reward_coordinator=reward_coordinator,
-        registry_coordinator=registry_coordinator,
-        strategy_manager=strategy_manager,
-        strategy_manager_addr=strategy_manager_addr,
+        operator_ecdsa_private_key=config_operator_ecdsa_private_key,
+        allocation_manager=config_allocation_manager,
+        avs_directory=config_avs_directory,
+        delegation_manager=config_delegation_manager,
+        permission_controller=config_permission_controller,
+        reward_coordinator=config_reward_coordinator,
+        registry_coordinator=config_registry_coordinator,
+        strategy_manager=config_strategy_manager,
+        strategy_manager_addr=config_strategy_manager_addr,
         el_chain_reader=el_reader,
     )
 
     # Build AVS registry reader client
     avs_registry_reader = config.build_avs_registry_reader_clients(
-        operator_ecdsa_private_key=operator_ecdsa_private_key,
-        registry_coordinator=registry_coordinator,
-        registry_coordinator_addr=registry_coordinator_addr,
-        bls_apk_registry=bls_apk_registry,
-        bls_apk_registry_addr=bls_apk_registry_addr,
-        operator_state_retriever=operator_state_retriever,
-        service_manager=service_manager,
-        stake_registry=stake_registry,
+        operator_ecdsa_private_key=config_operator_ecdsa_private_key,
+        registry_coordinator=config_registry_coordinator,
+        registry_coordinator_addr=config_registry_coordinator_addr,
+        bls_apk_registry=config_bls_apk_registry,
+        bls_apk_registry_addr=config_bls_apk_registry_addr,
+        operator_state_retriever=config_operator_state_retriever,
+        service_manager=config_service_manager,
+        stake_registry=config_stake_registry,
     )
 
     # Build AVS registry writer client
     avs_registry_writer = config.build_avs_registry_writer_clients(
-        operator_ecdsa_private_key=operator_ecdsa_private_key,
-        registry_coordinator=registry_coordinator,
-        operator_state_retriever=operator_state_retriever,
-        service_manager=service_manager,
-        service_manager_addr=service_manager_addr,
-        stake_registry=stake_registry,
-        bls_apk_registry=bls_apk_registry,
+        operator_ecdsa_private_key=config_operator_ecdsa_private_key,
+        registry_coordinator=config_registry_coordinator,
+        operator_state_retriever=config_operator_state_retriever,
+        service_manager=config_service_manager,
+        service_manager_addr=config_service_manager_addr,
+        stake_registry=config_stake_registry,
+        bls_apk_registry=config_bls_apk_registry,
         el_chain_reader=el_reader,
     )
 

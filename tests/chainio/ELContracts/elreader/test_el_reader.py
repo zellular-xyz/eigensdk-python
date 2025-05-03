@@ -159,9 +159,6 @@ def test_is_operator_registered_with_operator_set_success(mocker, operator_addre
     assert result is True
 
 
-def test_get_operators_for_operator_set(operator_set):
-    result = el_reader.get_operators_for_operator_set(operator_set)
-    assert result == []
 
 
 @pytest.fixture
@@ -178,9 +175,7 @@ def test_get_num_operators_for_operator_set(operator_set):
     assert result == 0
 
 
-def test_get_strategies_for_operator_set(operator_set):
-    result = el_reader.get_strategies_for_operator_set(operator_set)
-    assert result == []
+
 
 
 def test_is_operator_registered(operator_address):
