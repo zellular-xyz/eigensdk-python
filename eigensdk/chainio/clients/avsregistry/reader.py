@@ -17,6 +17,7 @@ from eigensdk._types import (
 )
 from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
 from eigensdk.crypto.bls.attestation import G1Point
+from eth_account.signers.local import LocalAccount
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 
@@ -33,6 +34,7 @@ class AvsRegistryReader:
         stake_registry: Contract,
         logger: logging.Logger,
         eth_client: Web3,
+        pk_wallet: LocalAccount,
         tx_mgr: Any,
     ):
 
@@ -46,6 +48,7 @@ class AvsRegistryReader:
         self.stake_registry: Contract = stake_registry
         self.eth_client: Web3 = eth_client
         self.tx_mgr = tx_mgr
+        self.pk_wallet: LocalAccount = pk_wallet
 
         if registry_coordinator is None:
             raise ValueError("RegistryCoordinator contract not provided")

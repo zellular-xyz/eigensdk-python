@@ -126,6 +126,7 @@ class BuildAllConfig:
             tx_mgr=txmanager.TxManager(
                 self.eth_client, pk_wallet.address, operator_ecdsa_private_key
             ),
+            pk_wallet=pk_wallet,
             eth_client=self.eth_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
@@ -176,6 +177,7 @@ class BuildAllConfig:
             tx_mgr=txmanager.TxManager(
                 self.eth_client, pk_wallet.address, operator_ecdsa_private_key
             ),
+            pk_wallet=pk_wallet
         )
 
         return avs_reader_instance
@@ -223,6 +225,7 @@ class BuildAllConfig:
             tx_mgr=txmanager.TxManager(
                 self.eth_client, pk_wallet.address, operator_ecdsa_private_key
             ),
+            pk_wallet=pk_wallet,
         )
 
         return avs_writer_instance

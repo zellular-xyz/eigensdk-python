@@ -6,7 +6,7 @@ from web3 import Web3
 from web3.contract import Contract
 from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
-
+from eth_account.signers.local import LocalAccount
 
 class RegistrationType(IntEnum):
     NORMAL = 0
@@ -27,6 +27,7 @@ class ELWriter:
         el_chain_reader: Any,
         eth_client: Web3,
         logger: logging.Logger,
+        pk_wallet: LocalAccount,
         tx_mgr: Any,
         strategy_abi: List[Dict[str, Any]],
         erc20_abi: List[Dict[str, Any]],
@@ -45,6 +46,7 @@ class ELWriter:
         self.erc20_abi = erc20_abi
         self.tx_mgr = tx_mgr
         self.el_chain_reader = el_chain_reader
+        self.pk_wallet: LocalAccount = pk_wallet
 
         if allocation_manager is None:
             raise ValueError("AllocationManager contract not provided")

@@ -10,8 +10,26 @@ from web3.types import TxReceipt
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
 
 
+
+from typing import List
+
+from eth_account.signers.local import LocalAccount
+from web3 import Web3
+from web3.contract.contract import ContractFunction
+# from web3.middleware.geth_poa import geth_poa_middleware
+from web3.types import TxReceipt
+
+
 def nums_to_bytes(nums: List[int]) -> bytes:
     return "".join(map(chr, nums)).encode()
+
+
+def bitmap_to_quorum_ids(bitmap: int) -> List[int]:
+    quorum_ids = []
+    for i in range(256):
+        if bitmap & (1 << i):
+            quorum_ids.append(int(i))
+    return quorum_ids
 
 
 def send_transaction(
@@ -34,10 +52,14 @@ def send_transaction(
             "chainId": eth_http_client.eth.chain_id,
         }
     )
-    signed_tx = eth_http_client.eth.account.sign_transaction(tx, private_key=pk_wallet.key)
+    signed_tx = eth_http_client.eth.account.sign_transaction(
+        tx, private_key=pk_wallet.key
+    )
     tx_hash = eth_http_client.eth.send_raw_transaction(signed_tx.raw_transaction)
     receipt = eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
     return receipt
+
+
 
 
 class BN254G1Point:
@@ -138,17 +160,6 @@ def abi_encode_operator_avs_registration_params(
     return encoded[32:]
 
 
-def bitmap_to_quorum_ids(bitmap: int, max_number_of_quorums: int = 64) -> list[int]:
-
-    quorum_ids = []
-
-    # Loop through each bit position in the bitmap
-    for i in range(max_number_of_quorums):
-        # Check if the bit at position i is set (1)
-        if (bitmap & (1 << i)) != 0:
-            quorum_ids.append(i)
-
-    return quorum_ids
 
 
 def remove_duplicate_strategies(strategies):
