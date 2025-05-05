@@ -15,7 +15,7 @@ class ELReader:
         reward_coordinator: Contract,
         strategy_manager: Contract,
         logger: logging.Logger,
-        eth_client: Web3,
+        eth_http_client: Web3,
         strategy_abi: List[Dict[str, Any]],
         erc20_abi: List[Dict[str, Any]],
     ):
@@ -25,34 +25,34 @@ class ELReader:
         self.permission_controller = permission_controller
         self.reward_coordinator = reward_coordinator
         self.strategy_manager = strategy_manager
-        self.eth_client = eth_client
+        self.eth_http_client = eth_http_client
         self.logger = logger
         self.strategy_abi = strategy_abi
         self.erc20_abi = erc20_abi
 
-        if allocation_manager is None:
-            raise ValueError("AllocationManager contract not provided")
+        # if allocation_manager is None:
+        #     raise ValueError("AllocationManager contract not provided")
 
-        if avs_directory is None:
-            raise ValueError("AvsDirectory contract not provided")
+        # if avs_directory is None:
+        #     raise ValueError("AvsDirectory contract not provided")
 
-        if delegation_manager is None:
-            raise ValueError("DelegationManager contract not provided")
+        # if delegation_manager is None:
+        #     raise ValueError("DelegationManager contract not provided")
 
-        if permission_controller is None:
-            raise ValueError("PermissionController contract not provided")
+        # if permission_controller is None:
+        #     raise ValueError("PermissionController contract not provided")
 
-        if reward_coordinator is None:
-            raise ValueError("RewardCoordinator contract not provided")
+        # if reward_coordinator is None:
+        #     raise ValueError("RewardCoordinator contract not provided")
 
-        if strategy_manager is None:
-            raise ValueError("StrategyManager contract not provided")
+        # if strategy_manager is None:
+        #     raise ValueError("StrategyManager contract not provided")
 
-        if strategy_abi is None:
-            raise ValueError("Strategy ABI not provided")
+        # if strategy_abi is None:
+        #     raise ValueError("Strategy ABI not provided")
 
-        if erc20_abi is None:
-            raise ValueError("ERC20 ABI not provided")
+        # if erc20_abi is None:
+        #     raise ValueError("ERC20 ABI not provided")
 
     def get_allocatable_magnitude(self, operator_addr: Address, strategy_addr: Address) -> int:
 
@@ -404,20 +404,20 @@ class ELReader:
     def get_strategy_and_underlying_token(
         self, strategy_addr: Address
     ) -> Tuple[Optional[Contract], Optional[str]]:
-        sc = self.eth_client.eth.contract(address=strategy_addr, abi=self.strategy_abi)
+        sc = self.eth_http_client.eth.contract(address=strategy_addr, abi=self.strategy_abi)
         return sc, sc.functions.underlyingToken().call()
 
     def get_strategy_and_underlying_erc20_token(
         self, strategy_addr: Address
     ) -> Tuple[Optional[Contract], Optional[Contract], Optional[str]]:
-        strategy_contract = self.eth_client.eth.contract(
+        strategy_contract = self.eth_http_client.eth.contract(
             address=Web3.to_checksum_address(strategy_addr), abi=self.strategy_abi
         )
 
         token_addr = Web3.to_checksum_address(strategy_contract.functions.underlyingToken().call())
         return (
             strategy_contract,
-            self.eth_client.eth.contract(token_addr, abi=self.erc20_abi),
+            self.eth_http_client.eth.contract(token_addr, abi=self.erc20_abi),
             token_addr,
         )
 
@@ -464,7 +464,7 @@ class ELReader:
         self, operator_address: Address, operator_set: Dict[str, Any], strategies: List[Address]
     ) -> Optional[Dict[str, int]]:
         return self.allocation_manager.functions.getMinimumSlashableStake(
-            operator_set, [operator_address], strategies, self.eth_client.eth.block_number
+            operator_set, [operator_address], strategies, self.eth_http_client.eth.block_number
         ).call()
 
     def get_slashable_shares_for_operator_sets_before(
@@ -496,5 +496,5 @@ class ELReader:
         self, operator_sets: List[Dict[str, Any]]
     ) -> Optional[List[Dict[str, Any]]]:
         return self.get_slashable_shares_for_operator_sets_before(
-            operator_sets, self.eth_client.eth.block_number
+            operator_sets, self.eth_http_client.eth.block_number
         )

@@ -1,5 +1,5 @@
 from tests.builder import holesky_el_writer
-from eigensdk.crypto.bls.attestation import BLSKeyPair, new_private_key
+from eigensdk.crypto.bls.attestation import KeyPair, new_private_key
 from eth_typing import Address
 import time
 from web3 import Web3

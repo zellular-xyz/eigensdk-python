@@ -7,6 +7,8 @@ from web3.contract import Contract
 from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
 from eth_account.signers.local import LocalAccount
+from ...utils import send_transaction
+from web3.types import TxReceipt
 
 
 class RegistrationType(IntEnum):
@@ -24,9 +26,8 @@ class ELWriter:
         reward_coordinator: Contract,
         registry_coordinator: Contract,
         strategy_manager: Contract,
-        strategy_manager_addr: Address,
         el_chain_reader: Any,
-        eth_client: Web3,
+        eth_http_client: Web3,
         logger: logging.Logger,
         pk_wallet: LocalAccount,
         tx_mgr: Any,
@@ -40,8 +41,7 @@ class ELWriter:
         self.rewards_coordinator = reward_coordinator
         self.registry_coordinator = registry_coordinator
         self.strategy_manager = strategy_manager
-        self.strategy_manager_addr = strategy_manager_addr
-        self.eth_client = eth_client
+        self.eth_http_client = eth_http_client
         self.logger = logger
         self.strategy_abi = strategy_abi
         self.erc20_abi = erc20_abi
@@ -49,41 +49,43 @@ class ELWriter:
         self.el_chain_reader = el_chain_reader
         self.pk_wallet: LocalAccount = pk_wallet
 
-        if allocation_manager is None:
-            raise ValueError("AllocationManager contract not provided")
+        # if allocation_manager is None:
+        #     raise ValueError("AllocationManager contract not provided")
 
-        if avs_directory is None:
-            raise ValueError("AvsDirectory contract not provided")
+        # if avs_directory is None:
+        #     raise ValueError("AvsDirectory contract not provided")
 
-        if delegation_manager is None:
-            raise ValueError("DelegationManager contract not provided")
+        # if delegation_manager is None:
+        #     raise ValueError("DelegationManager contract not provided")
 
-        if permission_controller is None:
-            raise ValueError("PermissionController contract not provided")
+        # if permission_controller is None:
+        #     raise ValueError("PermissionController contract not provided")
 
-        if reward_coordinator is None:
-            raise ValueError("RewardCoordinator contract not provided")
+        # if reward_coordinator is None:
+        #     raise ValueError("RewardCoordinator contract not provided")
 
-        if strategy_manager is None:
-            raise ValueError("StrategyManager contract not provided")
+        # if strategy_manager is None:
+        #     raise ValueError("StrategyManager contract not provided")
 
     def send(self, tx_func, *args, wait_for_receipt: bool = True):
         tx = tx_func(*args).build_transaction(self.tx_mgr.get_no_send_tx_opts())
         return self.tx_mgr.send(tx, wait_for_receipt)
 
-    def register_as_operator(self, operator: Operator, wait_for_receipt: bool):
+    def register_as_operator(self, operator: Operator, wait_for_receipt: bool = True):
         if operator.delegation_approver_address is None:
             raise ValueError("operator.delegation_approver_address cannot be None")
 
-        return self.send(
-            self.delegation_manager.functions.registerAsOperator,
+        func = self.delegation_manager.functions.registerAsOperator(
             Web3.to_checksum_address(operator.delegation_approver_address),
             operator.allocation_delay,
             operator.metadata_url,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def update_operator_details(self, operator: Operator, wait_for_receipt: bool):
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def update_operator_details(self, operator: Operator, wait_for_receipt: bool = True):
         if operator.delegation_approver_address is None:
             raise ValueError("operator.delegation_approver_address cannot be None")
         if operator.address is None:
@@ -96,7 +98,7 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def update_metadata_uri(self, operator_address: str, uri: str, wait_for_receipt: bool):
+    def update_metadata_uri(self, operator_address: str, uri: str, wait_for_receipt: bool = True):
         return self.send(
             self.delegation_manager.functions.updateOperatorMetadataURI,
             Web3.to_checksum_address(operator_address),
@@ -104,7 +106,9 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int, wait_for_receipt: bool):
+    def deposit_erc20_into_strategy(
+        self, strategy_addr: str, amount: int, wait_for_receipt: bool = True
+    ):
         _, token_contract, token_addr = (
             self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
         )
@@ -122,14 +126,14 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def set_claimer_for(self, claimer: str, wait_for_receipt: bool):
+    def set_claimer_for(self, claimer: str, wait_for_receipt: bool = True):
         return self.send(
             self.rewards_coordinator.functions.setClaimerFor,
             Web3.to_checksum_address(claimer),
             wait_for_receipt=wait_for_receipt,
         )
 
-    def process_claim(self, claim: dict, recipient_address: str, wait_for_receipt: bool):
+    def process_claim(self, claim: dict, recipient_address: str, wait_for_receipt: bool = True):
         return self.send(
             self.rewards_coordinator.functions.processClaim,
             claim,
@@ -137,7 +141,9 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def set_operator_avs_split(self, operator: str, avs: str, split: int, wait_for_receipt: bool):
+    def set_operator_avs_split(
+        self, operator: str, avs: str, split: int, wait_for_receipt: bool = True
+    ):
         return self.send(
             self.rewards_coordinator.functions.setOperatorAVSSplit,
             Web3.to_checksum_address(operator),
@@ -146,7 +152,7 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def set_operator_pi_split(self, operator: str, split: int, wait_for_receipt: bool):
+    def set_operator_pi_split(self, operator: str, split: int, wait_for_receipt: bool = True):
         return self.send(
             self.rewards_coordinator.functions.setOperatorPISplit,
             Web3.to_checksum_address(operator),
@@ -155,7 +161,7 @@ class ELWriter:
         )
 
     def set_operator_set_split(
-        self, operator: str, operator_set: dict, split: int, wait_for_receipt: bool
+        self, operator: str, operator_set: dict, split: int, wait_for_receipt: bool = True
     ):
         return self.send(
             self.rewards_coordinator.functions.setOperatorSetSplit,
@@ -165,7 +171,7 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def process_claims(self, claims: list, recipient_address: str, wait_for_receipt: bool):
+    def process_claims(self, claims: list, recipient_address: str, wait_for_receipt: bool = True):
         return self.send(
             self.rewards_coordinator.functions.processClaims,
             claims,
@@ -173,7 +179,9 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def modify_allocations(self, operator_address: str, allocations: list, wait_for_receipt: bool):
+    def modify_allocations(
+        self, operator_address: str, allocations: list, wait_for_receipt: bool = True
+    ):
         return self.send(
             self.allocation_manager.functions.modifyAllocations,
             Web3.to_checksum_address(operator_address),
@@ -182,7 +190,11 @@ class ELWriter:
         )
 
     def clear_deallocation_queue(
-        self, operator_address: str, strategies: list, nums_to_clear: list, wait_for_receipt: bool
+        self,
+        operator_address: str,
+        strategies: list,
+        nums_to_clear: list,
+        wait_for_receipt: bool = True,
     ):
         return self.send(
             self.allocation_manager.functions.clearDeallocationQueue,
@@ -192,7 +204,9 @@ class ELWriter:
             wait_for_receipt=wait_for_receipt,
         )
 
-    def set_allocation_delay(self, operator_address: str, delay: int, wait_for_receipt: bool):
+    def set_allocation_delay(
+        self, operator_address: str, delay: int, wait_for_receipt: bool = True
+    ):
         result = self.send(
             self.allocation_manager.functions.setAllocationDelay,
             Web3.to_checksum_address(operator_address),
@@ -223,7 +237,7 @@ class ELWriter:
                     RegistrationType.NORMAL,
                     request["socket"],
                     get_pubkey_registration_params(
-                        self.eth_client,
+                        self.eth_http_client,
                         cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
                         cast(Address, Web3.to_checksum_address(request["operator_address"])),
                         request["bls_key_pair"],

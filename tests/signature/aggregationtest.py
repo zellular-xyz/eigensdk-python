@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from eigensdk.crypto.bls.attestation import BLSKeyPair, gen_random_bls_keys, Signature, G1Point
+from eigensdk.crypto.bls.attestation import KeyPair, gen_random_bls_keys, Signature, G1Point
 from eigensdk.crypto.bn256 import utils as bn256Utils
 import json
 import random

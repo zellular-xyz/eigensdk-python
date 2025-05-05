@@ -7,7 +7,7 @@ from web3.contract.contract import ContractFunction
 from web3.types import Address
 from web3.types import TxReceipt
 
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, BLSKeyPair
+from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
 
 
 from typing import List
@@ -33,13 +33,21 @@ def bitmap_to_quorum_ids(bitmap: int) -> List[int]:
 
 
 def send_transaction(
-    func: ContractFunction, pk_wallet: LocalAccount, eth_http_client: Web3
+    func: ContractFunction,
+    pk_wallet: LocalAccount,
+    eth_http_client: Web3,
+    gas_limit: int = None,
+    skip_estimation: bool = False,
 ) -> TxReceipt:
-
-    try:
-        gas_estimate = func.estimate_gas({"from": pk_wallet.address})
-    except Exception as e:
-        raise Exception(f"Gas estimation failed: {e}")
+    gas_estimate = gas_limit or 1000000  # Default high gas limit if skipping estimation
+    # # Use provided gas limit or estimate gas
+    # if gas_limit is None and not skip_estimation:
+    #     try:
+    #         gas_estimate = func.estimate_gas({"from": pk_wallet.address})
+    #     except Exception as e:
+    #         raise Exception(f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit.")
+    # else:
+    #     gas_estimate = gas_limit or 1000000  # Default high gas limit if skipping estimation
 
     current_gas_price = eth_http_client.eth.gas_price
 
@@ -190,7 +198,7 @@ def get_pubkey_registration_params(
     eth_client: Web3,
     registry_coordinator_addr: Address,
     operator_address: Address,
-    bls_key_pair: BLSKeyPair,
+    bls_key_pair: KeyPair,
 ) -> Dict[str, Any]:
 
     # Create contract instance for registry coordinator
@@ -222,7 +230,7 @@ def get_pubkey_registration_params(
         operator_address
     ).call()
 
-    # Convert the hashed message to the format expected by BLSKeyPair
+    # Convert the hashed message to the format expected by KeyPair
     gnark_msg = convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
     # Sign the message
     signed_msg = bls_key_pair.sign_hashed_to_curve_message(gnark_msg)

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, List
 from tests.builder import holesky_avs_registry_writer
 from eth_typing import Address
-from eigensdk.crypto.bls.attestation import BLSKeyPair, new_private_key
+from eigensdk.crypto.bls.attestation import KeyPair, new_private_key
 import ecdsa
 
 
@@ -35,7 +35,7 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
 def test_register_operator_with_churn():
     # Generate a new BLS key pair for testing
     bls_private_key = new_private_key()
-    bls_key_pair = BLSKeyPair(bls_private_key)
+    bls_key_pair = KeyPair(bls_private_key)
 
     # Create operator ECDSA private key from the environment variable
     operator_ecdsa_private_key = ecdsa.SigningKey.from_string(
@@ -240,7 +240,7 @@ def test_set_account_identifier():
 def test_register_operator():
     # Generate a new BLS key pair for testing
     bls_private_key = new_private_key()
-    bls_key_pair = BLSKeyPair(bls_private_key)
+    bls_key_pair = KeyPair(bls_private_key)
 
     # Create an ECDSA private key from the environment variable
     # Note: In a real test, you would generate a new one or use a test key

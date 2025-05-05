@@ -11,7 +11,7 @@ from web3 import Web3
 from web3.contract import Contract
 
 from eigensdk.crypto.bls.attestation import (
-    BLSKeyPair,
+    KeyPair,
     Signature,
     gen_random_bls_keys,
 )
@@ -70,7 +70,7 @@ def pubkey_hash_from_g1(pt) -> bytes:
 @dataclass
 class OperatorInfo:
     operator_id: bytes
-    keypair: BLSKeyPair
+    keypair: KeyPair
     stake: int
 
 

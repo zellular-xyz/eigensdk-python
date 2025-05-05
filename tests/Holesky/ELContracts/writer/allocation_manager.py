@@ -1,5 +1,5 @@
 from tests.builder import holesky_el_writer
-from eigensdk.crypto.bls.attestation import BLSKeyPair, new_private_key
+from eigensdk.crypto.bls.attestation import KeyPair, new_private_key
 from eth_typing import Address
 import time
 
@@ -9,7 +9,7 @@ def test_modify_allocations():
     operator_address = "0x3D3534BFf2cB9cB174eBF7DF9de6386E881d1792"
 
     private_key = new_private_key()
-    bls_key_pair = BLSKeyPair(private_key)
+    bls_key_pair = KeyPair(private_key)
 
     register_request = {
         "operator_address": operator_address,
@@ -92,7 +92,7 @@ def test_deregister_from_operator_sets():
 def test_register_for_operator_sets():
     registry_coordinator_addr = "0x8771E1aE4a8D98AEFdbcefFe8940F14d83891B7f"
     private_key = new_private_key()
-    bls_key_pair = BLSKeyPair(private_key)
+    bls_key_pair = KeyPair(private_key)
 
     request = {
         "operator_address": "0x3D3534BFf2cB9cB174eBF7DF9de6386E881d1792",

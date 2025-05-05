@@ -72,7 +72,7 @@ def test_bls_module():
     assert private_key is not None
 
     # Create a key pair
-    key_pair = bls.attestation.BLSKeyPair(private_key)
+    key_pair = bls.attestation.KeyPair(private_key)
     assert key_pair is not None
 
     # Sign a message

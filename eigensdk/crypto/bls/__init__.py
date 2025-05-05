@@ -4,7 +4,7 @@ from eigensdk.crypto.bls.attestation import (
     GTPoint,
     Signature,
     PrivateKey,
-    BLSKeyPair,
+    KeyPair,
     new_g1_point,
     new_g2_point,
     new_zero_g1_point,

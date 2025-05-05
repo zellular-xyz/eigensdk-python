@@ -27,7 +27,7 @@ class AvsRegistryService:
 
         operators_stakes_in_quorums = (
             self.avs_registry_reader.get_operators_stake_in_quorums_at_block(
-                quorum_numbers, block_number
+                quorum_numbers=quorum_numbers, block_number=block_number
             )
         )
         num_quorums = len(quorum_numbers)

@@ -12,12 +12,13 @@ from eigensdk.chainio.utils import (
     convert_to_bn254_g1_point,
     convert_bn254_geth_to_gnark,
 )
-from eigensdk.crypto.bls.attestation import BLSKeyPair
+from eigensdk.crypto.bls.attestation import G1Point, KeyPair
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
 from eigensdk.chainio import utils
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
+from web3.types import TxReceipt
 
 
 class AvsRegistryWriter:
@@ -31,7 +32,7 @@ class AvsRegistryWriter:
         bls_apk_registry: Contract,
         el_reader: ELReader,
         logger: logging.Logger,
-        eth_client: Web3,
+        eth_http_client: Web3,
         pk_wallet: LocalAccount,
         tx_mgr: Any = None,
         service_manager_abi: Optional[List[Dict[str, Any]]] = None,
@@ -45,26 +46,26 @@ class AvsRegistryWriter:
         self.bls_apk_registry: Contract = bls_apk_registry
         self.el_reader: ELReader = el_reader
         self.logger: logging.Logger = logger
-        self.eth_client: Web3 = eth_client
-        self.web3: Web3 = eth_client  # Create alias for compatibility
+        self.eth_http_client: Web3 = eth_http_client
+        self.web3: Web3 = eth_http_client  # Create alias for compatibility
         self.tx_mgr: Any = tx_mgr
         self.service_manager_abi: Optional[List[Dict[str, Any]]] = service_manager_abi
         self.pk_wallet: LocalAccount = pk_wallet
 
-        if registry_coordinator is None:
-            raise ValueError("RegistryCoordinator contract not provided")
+        # if registry_coordinator is None:
+        #     raise ValueError("RegistryCoordinator contract not provided")
 
-        if bls_apk_registry is None:
-            raise ValueError("BLSApkRegistry contract not provided")
+        # if bls_apk_registry is None:
+        #     raise ValueError("BLSApkRegistry contract not provided")
 
-        if operator_state_retriever is None:
-            raise ValueError("OperatorStateRetriever contract not provided")
+        # if operator_state_retriever is None:
+        #     raise ValueError("OperatorStateRetriever contract not provided")
 
-        if service_manager is None:
-            raise ValueError("ServiceManager contract not provided")
+        # if service_manager is None:
+        #     raise ValueError("ServiceManager contract not provided")
 
-        if stake_registry is None:
-            raise ValueError("StakeRegistry contract not provided")
+        # if stake_registry is None:
+        #     raise ValueError("StakeRegistry contract not provided")
 
     def send(self, tx_func, *args, wait_for_receipt: bool = True):
         tx = tx_func(*args).build_transaction()
@@ -73,7 +74,7 @@ class AvsRegistryWriter:
     def register_operator(
         self,
         operator_ecdsa_private_key: ecdsa.SigningKey,
-        bls_key_pair: BLSKeyPair,
+        bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
         wait_for_receipt=True,
@@ -135,8 +136,95 @@ class AvsRegistryWriter:
             operator_signature_with_salt_and_expiry,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_client)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
+        return receipt
+
+    def register_operator_in_quorum_with_avs_registry_coordinator(
+        self,
+        operator_ecdsa_private_key: str,
+        operator_to_avs_registration_sig_salt: bytes,
+        operator_to_avs_registration_sig_expiry: int,
+        bls_key_pair: KeyPair,
+        quorum_numbers: List[int],
+        socket: str,
+    ) -> TxReceipt:
+        account = Account.from_key(operator_ecdsa_private_key)
+
+        operator_addr = account.address
+        self.logger.info(
+            "Registering operator with the AVS's registry coordinator",
+            extra={
+                "avs-service-manager": self.service_manager_addr,
+                "operator": operator_addr,
+                "quorumNumbers": quorum_numbers,
+                "socket": socket,
+            },
+        )
+        g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
+            operator_addr
+        ).call()
+
+        signed_msg = bls_key_pair.sign_hashed_to_curve_message(G1Point(*g1_hashed_msg_to_sign))
+
+        pubkey_reg_params = (
+            (
+                int(signed_msg.getX().getStr()),
+                int(signed_msg.getY().getStr()),
+            ),
+            (
+                int(bls_key_pair.pub_g1.getX().getStr()),
+                int(bls_key_pair.pub_g1.getY().getStr()),
+            ),
+            (
+                (
+                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
+                ),
+                (
+                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
+                ),
+            ),
+        )
+
+        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
+            operator_addr,
+            self.service_manager_addr,
+            operator_to_avs_registration_sig_salt,
+            operator_to_avs_registration_sig_expiry,
+        )
+
+        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
+
+        operator_signature_with_salt_and_expiry = (
+            operator_signature,
+            operator_to_avs_registration_sig_salt,
+            operator_to_avs_registration_sig_expiry,
+        )
+
+        print(utils.nums_to_bytes(quorum_numbers), "\n\n")
+        print(socket, "\n\n")
+        print(pubkey_reg_params, "\n\n")
+        print(operator_signature_with_salt_and_expiry, "\n\n")
+        func = self.registry_coordinator.functions.registerOperator(
+            utils.nums_to_bytes(quorum_numbers),
+            socket,
+            pubkey_reg_params,
+            operator_signature_with_salt_and_expiry,
+        )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        self.logger.info(
+            "Successfully registered operator with AVS registry coordinator",
+            extra={
+                "txHash": receipt.transactionHash.hex(),
+                "avs-service-manager": self.service_manager_addr,
+                "operator": operator_addr,
+                "quorumNumbers": quorum_numbers,
+            },
+        )
         return receipt
 
     def update_stakes_of_entire_operator_set_for_quorums(
@@ -156,7 +244,7 @@ class AvsRegistryWriter:
         self,
         operator_ecdsa_private_key: ecdsa.SigningKey,
         churn_approval_ecdsa_private_key: ecdsa.SigningKey,
-        bls_key_pair: BLSKeyPair,
+        bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         quorum_numbers_to_kick: List[int],
         operators_to_kick: List[str],

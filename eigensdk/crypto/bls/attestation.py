@@ -122,7 +122,7 @@ def new_private_key(sk: bytes = b"") -> PrivateKey:
     return PrivateKey(sk)
 
 
-class BLSKeyPair:
+class KeyPair:
     def __init__(self, priv_key: PrivateKey = None) -> None:
         if not priv_key:
             self.priv_key = PrivateKey()
@@ -133,10 +133,10 @@ class BLSKeyPair:
         self.pub_g2 = bn256Utils.mul_by_generator_g2(self.priv_key).normalize()
 
     @staticmethod
-    def from_string(sk: str, base=16) -> "BLSKeyPair":
+    def from_string(sk: str, base=16) -> "KeyPair":
         pk = PrivateKey()
         pk.setStr(sk.encode("utf-8"), base)
-        return BLSKeyPair(pk)
+        return KeyPair(pk)
 
     def save_to_file(self, _path: str, password: str):
         priv_key = "0x" + self.priv_key.getStr(16).decode("utf-8").rjust(64, "0")
@@ -154,7 +154,7 @@ class BLSKeyPair:
             keystore_json["version"] = 3
 
         private_key = Account.decrypt(keystore_json, password)
-        return BLSKeyPair(PrivateKey(bytes(private_key)))
+        return KeyPair(PrivateKey(bytes(private_key)))
 
     def sign_message(self, msg_bytes: bytes) -> Signature:
         h = bn256Utils.map_to_curve(msg_bytes)
@@ -171,16 +171,16 @@ class BLSKeyPair:
         return bn256Utils.mul_by_generator_g2(self.priv_key)
 
 
-def new_key_pair(priv_key: PrivateKey) -> BLSKeyPair:
-    return BLSKeyPair(priv_key)
+def new_key_pair(priv_key: PrivateKey) -> KeyPair:
+    return KeyPair(priv_key)
 
 
-def new_key_pair_from_string(sk: str) -> BLSKeyPair:
-    return BLSKeyPair.from_string(sk)
+def new_key_pair_from_string(sk: str) -> KeyPair:
+    return KeyPair.from_string(sk)
 
 
-def gen_random_bls_keys() -> BLSKeyPair:
-    return BLSKeyPair()
+def gen_random_bls_keys() -> KeyPair:
+    return KeyPair()
 
 
 def g1_to_tupple(g1):

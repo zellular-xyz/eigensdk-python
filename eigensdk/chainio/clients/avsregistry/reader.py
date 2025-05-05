@@ -1,22 +1,28 @@
 import logging
+import math
 from eth_typing import Address
 from typing import Dict, List, Optional, Tuple, Any
 from typing import cast
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxParams
+from web3._utils.events import get_event_data
+from eth_utils import event_abi_to_log_topic
+from eigensdk.chainio import utils
 
 from eigensdk._types import (
+    OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
 )
+
 from eigensdk._types import (
     StakeRegistryTypesStrategyParams,
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
 )
 from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
-from eigensdk.crypto.bls.attestation import G1Point
+from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from eth_account.signers.local import LocalAccount
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
@@ -33,7 +39,7 @@ class AvsRegistryReader:
         service_manager: Contract,
         stake_registry: Contract,
         logger: logging.Logger,
-        eth_client: Web3,
+        eth_http_client: Web3,
         pk_wallet: LocalAccount,
         tx_mgr: Any,
     ):
@@ -46,47 +52,75 @@ class AvsRegistryReader:
         self.operator_state_retriever: Contract = operator_state_retriever
         self.service_manager = service_manager
         self.stake_registry: Contract = stake_registry
-        self.eth_client: Web3 = eth_client
+        self.eth_http_client: Web3 = eth_http_client
         self.tx_mgr = tx_mgr
         self.pk_wallet: LocalAccount = pk_wallet
 
-        if registry_coordinator is None:
-            raise ValueError("RegistryCoordinator contract not provided")
+        # if registry_coordinator is None:
+        #     raise ValueError("RegistryCoordinator contract not provided")
 
-        if bls_apk_registry is None:
-            raise ValueError("BLSApkRegistry contract not provided")
+        # if bls_apk_registry is None:
+        #     raise ValueError("BLSApkRegistry contract not provided")
 
-        if operator_state_retriever is None:
-            raise ValueError("OperatorStateRetriever contract not provided")
+        # if operator_state_retriever is None:
+        #     raise ValueError("OperatorStateRetriever contract not provided")
 
-        if service_manager is None:
-            raise ValueError("ServiceManager contract not provided")
+        # if service_manager is None:
+        #     raise ValueError("ServiceManager contract not provided")
 
-        if stake_registry is None:
-            raise ValueError("StakeRegistry contract not provided")
+        # if stake_registry is None:
+        #     raise ValueError("StakeRegistry contract not provided")
 
     def get_quorum_count(self, call_options: Optional[TxParams] = None) -> int:
         return self.registry_coordinator.functions.quorumCount().call(call_options)
 
+    # def get_operators_stake_in_quorums_at_current_block(
+    #     self, call_options: Optional[TxParams], quorum_numbers: List[int]
+    # ) -> List[List[OperatorStateRetrieverOperator]]:
+    #     return self.get_operators_stake_in_quorums_at_block(
+    #         call_options, quorum_numbers, int(self.eth_http_client.eth.block_number)
+    #     )
+
+    # def get_operators_stake_in_quorums_at_block(
+    #     self, call_options: Optional[TxParams], quorum_numbers: List[int], block_number: int
+    # ) -> List[List[OperatorStateRetrieverOperator]]:
+    #     return self.operator_state_retriever.functions.getOperatorState(
+    #         self.registry_coordinator_addr, quorum_numbers, block_number
+    #     ).call(call_options)
+
     def get_operators_stake_in_quorums_at_current_block(
-        self, call_options: Optional[TxParams], quorum_numbers: List[int]
+        self, quorum_numbers: List[int]
     ) -> List[List[OperatorStateRetrieverOperator]]:
-        return self.get_operators_stake_in_quorums_at_block(
-            call_options, quorum_numbers, int(self.eth_client.eth.block_number)
-        )
+        cur_block = self.eth_http_client.eth.block_number
+        if cur_block > math.pow(2, 32) - 1:
+            raise ValueError("Current block number is too large to be converted to uint32")
+        return self.get_operators_stake_in_quorums_at_block(quorum_numbers, cur_block)
 
     def get_operators_stake_in_quorums_at_block(
-        self, call_options: Optional[TxParams], quorum_numbers: List[int], block_number: int
+        self, quorum_numbers: List[int], block_number: int
     ) -> List[List[OperatorStateRetrieverOperator]]:
-        return self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr, quorum_numbers, block_number
-        ).call(call_options)
+        operator_stakes = self.operator_state_retriever.functions.getOperatorState(
+            registryCoordinator=self.registry_coordinator_addr,
+            quorumNumbers=utils.nums_to_bytes(quorum_numbers),
+            blockNumber=block_number,
+        ).call()
+        return [
+            [
+                OperatorStateRetrieverOperator(
+                    operator=operator[0],
+                    operator_id="0x" + operator[1].hex(),
+                    stake=operator[2],
+                )
+                for operator in quorum
+            ]
+            for quorum in operator_stakes
+        ]
 
     def get_operator_addrs_in_quorums_at_current_block(
         self, call_options: Optional[TxParams], quorum_numbers: List[int]
     ) -> List[List[str]]:
         stakes = self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr, quorum_numbers, self.eth_client.eth.block_number
+            self.registry_coordinator_addr, quorum_numbers, self.eth_http_client.eth.block_number
         ).call(call_options)
 
         return [
@@ -105,7 +139,7 @@ class AvsRegistryReader:
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
         opts = cast(TxParams, call_options)
-        block_number = self.eth_client.eth.block_number
+        block_number = self.eth_http_client.eth.block_number
 
         return self.get_operators_stake_in_quorums_of_operator_at_block(
             opts, operator_id, block_number
@@ -119,7 +153,7 @@ class AvsRegistryReader:
         if (
             "block_hash" not in opts
         ):  # FIXME what if "block_identifier" in opts, compare with go code
-            opts["block_identifier"] = self.eth_client.eth.block_number  # ✅ valid key
+            opts["block_identifier"] = self.eth_http_client.eth.block_number  # ✅ valid key
 
         tx_params = cast(TxParams, opts)  # todo why cast?
 
@@ -302,12 +336,9 @@ class AvsRegistryReader:
             call_options
         )
 
-    def get_operator_id(
-        self, call_options: Optional[TxParams], operator_address: str
-    ) -> Optional[bytes]:
-        return self.registry_coordinator.functions.getOperatorId(operator_address).call(
-            call_options
-        )
+    def get_operator_id(self, operator_address: Address) -> bytes:
+        operator_id = self.registry_coordinator.functions.getOperatorId(operator_address).call()
+        return operator_id
 
     def get_operator_from_id(
         self, call_options: Optional[TxParams], operator_id: int
@@ -380,39 +411,109 @@ class AvsRegistryReader:
         return G1Point(apk["x"], apk["y"])
 
     def query_existing_registered_operator_sockets(
-        self, start_block: Optional[int], stop_block: Optional[int], block_range: Optional[int]
-    ) -> Optional[Dict[bytes, str]]:
-        start_block = start_block or 0
-        stop_block = stop_block or self.eth_client.eth.block_number
-        block_range = block_range or DEFAULT_QUERY_BLOCK_RANGE
+        self,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
+    ) -> Tuple[Dict[bytes, str], int]:
+        if stop_block is None:
+            stop_block = self.eth_http_client.eth.block_number
 
-        operator_id_to_socket_map = {}
+        operator_id_to_socket_map: Dict[bytes, str] = {}
+
+        event_abi = self.registry_coordinator.events.OperatorSocketUpdate._get_event_abi()
+        event_topic = event_abi_to_log_topic(event_abi)
+
         for i in range(start_block, stop_block + 1, block_range):
             to_block = min(i + block_range - 1, stop_block)
-            filter_opts = {"fromBlock": i, "toBlock": to_block}
 
-            socket_updates = self.registry_coordinator.events.OperatorSocketUpdate().get_logs(
-                filter_opts
-            )
-            num_socket_updates = 0
-            for event in socket_updates:
-                args = event["args"]
-                operator_id_raw = args.get("operatorId")
+            try:
+                logs = self.eth_http_client.eth.get_logs(
+                    {
+                        "fromBlock": i,
+                        "toBlock": to_block,
+                        "address": self.registry_coordinator.address,
+                        "topics": [event_topic],
+                    }
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to fetch logs for blocks {i}-{to_block}: {e}")
+                continue
 
-                operator_id = bytes.fromhex(
-                    operator_id_raw[2:] if operator_id_raw.startswith("0x") else operator_id_raw
+            decoded_logs = [
+                get_event_data(self.eth_http_client.codec, event_abi, log) for log in logs
+            ]
+
+            for log in decoded_logs:
+                operator_id_raw = log["args"]["operatorId"]
+                socket = log["args"]["socket"]
+
+                # Normalize operator ID
+                operator_id = (
+                    bytes.fromhex(operator_id_raw[2:])
+                    if operator_id_raw.startswith("0x")
+                    else bytes.fromhex(operator_id_raw)
                 )
 
-                operator_id_to_socket_map[operator_id] = str(args.get("socket", ""))
-                num_socket_updates += 1
+                operator_id_to_socket_map[operator_id] = socket
 
             self.logger.debug(
-                "avs_registry_chain_reader.query_existing_registered_operator_sockets",
+                "avsRegistryChainReader.query_existing_registered_operator_sockets",
                 extra={
-                    "numTransactionLogs": num_socket_updates,
+                    "numTransactionLogs": len(decoded_logs),
                     "fromBlock": i,
                     "toBlock": to_block,
                 },
             )
 
-        return operator_id_to_socket_map
+        return operator_id_to_socket_map, stop_block
+
+    def query_existing_registered_operator_pubkeys(
+        self,
+        start_block: int = 0,
+        stop_block: Optional[int] = None,
+        block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
+    ) -> Tuple[List[Address], List[OperatorPubkeys], int]:
+        if stop_block is None:
+            stop_block = self.eth_http_client.eth.block_number
+
+        operator_pubkeys: List[OperatorPubkeys] = []
+        operator_addresses: List[Address] = []
+        for i in range(start_block, stop_block + 1, block_range):
+            to_block: int = min(i + block_range - 1, stop_block)
+
+            event_abi = self.bls_apk_registry.events.NewPubkeyRegistration._get_event_abi()
+            event_topic = event_abi_to_log_topic(event_abi)
+            logs = self.eth_http_client.eth.get_logs(
+                {
+                    "fromBlock": i,
+                    "toBlock": to_block,
+                    "address": self.bls_apk_registry.address,
+                    "topics": [event_topic],
+                }
+            )
+
+            pubkey_updates = [
+                get_event_data(self.eth_http_client.codec, event_abi, log) for log in logs
+            ]
+
+            self.logger.debug(
+                "avsRegistryChainReader.query_existing_registered_operator_pubkeys",
+                extra={
+                    "numTransactionLogs": len(pubkey_updates),
+                    "fromBlock": i,
+                    "toBlock": to_block,
+                },
+            )
+            for update in pubkey_updates:
+                operator_addr = update["args"]["operator"]
+                pubkey_g1 = update["args"]["pubkeyG1"]
+                pubkey_g2 = update["args"]["pubkeyG2"]
+                operator_pubkeys.append(
+                    OperatorPubkeys(
+                        g1_pub_key=G1Point(pubkey_g1["X"], pubkey_g1["Y"]),
+                        g2_pub_key=G2Point(*pubkey_g2["X"], *pubkey_g2["Y"]),
+                    )
+                )
+                operator_addresses.append(operator_addr)
+        return operator_addresses, operator_pubkeys, to_block
