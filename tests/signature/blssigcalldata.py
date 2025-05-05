@@ -22,14 +22,14 @@ from eigensdk.crypto.bn256 import utils as bn_utils
 ###############################################################################
 
 RPC_URL = os.environ.get("RPC_URL", "https://holesky.infura.io/v3/889a5bab533a43e993049f577a2c136b")
-REGISTRY_COORDINATOR = "0xC908fAFAE29B5C9F0b5E0Da1d3025b8d6D42bfa0"  
+REGISTRY_COORDINATOR = "0xC908fAFAE29B5C9F0b5E0Da1d3025b8d6D42bfa0"
 OPER_STATE_RETRIEVER = "0xB4baAfee917fb4449f5ec64804217bccE9f46C67"
 AGGREGATOR_EOA = "0x3D3534BFf2cB9cB174eBF7DF9de6386E881d1792"
 
 # ---------------------------------------------------------------------------
 
-TASK_RESPONSE_TUPLE_TYPE = "(uint256 dummy)"  
-example_task_response = (123,)  
+TASK_RESPONSE_TUPLE_TYPE = "(uint256 dummy)"
+example_task_response = (123,)
 
 # ---------------------------------------------------------------------------
 
@@ -40,8 +40,9 @@ assert w3.is_connected(), "Cannot reach RPC – check RPC_URL"
 # ── Helper functions ─────────────────────────────────────────────────────────
 ###############################################################################
 
+
 def fp_to_int(fp) -> int:
-    return int(fp.getStr())          
+    return int(fp.getStr())
 
 
 def g1_tuple(pt):
@@ -56,27 +57,31 @@ def g2_tuple(pt):
         (fp_to_int(pt.y.c0), fp_to_int(pt.y.c1)),
     )
 
+
 def pubkey_hash_from_g1(pt) -> bytes:
     return keccak(encode(["uint256", "uint256"], g1_tuple(pt)))
+
 
 ###############################################################################
 # ── Dataclasses ──────────────────────────────────────────────────────────────
 ###############################################################################
 
+
 @dataclass
 class OperatorInfo:
-    operator_id: bytes  
-    keypair: BLSKeyPair  
+    operator_id: bytes
+    keypair: BLSKeyPair
     stake: int
 
 
 @dataclass
 class PrepResult:
-    msg_hash: bytes  
-    quorum_numbers: bytes  
+    msg_hash: bytes
+    quorum_numbers: bytes
     reference_block: int
-    params_tuple: tuple  
-    call_data_dict: dict  
+    params_tuple: tuple
+    call_data_dict: dict
+
 
 ###############################################################################
 # ── Demo operator set ───────────────────────────────────────────────────────
@@ -142,12 +147,12 @@ for opid in ALL_OP_IDS[1:]:
 # ── Step 3: build Non‑signer arrays; fetch historical indices  ──────────────
 ###############################################################################
 quorum_numbers = b"\x00"
-reference_block = w3.eth.block_number - 1 
+reference_block = w3.eth.block_number - 1
 
 # ── 3a  Non‑signer pubkeys sorted by pubkey‑hash
 non_signer_pubkeys_sorted = sorted(
     [operator_info[oid].keypair.pub_g1 for oid in NON_SIGNER_IDS],
-    key=pubkey_hash_from_g1,       
+    key=pubkey_hash_from_g1,
 )
 
 # ── 3b  Call OperatorStateRetriever to get all four index arrays

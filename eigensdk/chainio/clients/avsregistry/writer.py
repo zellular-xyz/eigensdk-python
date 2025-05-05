@@ -19,6 +19,7 @@ from eigensdk.chainio import utils
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 
+
 class AvsRegistryWriter:
     def __init__(
         self,
@@ -49,7 +50,7 @@ class AvsRegistryWriter:
         self.tx_mgr: Any = tx_mgr
         self.service_manager_abi: Optional[List[Dict[str, Any]]] = service_manager_abi
         self.pk_wallet: LocalAccount = pk_wallet
-        
+
         if registry_coordinator is None:
             raise ValueError("RegistryCoordinator contract not provided")
 
@@ -75,10 +76,11 @@ class AvsRegistryWriter:
         bls_key_pair: BLSKeyPair,
         quorum_numbers: List[int],
         socket: str,
-        wait_for_receipt = True,
+        wait_for_receipt=True,
     ) -> Optional[Dict]:
         operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
         from eth_account import Account
+
         account = Account.from_key(operator_ecdsa_private_key)
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
@@ -91,10 +93,19 @@ class AvsRegistryWriter:
 
         pubkey_reg_params = (
             (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
-            (int(bls_key_pair.pub_g1.getX().getStr()), int(bls_key_pair.pub_g1.getY().getStr())),  # pubkeyG1 as tuple
             (
-                (int(bls_key_pair.pub_g2.getX().get_a().getStr()), int(bls_key_pair.pub_g2.getX().get_b().getStr())),
-                (int(bls_key_pair.pub_g2.getY().get_a().getStr()), int(bls_key_pair.pub_g2.getY().get_b().getStr())),
+                int(bls_key_pair.pub_g1.getX().getStr()),
+                int(bls_key_pair.pub_g1.getY().getStr()),
+            ),  # pubkeyG1 as tuple
+            (
+                (
+                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
+                ),
+                (
+                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
+                ),
             ),
         )
         signature_salt, sig_valid_for_seconds = (
@@ -110,15 +121,12 @@ class AvsRegistryWriter:
         )
 
         operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-        
 
-        
         operator_signature_with_salt_and_expiry = (
             operator_signature,  # signature as bytes
             signature_salt,  # salt as bytes32
             signature_expiry,  # expiry as uint256
         )
-
 
         func = self.registry_coordinator.functions.registerOperator(
             utils.nums_to_bytes(quorum_numbers),
@@ -126,14 +134,10 @@ class AvsRegistryWriter:
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
         )
-        
-
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_client)
 
-
         return receipt
-        
 
     def update_stakes_of_entire_operator_set_for_quorums(
         self,

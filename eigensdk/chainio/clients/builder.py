@@ -177,7 +177,7 @@ class BuildAllConfig:
             tx_mgr=txmanager.TxManager(
                 self.eth_client, pk_wallet.address, operator_ecdsa_private_key
             ),
-            pk_wallet=pk_wallet
+            pk_wallet=pk_wallet,
         )
 
         return avs_reader_instance

@@ -8,6 +8,7 @@ from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
 from eth_account.signers.local import LocalAccount
 
+
 class RegistrationType(IntEnum):
     NORMAL = 0
     TRUSTED = 1
