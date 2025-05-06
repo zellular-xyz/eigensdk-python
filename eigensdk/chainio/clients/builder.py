@@ -109,6 +109,7 @@ class BuildAllConfig:
         pk_wallet: LocalAccount,
     ) -> Tuple[avs_reader.AvsRegistryReader, avs_writer.AvsRegistryWriter]:
         eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
+        logger.info(f"RegistryCoordinator: {self.registry_coordinator_addr}")
         registry_coordinator = eth_http_client.eth.contract(
             address=self.registry_coordinator_addr,
             abi=ABIs.REGISTRY_COORDINATOR,
@@ -116,6 +117,7 @@ class BuildAllConfig:
         service_manager_addr = registry_coordinator.functions.serviceManager().call()
 
         bls_apk_registry_addr = registry_coordinator.functions.blsApkRegistry().call()
+        logger.info(f"BlsApkRegistry: {bls_apk_registry_addr}")
         bls_apk_registry = eth_http_client.eth.contract(
             address=bls_apk_registry_addr,
             abi=ABIs.BLS_APK_REGISTRY,
@@ -127,6 +129,7 @@ class BuildAllConfig:
         )
 
         stake_registry_addr = registry_coordinator.functions.stakeRegistry().call()
+        logger.info(f"StakeRegistry: {stake_registry_addr}")
         stake_registry = eth_http_client.eth.contract(
             address=stake_registry_addr,
             abi=ABIs.STAKE_REGISTRY,
