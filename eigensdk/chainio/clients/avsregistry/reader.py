@@ -196,15 +196,15 @@ class AvsRegistryReader:
             to_block: int = min(i + block_range - 1, stop_block)
             pubkey_updates = (
                 self.bls_apk_registry.events.NewPubkeyRegistration.create_filter(
-                    fromBlock=i, toBlock=to_block, argument_filters={}
+                    from_block=i, to_block=to_block, argument_filters={}
                 ).get_all_entries()
             )
             self.logger.debug(
                 "avsRegistryChainReader.query_existing_registered_operator_pubkeys",
                 extra={
                     "numTransactionLogs": len(pubkey_updates),
-                    "fromBlock": i,
-                    "toBlock": to_block,
+                    "from_block": i,
+                    "to_block": to_block,
                 },
             )
             for update in pubkey_updates:
@@ -234,7 +234,7 @@ class AvsRegistryReader:
             to_block = min(i + block_range - 1, stop_block)
             socket_updates = (
                 self.registry_coordinator.events.OperatorSocketUpdate.create_filter(
-                    fromBlock=i, toBlock=to_block, argument_filters={}
+                    from_block=i, to_block=to_block, argument_filters={}
                 ).get_all_entries()
             )
             num_socket_updates = 0
@@ -247,7 +247,7 @@ class AvsRegistryReader:
                 "avsRegistryChainReader.query_existing_registered_operator_sockets",
                 extra={
                     "numTransactionLogs": num_socket_updates,
-                    "fromBlock": i,
+                    "from_block": i,
                     "toBlock": to_block,
                 },
             )
