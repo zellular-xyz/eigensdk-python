@@ -34,7 +34,6 @@ class AvsRegistryWriter:
         logger: logging.Logger,
         eth_http_client: Web3,
         pk_wallet: LocalAccount,
-        tx_mgr: Any = None,
         service_manager_abi: Optional[List[Dict[str, Any]]] = None,
     ):
 
@@ -48,28 +47,32 @@ class AvsRegistryWriter:
         self.logger: logging.Logger = logger
         self.eth_http_client: Web3 = eth_http_client
         self.web3: Web3 = eth_http_client  # Create alias for compatibility
-        self.tx_mgr: Any = tx_mgr
         self.service_manager_abi: Optional[List[Dict[str, Any]]] = service_manager_abi
         self.pk_wallet: LocalAccount = pk_wallet
 
-        # if registry_coordinator is None:
-        #     raise ValueError("RegistryCoordinator contract not provided")
+        if registry_coordinator is None:
+            self.logger.warning("RegistryCoordinator contract not provided")
 
-        # if bls_apk_registry is None:
-        #     raise ValueError("BLSApkRegistry contract not provided")
+        if operator_state_retriever is None:
+            self.logger.warning("OperatorStateRetriever contract not provided")
 
-        # if operator_state_retriever is None:
-        #     raise ValueError("OperatorStateRetriever contract not provided")
+        if service_manager is None:
+            self.logger.warning("ServiceManager contract not provided")
 
-        # if service_manager is None:
-        #     raise ValueError("ServiceManager contract not provided")
+        if service_manager_addr is None:
+            self.logger.warning("ServiceManager address not provided")
 
-        # if stake_registry is None:
-        #     raise ValueError("StakeRegistry contract not provided")
+        if stake_registry is None:
+            self.logger.warning("StakeRegistry contract not provided")
 
-    def send(self, tx_func, *args, wait_for_receipt: bool = True):
-        tx = tx_func(*args).build_transaction()
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        if eth_http_client is None:
+            self.logger.warning("EthHTTPClient not provided")
+
+        if pk_wallet is None:
+            self.logger.warning("PKWallet not provided")
+
+        if service_manager_abi is None:
+            self.logger.warning("ServiceManager ABI not provided")
 
     def register_operator(
         self,
@@ -77,7 +80,6 @@ class AvsRegistryWriter:
         bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
-        wait_for_receipt=True,
     ) -> Optional[Dict]:
         operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
         from eth_account import Account
@@ -231,14 +233,16 @@ class AvsRegistryWriter:
         self,
         operators_per_quorum: List[List[str]],
         quorum_numbers: List[int],
-        wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.updateOperatorsForQuorum,
+
+        func = self.registry_coordinator.functions.updateOperatorsForQuorum(
             operators_per_quorum,
             quorum_numbers,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def register_operator_with_churn(
         self,
@@ -249,7 +253,6 @@ class AvsRegistryWriter:
         quorum_numbers_to_kick: List[int],
         operators_to_kick: List[str],
         socket: str,
-        wait_for_receipt: bool,
     ) -> Optional[Dict]:
         operator_addr = self.web3.eth.account.from_key(
             operator_ecdsa_private_key.to_string()
@@ -325,90 +328,105 @@ class AvsRegistryWriter:
             "expiry": signature_expiry,
         }
 
-        # Updated to use the send method
-        return self.send(
-            self.registry_coordinator.functions.registerOperatorWithChurn,
+        func = self.registry_coordinator.functions.registerOperatorWithChurn(
             quorum_numbers,
             socket,
             pubkey_reg_params,
             operator_kick_params,
             churn_approver_signature_with_salt_and_expiry,
             operator_signature_with_salt_and_expiry,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def update_stakes_of_operator_subset_for_all_quorums(
-        self, operators: List[str], wait_for_receipt: bool
+        self, operators: List[str]
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.updateOperators,
-            operators,
-            wait_for_receipt=wait_for_receipt,
-        )
+
+        func = self.registry_coordinator.functions.updateOperators(operators)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def deregister_operator(
-        self, quorum_numbers: List[int], pubkey: BN254G1Point, wait_for_receipt: bool
+        self,
+        quorum_numbers: List[int],
+        pubkey: BN254G1Point,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.deregisterOperator0,
-            quorum_numbers,
-            wait_for_receipt=wait_for_receipt,
-        )
 
-    def update_socket(self, socket: str, wait_for_receipt: bool) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.updateSocket,
-            socket,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = self.registry_coordinator.functions.deregisterOperator(quorum_numbers)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def update_socket(
+        self,
+        socket: str,
+    ) -> Optional[Dict]:
+        func = self.registry_coordinator.functions.updateSocket(socket)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_rewards_initiator(
-        self, rewards_initiator_addr: str, wait_for_receipt: bool
+        self,
+        rewards_initiator_addr: str,
     ) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
 
-        return self.send(
-            service_manager_contract.functions.setRewardsInitiator,
-            rewards_initiator_addr,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = service_manager_contract.functions.setRewardsInitiator(rewards_initiator_addr)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_slashable_stake_lookahead(
-        self, quorum_number: int, look_ahead_period: int, wait_for_receipt: bool
+        self,
+        quorum_number: int,
+        look_ahead_period: int,
     ) -> Optional[Dict]:
-        return self.send(
-            self.stake_registry.functions.setSlashableStakeLookahead,
-            quorum_number,
-            look_ahead_period,
-            wait_for_receipt=wait_for_receipt,
+
+        func = self.stake_registry.functions.setSlashableStakeLookahead(
+            quorum_number, look_ahead_period
         )
 
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
     def set_minimum_stake_for_quorum(
-        self, quorum_number: int, minimum_stake: int, wait_for_receipt: bool
+        self,
+        quorum_number: int,
+        minimum_stake: int,
     ) -> Optional[Dict]:
-        return self.send(
-            self.stake_registry.functions.setMinimumStakeForQuorum,
-            quorum_number,
-            minimum_stake,
-            wait_for_receipt=wait_for_receipt,
-        )
+
+        func = self.stake_registry.functions.setMinimumStakeForQuorum(quorum_number, minimum_stake)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def create_total_delegated_stake_quorum(
         self,
         operator_set_params: Dict,
         minimum_stake_required: int,
         strategy_params: List[Dict],
-        wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.createTotalDelegatedStakeQuorum,
-            operator_set_params,
-            minimum_stake_required,
-            strategy_params,
-            wait_for_receipt=wait_for_receipt,
+
+        func = self.stake_registry.functions.createTotalDelegatedStakeQuorum(
+            operator_set_params, minimum_stake_required, strategy_params
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def create_slashable_stake_quorum(
         self,
@@ -416,120 +434,148 @@ class AvsRegistryWriter:
         minimum_stake_required: int,
         strategy_params: List[Dict],
         look_ahead_period: int,
-        wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        self.logger.info("Creating slashable stake quorum")
-        return self.send(
-            self.registry_coordinator.functions.createSlashableStakeQuorum,
+
+        func = self.registry_coordinator.functions.createSlashableStakeQuorum(
             operator_set_params,
             minimum_stake_required,
             strategy_params,
             look_ahead_period,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def eject_operator(
-        self, operator_address: str, quorum_numbers: List[int], wait_for_receipt: bool
+        self,
+        operator_address: str,
+        quorum_numbers: List[int],
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.ejectOperator,
+
+        func = self.registry_coordinator.functions.ejectOperator(
             operator_address,
             quorum_numbers,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_operator_set_params(
-        self, quorum_number: int, operator_set_params: Dict, wait_for_receipt: bool
+        self,
+        quorum_number: int,
+        operator_set_params: Dict,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.setOperatorSetParams,
+        func = self.registry_coordinator.functions.setOperatorSetParams(
             quorum_number,
             operator_set_params,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_churn_approver(
-        self, churn_approver_address: str, wait_for_receipt: bool
+        self,
+        churn_approver_address: str,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.setChurnApprover,
-            churn_approver_address,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = self.registry_coordinator.functions.setChurnApprover(churn_approver_address)
 
-    def set_ejector(self, ejector_address: str, wait_for_receipt: bool) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.setEjector,
-            ejector_address,
-            wait_for_receipt=wait_for_receipt,
-        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_ejector(
+        self,
+        ejector_address: str,
+    ) -> Optional[Dict]:
+
+        func = self.registry_coordinator.functions.setEjector(ejector_address)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def modify_strategy_params(
         self,
         quorum_number: int,
         strategy_indices: List[int],
         multipliers: List[int],
-        wait_for_receipt: bool,
     ) -> Optional[Dict]:
-        return self.send(
-            self.stake_registry.functions.modifyStrategyParams,
+
+        func = self.stake_registry.functions.modifyStrategyParams(
             quorum_number,
             strategy_indices,
             multipliers,
-            wait_for_receipt=wait_for_receipt,
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_account_identifier(
-        self, account_identifier_address: str, wait_for_receipt: bool
+        self,
+        account_identifier_address: str,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.setAccountIdentifier,
-            account_identifier_address,
-            wait_for_receipt=wait_for_receipt,
-        )
+
+        func = self.registry_coordinator.functions.setAccountIdentifier(account_identifier_address)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_ejection_cooldown(
-        self, ejection_cooldown: int, wait_for_receipt: bool
+        self,
+        ejection_cooldown: int,
     ) -> Optional[Dict]:
-        return self.send(
-            self.registry_coordinator.functions.setEjectionCooldown,
-            ejection_cooldown,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = self.registry_coordinator.functions.setEjectionCooldown(ejection_cooldown)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def add_strategies(
-        self, quorum_number: int, strategy_params: List[Dict], wait_for_receipt: bool
+        self,
+        quorum_number: int,
+        strategy_params: List[Dict],
     ) -> Optional[Dict]:
-        return self.send(
-            self.stake_registry.functions.addStrategies,
-            quorum_number,
-            strategy_params,
-            wait_for_receipt=wait_for_receipt,
-        )
 
-    def update_avs_metadata_uri(self, metadata_uri: str, wait_for_receipt: bool) -> Optional[Dict]:
+        func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def update_avs_metadata_uri(
+        self,
+        metadata_uri: str,
+    ) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
 
-        return self.send(
-            service_manager_contract.functions.updateAVSMetadataURI,
-            metadata_uri,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = service_manager_contract.functions.updateAVSMetadataURI(metadata_uri)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def remove_strategies(
-        self, quorum_number: int, indices_to_remove: List[int], wait_for_receipt: bool
+        self,
+        quorum_number: int,
+        indices_to_remove: List[int],
     ) -> Optional[Dict]:
-        return self.send(
-            self.stake_registry.functions.removeStrategies,
-            quorum_number,
-            indices_to_remove,
-            wait_for_receipt=wait_for_receipt,
-        )
+
+        func = self.stake_registry.functions.removeStrategies(quorum_number, indices_to_remove)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def create_avs_rewards_submission(
-        self, rewards_submission: List[Dict], wait_for_receipt: bool
+        self,
+        rewards_submission: List[Dict],
     ) -> Optional[Dict]:
         self.logger.info(
             "Creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission}
@@ -539,21 +585,24 @@ class AvsRegistryWriter:
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
 
-        return self.send(
-            service_manager_contract.functions.createAVSRewardsSubmission,
-            rewards_submission,
-            wait_for_receipt=wait_for_receipt,
-        )
+        func = service_manager_contract.functions.createAVSRewardsSubmission(rewards_submission)
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def create_operator_directed_avs_rewards_submission(
-        self, operator_directed_rewards_submissions: List[Dict], wait_for_receipt: bool
+        self,
+        operator_directed_rewards_submissions: List[Dict],
     ) -> Optional[Dict]:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
 
-        return self.send(
-            service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission,
-            operator_directed_rewards_submissions,
-            wait_for_receipt=wait_for_receipt,
+        func = service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission(
+            operator_directed_rewards_submissions
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt

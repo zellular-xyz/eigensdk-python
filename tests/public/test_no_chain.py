@@ -1,5 +1,4 @@
 from eigensdk.chainio.clients.builder import BuildAllConfig
-from eigensdk.chainio.txmgr import txmanager
 from eigensdk.contracts import ABIs
 from eigensdk.crypto import bls
 
@@ -19,26 +18,6 @@ def test_build_all_config_import():
     assert config.avs_name == "test"
     assert config.prom_metrics_ip_port_address == "localhost:9090"
     assert hasattr(config, "logger")
-
-
-def test_txmanager_import():
-    """Test that TxManager can be imported."""
-    from web3 import Web3
-
-    # Create a dummy Web3 instance that doesn't connect anywhere
-    w3 = Web3()
-
-    # We can instantiate TxManager without errors
-    tx_mgr = txmanager.TxManager(
-        w3,
-        "0x1234567890123456789012345678901234567890",
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-    )
-
-    # Testing attributes that actually exist in the class
-    assert hasattr(tx_mgr, "w3")
-    assert hasattr(tx_mgr, "sender_address")
-    assert hasattr(tx_mgr, "private_key")
 
 
 def test_abi_files_exist():

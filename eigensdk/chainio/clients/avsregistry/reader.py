@@ -41,7 +41,6 @@ class AvsRegistryReader:
         logger: logging.Logger,
         eth_http_client: Web3,
         pk_wallet: LocalAccount,
-        tx_mgr: Any,
     ):
 
         self.logger: logging.Logger = logger
@@ -53,40 +52,37 @@ class AvsRegistryReader:
         self.service_manager = service_manager
         self.stake_registry: Contract = stake_registry
         self.eth_http_client: Web3 = eth_http_client
-        self.tx_mgr = tx_mgr
         self.pk_wallet: LocalAccount = pk_wallet
 
-        # if registry_coordinator is None:
-        #     raise ValueError("RegistryCoordinator contract not provided")
+        if registry_coordinator is None:
+            self.logger.warning("RegistryCoordinator contract not provided")
 
-        # if bls_apk_registry is None:
-        #     raise ValueError("BLSApkRegistry contract not provided")
+        if registry_coordinator_addr is None:
+            self.logger.warning("RegistryCoordinator address not provided")
 
-        # if operator_state_retriever is None:
-        #     raise ValueError("OperatorStateRetriever contract not provided")
+        if bls_apk_registry is None:
+            self.logger.warning("BLSApkRegistry contract not provided")
 
-        # if service_manager is None:
-        #     raise ValueError("ServiceManager contract not provided")
+        if bls_apk_registry_addr is None:
+            self.logger.warning("BLSApkRegistry address not provided")
 
-        # if stake_registry is None:
-        #     raise ValueError("StakeRegistry contract not provided")
+        if operator_state_retriever is None:
+            self.logger.warning("OperatorStateRetriever contract not provided")
+
+        if service_manager is None:
+            self.logger.warning("ServiceManager contract not provided")
+
+        if stake_registry is None:
+            self.logger.warning("StakeRegistry contract not provided")
+
+        if eth_http_client is None:
+            self.logger.warning("EthHTTPClient not provided")
+
+        if pk_wallet is None:
+            self.logger.warning("PKWallet not provided")
 
     def get_quorum_count(self, call_options: Optional[TxParams] = None) -> int:
         return self.registry_coordinator.functions.quorumCount().call(call_options)
-
-    # def get_operators_stake_in_quorums_at_current_block(
-    #     self, call_options: Optional[TxParams], quorum_numbers: List[int]
-    # ) -> List[List[OperatorStateRetrieverOperator]]:
-    #     return self.get_operators_stake_in_quorums_at_block(
-    #         call_options, quorum_numbers, int(self.eth_http_client.eth.block_number)
-    #     )
-
-    # def get_operators_stake_in_quorums_at_block(
-    #     self, call_options: Optional[TxParams], quorum_numbers: List[int], block_number: int
-    # ) -> List[List[OperatorStateRetrieverOperator]]:
-    #     return self.operator_state_retriever.functions.getOperatorState(
-    #         self.registry_coordinator_addr, quorum_numbers, block_number
-    #     ).call(call_options)
 
     def get_operators_stake_in_quorums_at_current_block(
         self, quorum_numbers: List[int]

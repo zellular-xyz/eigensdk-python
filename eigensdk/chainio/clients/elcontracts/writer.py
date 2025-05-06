@@ -30,7 +30,6 @@ class ELWriter:
         eth_http_client: Web3,
         logger: logging.Logger,
         pk_wallet: LocalAccount,
-        tx_mgr: Any,
         strategy_abi: List[Dict[str, Any]],
         erc20_abi: List[Dict[str, Any]],
     ):
@@ -45,35 +44,46 @@ class ELWriter:
         self.logger = logger
         self.strategy_abi = strategy_abi
         self.erc20_abi = erc20_abi
-        self.tx_mgr = tx_mgr
         self.el_chain_reader = el_chain_reader
         self.pk_wallet: LocalAccount = pk_wallet
 
-        # if allocation_manager is None:
-        #     raise ValueError("AllocationManager contract not provided")
+        if allocation_manager is None:
+            self.logger.warning("AllocationManager contract not provided")
 
-        # if avs_directory is None:
-        #     raise ValueError("AvsDirectory contract not provided")
+        if avs_directory is None:
+            self.logger.warning("AvsDirectory contract not provided")
 
-        # if delegation_manager is None:
-        #     raise ValueError("DelegationManager contract not provided")
+        if delegation_manager is None:
+            self.logger.warning("DelegationManager contract not provided")
 
-        # if permission_controller is None:
-        #     raise ValueError("PermissionController contract not provided")
+        if permission_controller is None:
+            self.logger.warning("PermissionController contract not provided")
 
-        # if reward_coordinator is None:
-        #     raise ValueError("RewardCoordinator contract not provided")
+        if reward_coordinator is None:
+            self.logger.warning("RewardCoordinator contract not provided")
 
-        # if strategy_manager is None:
-        #     raise ValueError("StrategyManager contract not provided")
+        if registry_coordinator is None:
+            self.logger.warning("RegistryCoordinator contract not provided")
 
-    def send(self, tx_func, *args, wait_for_receipt: bool = True):
-        tx = tx_func(*args).build_transaction(self.tx_mgr.get_no_send_tx_opts())
-        return self.tx_mgr.send(tx, wait_for_receipt)
+        if strategy_manager is None:
+            self.logger.warning("StrategyManager contract not provided")
 
-    def register_as_operator(self, operator: Operator, wait_for_receipt: bool = True):
-        if operator.delegation_approver_address is None:
-            raise ValueError("operator.delegation_approver_address cannot be None")
+        if el_chain_reader is None:
+            self.logger.warning("ELChainReader contract not provided")
+
+        if eth_http_client is None:
+            self.logger.warning("EthHTTPClient not provided")
+
+        if pk_wallet is None:
+            self.logger.warning("PKWallet not provided")
+
+        if strategy_abi is None:
+            self.logger.warning("StrategyABI not provided")
+
+        if erc20_abi is None:
+            self.logger.warning("ERC20ABI not provided")
+
+    def register_as_operator(self, operator: Operator):
 
         func = self.delegation_manager.functions.registerAsOperator(
             Web3.to_checksum_address(operator.delegation_approver_address),
@@ -85,150 +95,170 @@ class ELWriter:
 
         return receipt
 
-    def update_operator_details(self, operator: Operator, wait_for_receipt: bool = True):
-        if operator.delegation_approver_address is None:
-            raise ValueError("operator.delegation_approver_address cannot be None")
-        if operator.address is None:
-            raise ValueError("operator.address cannot be None")
+    def update_operator_details(self, operator: Operator):
 
-        return self.send(
-            self.delegation_manager.functions.modifyOperatorDetails,
+        func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator.address),
             Web3.to_checksum_address(operator.delegation_approver_address),
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def update_metadata_uri(self, operator_address: str, uri: str, wait_for_receipt: bool = True):
-        return self.send(
-            self.delegation_manager.functions.updateOperatorMetadataURI,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def update_metadata_uri(self, operator_address: str, uri: str):
+
+        func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator_address),
             uri,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def deposit_erc20_into_strategy(
-        self, strategy_addr: str, amount: int, wait_for_receipt: bool = True
-    ):
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int):
         _, token_contract, token_addr = (
             self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
         )
-        self.send(
-            token_contract.functions.approve,
+
+        func = token_contract.functions.approve(
             self.strategy_manager.address,
             amount,
-            wait_for_receipt=wait_for_receipt,
         )
-        return self.send(
-            self.strategy_manager.functions.depositIntoStrategy,
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        func = self.strategy_manager.functions.depositIntoStrategy(
             Web3.to_checksum_address(strategy_addr),
             Web3.to_checksum_address(token_addr),
             amount,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def set_claimer_for(self, claimer: str, wait_for_receipt: bool = True):
-        return self.send(
-            self.rewards_coordinator.functions.setClaimerFor,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_claimer_for(self, claimer: str):
+
+        func = self.rewards_coordinator.functions.setClaimerFor(
             Web3.to_checksum_address(claimer),
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def process_claim(self, claim: dict, recipient_address: str, wait_for_receipt: bool = True):
-        return self.send(
-            self.rewards_coordinator.functions.processClaim,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def process_claim(self, claim: dict, recipient_address: str):
+
+        func = self.rewards_coordinator.functions.processClaim(
             claim,
             Web3.to_checksum_address(recipient_address),
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def set_operator_avs_split(
-        self, operator: str, avs: str, split: int, wait_for_receipt: bool = True
-    ):
-        return self.send(
-            self.rewards_coordinator.functions.setOperatorAVSSplit,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_operator_avs_split(self, operator: str, avs: str, split: int):
+
+        func = self.rewards_coordinator.functions.setOperatorAVSSplit(
             Web3.to_checksum_address(operator),
             Web3.to_checksum_address(avs),
             split,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def set_operator_pi_split(self, operator: str, split: int, wait_for_receipt: bool = True):
-        return self.send(
-            self.rewards_coordinator.functions.setOperatorPISplit,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_operator_pi_split(self, operator: str, split: int):
+
+        func = self.rewards_coordinator.functions.setOperatorPISplit(
             Web3.to_checksum_address(operator),
             split,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def set_operator_set_split(
-        self, operator: str, operator_set: dict, split: int, wait_for_receipt: bool = True
-    ):
-        return self.send(
-            self.rewards_coordinator.functions.setOperatorSetSplit,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_operator_set_split(self, operator: str, operator_set: dict, split: int):
+
+        func = self.rewards_coordinator.functions.setOperatorSetSplit(
             Web3.to_checksum_address(operator),
             operator_set,
             split,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def process_claims(self, claims: list, recipient_address: str, wait_for_receipt: bool = True):
-        return self.send(
-            self.rewards_coordinator.functions.processClaims,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def process_claims(self, claims: list, recipient_address: str):
+
+        func = self.rewards_coordinator.functions.processClaims(
             claims,
             Web3.to_checksum_address(recipient_address),
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def modify_allocations(
-        self, operator_address: str, allocations: list, wait_for_receipt: bool = True
-    ):
-        return self.send(
-            self.allocation_manager.functions.modifyAllocations,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def modify_allocations(self, operator_address: str, allocations: list):
+
+        func = self.allocation_manager.functions.modifyAllocations(
             Web3.to_checksum_address(operator_address),
             allocations,
-            wait_for_receipt=wait_for_receipt,
         )
 
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
     def clear_deallocation_queue(
-        self,
-        operator_address: str,
-        strategies: list,
-        nums_to_clear: list,
-        wait_for_receipt: bool = True,
+        self, operator_address: str, strategies: list, nums_to_clear: list
     ):
-        return self.send(
-            self.allocation_manager.functions.clearDeallocationQueue,
+
+        func = self.allocation_manager.functions.clearDeallocationQueue(
             Web3.to_checksum_address(operator_address),
             [Web3.to_checksum_address(s) for s in strategies],
             nums_to_clear,
-            wait_for_receipt=wait_for_receipt,
         )
 
-    def set_allocation_delay(
-        self, operator_address: str, delay: int, wait_for_receipt: bool = True
-    ):
-        result = self.send(
-            self.allocation_manager.functions.setAllocationDelay,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def set_allocation_delay(self, operator_address: str, delay: int):
+
+        func = self.allocation_manager.functions.setAllocationDelay(
             Web3.to_checksum_address(operator_address),
             delay,
-            wait_for_receipt=wait_for_receipt,
         )
-        return result
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def deregister_from_operator_sets(self, operator: str, request: dict):
-        return self.send(
-            self.allocation_manager.functions.deregisterFromOperatorSets,
+
+        func = self.allocation_manager.functions.deregisterFromOperatorSets(
             {
                 "operator": Web3.to_checksum_address(operator),
                 "avs": Web3.to_checksum_address(request["avs_address"]),
                 "operatorSetIds": request["operator_set_ids"],
-            },
-            wait_for_receipt=request["wait_for_receipt"],
+            }
         )
 
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
     def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict):
-        return self.send(
-            self.allocation_manager.functions.registerForOperatorSets,
+
+        func = self.allocation_manager.functions.registerForOperatorSets(
             Web3.to_checksum_address(request["operator_address"]),
             {
                 "avs": Web3.to_checksum_address(request["avs_address"]),
@@ -244,28 +274,24 @@ class ELWriter:
                     ),
                 ),
             },
-            wait_for_receipt=request["wait_for_receipt"],
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def remove_permission(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.removeAppointee,
+
+        func = self.permission_controller.functions.removeAppointee(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    def new_remove_permission_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.removeAppointee,
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["appointee_address"]),
-            request["target"],
-            request["selector"],
-            wait_for_receipt=request.get("wait_for_receipt", True),
-        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def set_permission(self, request: dict):
         return self.send(
@@ -277,64 +303,67 @@ class ELWriter:
             wait_for_receipt=request["wait_for_receipt"],
         )
 
-    def new_accept_admin_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.acceptAdmin,
+    def accept_admin(self, request: dict):
+
+        func = self.permission_controller.functions.acceptAdmin(
             Web3.to_checksum_address(request["account_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True),
         )
 
-    def accept_admin(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.acceptAdmin,
-            Web3.to_checksum_address(request["account_address"]),
-            wait_for_receipt=request["wait_for_receipt"],
-        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def add_pending_admin(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.addPendingAdmin,
+
+        func = self.permission_controller.functions.addPendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    def new_remove_admin_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.removeAdmin,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def new_remove_admin_tx(self, request: dict):
+
+        func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True),
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def remove_admin(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.removeAdmin,
+
+        func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    def new_remove_pending_admin_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.removePendingAdmin,
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True),
-        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
 
     def remove_pending_admin(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.removePendingAdmin,
+
+        func = self.permission_controller.functions.removePendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request["wait_for_receipt"],
         )
 
-    def new_add_pending_admin_tx(self, tx_opts, request: dict):
-        return self.send(
-            self.permission_controller.functions.addPendingAdmin,
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt
+
+    def new_add_pending_admin_tx(self, request: dict):
+
+        func = self.permission_controller.functions.addPendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
-            wait_for_receipt=request.get("wait_for_receipt", True),
         )
+
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+
+        return receipt

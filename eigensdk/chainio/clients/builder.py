@@ -6,7 +6,6 @@ from eigensdk.chainio.clients.avsregistry import reader as avs_reader
 from eigensdk.chainio.clients.avsregistry import writer as avs_writer
 from eigensdk.chainio.clients.elcontracts import reader as el_reader
 from eigensdk.chainio.clients.elcontracts import writer as el_writer
-from eigensdk.chainio.txmgr import txmanager
 from eigensdk.contracts import ABIs
 from eth_account.signers.local import LocalAccount
 from eth_account import Account
@@ -108,7 +107,6 @@ class BuildAllConfig:
             strategy_manager=strategy_manager_instance,  #
             el_chain_reader=el_reader_instance,
             logger=self.logger,
-            tx_mgr=txmanager.TxManager(eth_http_client, pk_wallet.address, ecdsa_private_key),
             pk_wallet=pk_wallet,
             eth_http_client=eth_http_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
@@ -156,7 +154,6 @@ class BuildAllConfig:
             stake_registry=stake_registry_instance,
             logger=self.logger,
             eth_http_client=eth_http_client,
-            tx_mgr=txmanager.TxManager(eth_http_client, pk_wallet.address, ecdsa_private_key),
             pk_wallet=pk_wallet,
         )
         avs_writer_instance = avs_writer.AvsRegistryWriter(
@@ -169,7 +166,6 @@ class BuildAllConfig:
             el_reader=el_chain_reader,
             logger=self.logger,
             eth_http_client=eth_http_client,
-            tx_mgr=txmanager.TxManager(eth_http_client, pk_wallet.address, ecdsa_private_key),
             pk_wallet=pk_wallet,
         )
         return avs_reader_instance, avs_writer_instance

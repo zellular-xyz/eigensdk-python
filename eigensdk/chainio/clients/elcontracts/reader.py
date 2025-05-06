@@ -30,29 +30,29 @@ class ELReader:
         self.strategy_abi = strategy_abi
         self.erc20_abi = erc20_abi
 
-        # if allocation_manager is None:
-        #     raise ValueError("AllocationManager contract not provided")
+        if allocation_manager is None:
+            self.logger.warning("AllocationManager contract not provided")
 
-        # if avs_directory is None:
-        #     raise ValueError("AvsDirectory contract not provided")
+        if avs_directory is None:
+            self.logger.warning("AvsDirectory contract not provided")
 
-        # if delegation_manager is None:
-        #     raise ValueError("DelegationManager contract not provided")
+        if delegation_manager is None:
+            self.logger.warning("DelegationManager contract not provided")
 
-        # if permission_controller is None:
-        #     raise ValueError("PermissionController contract not provided")
+        if permission_controller is None:
+            self.logger.warning("PermissionController contract not provided")
 
-        # if reward_coordinator is None:
-        #     raise ValueError("RewardCoordinator contract not provided")
+        if reward_coordinator is None:
+            self.logger.warning("RewardCoordinator contract not provided")
 
-        # if strategy_manager is None:
-        #     raise ValueError("StrategyManager contract not provided")
+        if strategy_manager is None:
+            self.logger.warning("StrategyManager contract not provided")
 
-        # if strategy_abi is None:
-        #     raise ValueError("Strategy ABI not provided")
+        if strategy_abi is None:
+            self.logger.warning("Strategy ABI not provided")
 
-        # if erc20_abi is None:
-        #     raise ValueError("ERC20 ABI not provided")
+        if erc20_abi is None:
+            self.logger.warning("ERC20 ABI not provided")
 
     def get_allocatable_magnitude(self, operator_addr: Address, strategy_addr: Address) -> int:
 

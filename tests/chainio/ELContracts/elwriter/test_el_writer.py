@@ -20,18 +20,6 @@ def mock_operator():
 
 
 @pytest.fixture
-def mock_tx_manager():
-    """Mock TxManager"""
-    mock_tx_mgr = MagicMock()
-    mock_tx_mgr.get_no_send_tx_opts.return_value = {
-        "gas": 21000,
-        "gasPrice": 1000000000,
-    }
-    mock_tx_mgr.send.return_value = MagicMock(transactionHash=MagicMock(hex=lambda: "0xabc123"))
-    return mock_tx_mgr
-
-
-@pytest.fixture
 def mock_el_writer(mock_tx_manager):
     """Mock the el_writer object"""
     el_writer.tx_mgr = mock_tx_manager  # ✅ Ensure tx_mgr is mocked
