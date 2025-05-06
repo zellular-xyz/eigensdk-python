@@ -183,28 +183,7 @@ class ELWriter:
 
         return receipt
 
-    def set_operator_set_split(self, operator: str, operator_set: dict, split: int):
 
-        func = self.rewards_coordinator.functions.setOperatorSetSplit(
-            Web3.to_checksum_address(operator),
-            operator_set,
-            split,
-        )
-
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
-
-    def process_claims(self, claims: list, recipient_address: str):
-
-        func = self.rewards_coordinator.functions.processClaims(
-            claims,
-            Web3.to_checksum_address(recipient_address),
-        )
-
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
 
     def modify_allocations(self, operator_address: str, allocations: list):
 
@@ -324,16 +303,6 @@ class ELWriter:
 
         return receipt
 
-    def new_remove_admin_tx(self, request: dict):
-
-        func = self.permission_controller.functions.removeAdmin(
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["admin_address"]),
-        )
-
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
 
     def remove_admin(self, request: dict):
 
@@ -349,17 +318,6 @@ class ELWriter:
     def remove_pending_admin(self, request: dict):
 
         func = self.permission_controller.functions.removePendingAdmin(
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["admin_address"]),
-        )
-
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
-
-    def new_add_pending_admin_tx(self, request: dict):
-
-        func = self.permission_controller.functions.addPendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
         )

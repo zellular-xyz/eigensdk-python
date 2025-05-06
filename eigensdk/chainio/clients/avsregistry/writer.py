@@ -354,7 +354,6 @@ class AvsRegistryWriter:
     def deregister_operator(
         self,
         quorum_numbers: List[int],
-        pubkey: BN254G1Point,
     ) -> Optional[Dict]:
 
         func = self.registry_coordinator.functions.deregisterOperator(quorum_numbers)

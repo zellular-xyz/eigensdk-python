@@ -154,13 +154,11 @@ class ELReader:
         if not self.allocation_manager:
             raise ValueError("AllocationManager contract not provided")
 
-        # Create the operator set tuple expected by the contract
         operator_set_tuple = (
             Web3.to_checksum_address(operator_set["avs"]),
             operator_set.get("quorumNumber", 0),
         )
 
-        # Call the contract function
         operators = self.allocation_manager.functions.getMembers(operator_set_tuple).call()
 
         return operators
