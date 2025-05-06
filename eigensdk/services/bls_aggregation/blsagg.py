@@ -262,7 +262,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             )
 
             digest_aggregated_operators.signers_agg_sig_g1 = (
-                digest_aggregated_operators.signers_agg_sig_g1 + bls_sign
+                Signature.from_g1_point(digest_aggregated_operators.signers_agg_sig_g1 + bls_sign)
             )
             digest_aggregated_operators.signers_apk_g2 = (
                 digest_aggregated_operators.signers_apk_g2
@@ -305,7 +305,6 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 ):
                     non_signers_operator_ids.append(operator_id)
             non_signers_operator_ids.sort()
-
             non_signers_g1_pub_keys: list[G1Point] = [
                 operators_avs_state_dict[operator_id].operator_info.pub_keys.g1_pub_key
                 for operator_id in non_signers_operator_ids
@@ -314,7 +313,7 @@ class BlsAggregationService(BlsAggregationServiceInterface):
             indices = self.avs_registry_service.avs_registry_reader.get_check_signatures_indices(
                 cd.task_created_block,
                 cd.quorum_numbers,
-                non_signers_operator_ids,
+                [int(operator_id, 16) for operator_id in non_signers_operator_ids],
             )
 
             result = BlsAggregationServiceResponse(
