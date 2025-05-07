@@ -49,4 +49,4 @@ lint:
 
 precommit: format mypy lint
 commit-all: precommit
-	git commit -a
+	git commit -a -n
