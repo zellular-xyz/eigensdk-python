@@ -47,5 +47,6 @@ mypy:
 lint:
 	docker compose run dev flake8 eigensdk/chainio/
 
-commit-all: format mypy lint
+precommit: format mypy lint
+commit-all: precommit
 	git commit -a
