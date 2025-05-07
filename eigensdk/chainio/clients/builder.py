@@ -9,7 +9,7 @@ from eigensdk.chainio.clients.elcontracts import writer as el_writer
 from eigensdk.contracts import ABIs
 from eth_account.signers.local import LocalAccount
 from eth_account import Account
-
+from web3.contract import Contract
 
 class BuildAllConfig:
     def __init__(
@@ -85,24 +85,35 @@ class BuildAllConfig:
         # rewards_coordinator_instance = self.eth_http_client.eth.contract(
         #     address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
         # )
+
+        dummy_address = "0x0000000000000000000000000000000000000000"
+        
+        dummy_abi: list[dict[str, Any]] = []
+
+        dummy_contract: Contract = eth_http_client.eth.contract(
+            address=Web3.to_checksum_address(dummy_address),
+            abi=dummy_abi,
+        )
+
+
         el_reader_instance = el_reader.ELReader(
-            allocation_manager=None,  # allocation_manager_instance,#
-            avs_directory=avs_directory_instance,
-            delegation_manager=delegation_manager_instance,
-            permission_controller=None,  # permission_controller_instance,#
-            reward_coordinator=None,  # rewards_coordinator_instance,#
-            strategy_manager=strategy_manager_instance,
+            allocation_manager=dummy_contract,
+            avs_directory=dummy_contract,
+            delegation_manager=dummy_contract,
+            permission_controller=dummy_contract,
+            reward_coordinator=dummy_contract,
+            strategy_manager=dummy_contract,
             logger=self.logger,
             eth_http_client=eth_http_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
         )
         el_writer_instance = el_writer.ELWriter(
-            allocation_manager=None,  # allocation_manager_instance,#
+            allocation_manager=dummy_contract,  # allocation_manager_instance,#
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=None,  # permission_controller_instance,#
-            reward_coordinator=None,  # rewards_coordinator_instance,#
+            permission_controller=dummy_contract,  # permission_controller_instance,#
+            reward_coordinator=dummy_contract,  # rewards_coordinator_instance,#
             registry_coordinator=registry_coordinator_instance,
             strategy_manager=strategy_manager_instance,  #
             el_chain_reader=el_reader_instance,
@@ -198,7 +209,7 @@ def build_all(
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
     pk_wallet: LocalAccount = (
-        Account.from_key(config_ecdsa_private_key) if config_ecdsa_private_key else None
+        Account.from_key(config_ecdsa_private_key)
     )
 
     el_reader, el_writer = config.build_el_clients(

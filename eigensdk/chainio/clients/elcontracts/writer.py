@@ -8,9 +8,8 @@ from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
 from eth_account.signers.local import LocalAccount
 from ...utils import send_transaction
+from typing import Optional
 from web3.types import TxReceipt
-
-
 class RegistrationType(IntEnum):
     NORMAL = 0
     TRUSTED = 1
@@ -83,10 +82,15 @@ class ELWriter:
         if erc20_abi is None:
             self.logger.warning("ERC20ABI not provided")
 
-    def register_as_operator(self, operator: Operator):
+    def register_as_operator(self, operator: Operator) -> TxReceipt:
+        delegation_approver = (
+            Web3.to_checksum_address(operator.delegation_approver_address)
+            if operator.delegation_approver_address is not None
+            else "0x0000000000000000000000000000000000000000"
+        )
 
         func = self.delegation_manager.functions.registerAsOperator(
-            Web3.to_checksum_address(operator.delegation_approver_address),
+            delegation_approver,
             operator.allocation_delay,
             operator.metadata_url,
         )
@@ -95,7 +99,7 @@ class ELWriter:
 
         return receipt
 
-    def update_operator_details(self, operator: Operator):
+    def update_operator_details(self, operator: Operator) -> TxReceipt:
 
         func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator.address),
@@ -106,7 +110,7 @@ class ELWriter:
 
         return receipt
 
-    def update_metadata_uri(self, operator_address: str, uri: str):
+    def update_metadata_uri(self, operator_address: str, uri: str) -> TxReceipt:
 
         func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator_address),
@@ -117,7 +121,7 @@ class ELWriter:
 
         return receipt
 
-    def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int):
+    def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int) -> TxReceipt:
         _, token_contract, token_addr = (
             self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
         )
@@ -139,17 +143,14 @@ class ELWriter:
 
         return receipt
 
-    def set_claimer_for(self, claimer: str):
-
+    def set_claimer_for(self, claimer: str) -> TxReceipt:
         func = self.rewards_coordinator.functions.setClaimerFor(
             Web3.to_checksum_address(claimer),
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
-    def process_claim(self, claim: dict, recipient_address: str):
+    def process_claim(self, claim: dict, recipient_address: str) -> TxReceipt:
 
         func = self.rewards_coordinator.functions.processClaim(
             claim,
@@ -160,7 +161,7 @@ class ELWriter:
 
         return receipt
 
-    def set_operator_avs_split(self, operator: str, avs: str, split: int):
+    def set_operator_avs_split(self, operator: str, avs: str, split: int) -> TxReceipt:
 
         func = self.rewards_coordinator.functions.setOperatorAVSSplit(
             Web3.to_checksum_address(operator),
@@ -172,7 +173,7 @@ class ELWriter:
 
         return receipt
 
-    def set_operator_pi_split(self, operator: str, split: int):
+    def set_operator_pi_split(self, operator: str, split: int) -> TxReceipt:
 
         func = self.rewards_coordinator.functions.setOperatorPISplit(
             Web3.to_checksum_address(operator),
@@ -183,7 +184,11 @@ class ELWriter:
 
         return receipt
 
+<<<<<<< HEAD
     def modify_allocations(self, operator_address: str, allocations: list):
+=======
+    def modify_allocations(self, operator_address: str, allocations: list) -> TxReceipt:
+>>>>>>> 285c207 (Fix: lint and MyPy Done)
 
         func = self.allocation_manager.functions.modifyAllocations(
             Web3.to_checksum_address(operator_address),
@@ -196,7 +201,7 @@ class ELWriter:
 
     def clear_deallocation_queue(
         self, operator_address: str, strategies: list, nums_to_clear: list
-    ):
+    ) -> TxReceipt:
 
         func = self.allocation_manager.functions.clearDeallocationQueue(
             Web3.to_checksum_address(operator_address),
@@ -208,7 +213,7 @@ class ELWriter:
 
         return receipt
 
-    def set_allocation_delay(self, operator_address: str, delay: int):
+    def set_allocation_delay(self, operator_address: str, delay: int) -> TxReceipt:
 
         func = self.allocation_manager.functions.setAllocationDelay(
             Web3.to_checksum_address(operator_address),
@@ -219,7 +224,7 @@ class ELWriter:
 
         return receipt
 
-    def deregister_from_operator_sets(self, operator: str, request: dict):
+    def deregister_from_operator_sets(self, operator: str, request: dict) -> TxReceipt:
 
         func = self.allocation_manager.functions.deregisterFromOperatorSets(
             {
@@ -233,7 +238,7 @@ class ELWriter:
 
         return receipt
 
-    def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict):
+    def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict) -> TxReceipt:
 
         func = self.allocation_manager.functions.registerForOperatorSets(
             Web3.to_checksum_address(request["operator_address"]),
@@ -257,7 +262,7 @@ class ELWriter:
 
         return receipt
 
-    def remove_permission(self, request: dict):
+    def remove_permission(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removeAppointee(
             Web3.to_checksum_address(request["account_address"]),
@@ -270,17 +275,18 @@ class ELWriter:
 
         return receipt
 
-    def set_permission(self, request: dict):
-        return self.send(
-            self.permission_controller.functions.setAppointee,
+    def set_permission(self, request: dict) -> TxReceipt:
+
+        func = self.permission_controller.functions.removeAppointee(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["appointee_address"]),
             request["target"],
             request["selector"],
-            wait_for_receipt=request["wait_for_receipt"],
         )
-
-    def accept_admin(self, request: dict):
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        return receipt
+    
+    def accept_admin(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.acceptAdmin(
             Web3.to_checksum_address(request["account_address"]),
@@ -290,7 +296,7 @@ class ELWriter:
 
         return receipt
 
-    def add_pending_admin(self, request: dict):
+    def add_pending_admin(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.addPendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
@@ -301,8 +307,12 @@ class ELWriter:
 
         return receipt
 
+<<<<<<< HEAD
     def remove_admin(self, request: dict):
 
+=======
+    def remove_admin(self, request: dict) -> TxReceipt:
+>>>>>>> 285c207 (Fix: lint and MyPy Done)
         func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
@@ -312,7 +322,7 @@ class ELWriter:
 
         return receipt
 
-    def remove_pending_admin(self, request: dict):
+    def remove_pending_admin(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removePendingAdmin(
             Web3.to_checksum_address(request["account_address"]),
@@ -322,3 +332,13 @@ class ELWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         return receipt
+
+    def get_operator_id(self, operator_address: Address) -> bytes:
+        operator_id = self.registry_coordinator.functions.getOperatorId(
+            Web3.to_checksum_address(cast(Address, operator_address))
+        ).call()
+        return operator_id
+
+    def get_operator_from_id(self, operator_id: bytes) -> Address:
+        operator_address = self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
+        return cast(Address, Web3.to_checksum_address(operator_address))

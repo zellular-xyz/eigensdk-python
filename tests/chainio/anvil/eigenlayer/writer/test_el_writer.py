@@ -2,7 +2,7 @@ from tests.builder import clients, config
 from eth_typing import Address
 from web3 import Web3
 import pytest
-from eigensdk.types import Operator
+from eigensdk._types import Operator
 
 
 def test_register_as_operator():
@@ -16,13 +16,18 @@ def test_register_as_operator():
 
     # Register as operator
     receipt = clients.el_writer.register_as_operator(operator)
+<<<<<<< HEAD
 
+=======
+    print(f"Receipt: {receipt}")
+>>>>>>> 285c207 (Fix: lint and MyPy Done)
     # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
 
 
+<<<<<<< HEAD
 def test_delegate_to_operator():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
 
@@ -93,6 +98,8 @@ def test_update_operator_details():
     print(f"Updated operator details with tx hash: {receipt['transactionHash'].hex()}")
 
 
+=======
+>>>>>>> 285c207 (Fix: lint and MyPy Done)
 def test_update_metadata_uri():
     # Get operator address from config
     operator_addr = config["operator_address"]

@@ -5,7 +5,6 @@ from eth_typing import Address
 from typing import List, Optional, Dict, Any
 from web3 import Web3
 from web3.contract.contract import Contract
-from eth_account.messages import encode_defunct
 from eigensdk.chainio.utils import (
     BN254G1Point,
     convert_to_bn254_g2_point,
@@ -80,7 +79,7 @@ class AvsRegistryWriter:
         bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
         from eth_account import Account
 
@@ -147,7 +146,7 @@ class AvsRegistryWriter:
         operator_ecdsa_private_key: str,
         operator_to_avs_registration_sig_salt: bytes,
         operator_to_avs_registration_sig_expiry: int,
-        bls_key_pair: KeyPair,
+        bls_key_pair: KeyPair,  
         quorum_numbers: List[int],
         socket: str,
     ) -> TxReceipt:
@@ -218,22 +217,14 @@ class AvsRegistryWriter:
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
-        self.logger.info(
-            "Successfully registered operator with AVS registry coordinator",
-            extra={
-                "txHash": receipt.transactionHash.hex(),
-                "avs-service-manager": self.service_manager_addr,
-                "operator": operator_addr,
-                "quorumNumbers": quorum_numbers,
-            },
-        )
+
         return receipt
 
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
         operators_per_quorum: List[List[str]],
         quorum_numbers: List[int],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.updateOperatorsForQuorum(
             operators_per_quorum,
@@ -253,7 +244,7 @@ class AvsRegistryWriter:
         quorum_numbers_to_kick: List[int],
         operators_to_kick: List[str],
         socket: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         operator_addr = self.web3.eth.account.from_key(
             operator_ecdsa_private_key.to_string()
         ).address
@@ -343,7 +334,7 @@ class AvsRegistryWriter:
 
     def update_stakes_of_operator_subset_for_all_quorums(
         self, operators: List[str]
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.updateOperators(operators)
 
@@ -354,7 +345,7 @@ class AvsRegistryWriter:
     def deregister_operator(
         self,
         quorum_numbers: List[int],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.deregisterOperator(quorum_numbers)
 
@@ -365,7 +356,7 @@ class AvsRegistryWriter:
     def update_socket(
         self,
         socket: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         func = self.registry_coordinator.functions.updateSocket(socket)
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
@@ -375,7 +366,7 @@ class AvsRegistryWriter:
     def set_rewards_initiator(
         self,
         rewards_initiator_addr: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
@@ -390,7 +381,7 @@ class AvsRegistryWriter:
         self,
         quorum_number: int,
         look_ahead_period: int,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.setSlashableStakeLookahead(
             quorum_number, look_ahead_period
@@ -404,7 +395,7 @@ class AvsRegistryWriter:
         self,
         quorum_number: int,
         minimum_stake: int,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.setMinimumStakeForQuorum(quorum_number, minimum_stake)
 
@@ -417,7 +408,7 @@ class AvsRegistryWriter:
         operator_set_params: Dict,
         minimum_stake_required: int,
         strategy_params: List[Dict],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.createTotalDelegatedStakeQuorum(
             operator_set_params, minimum_stake_required, strategy_params
@@ -433,7 +424,7 @@ class AvsRegistryWriter:
         minimum_stake_required: int,
         strategy_params: List[Dict],
         look_ahead_period: int,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.createSlashableStakeQuorum(
             operator_set_params,
@@ -450,7 +441,7 @@ class AvsRegistryWriter:
         self,
         operator_address: str,
         quorum_numbers: List[int],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.ejectOperator(
             operator_address,
@@ -465,7 +456,7 @@ class AvsRegistryWriter:
         self,
         quorum_number: int,
         operator_set_params: Dict,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         func = self.registry_coordinator.functions.setOperatorSetParams(
             quorum_number,
             operator_set_params,
@@ -478,7 +469,7 @@ class AvsRegistryWriter:
     def set_churn_approver(
         self,
         churn_approver_address: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         func = self.registry_coordinator.functions.setChurnApprover(churn_approver_address)
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
@@ -488,7 +479,7 @@ class AvsRegistryWriter:
     def set_ejector(
         self,
         ejector_address: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.setEjector(ejector_address)
 
@@ -501,7 +492,7 @@ class AvsRegistryWriter:
         quorum_number: int,
         strategy_indices: List[int],
         multipliers: List[int],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.modifyStrategyParams(
             quorum_number,
@@ -516,7 +507,7 @@ class AvsRegistryWriter:
     def set_account_identifier(
         self,
         account_identifier_address: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.registry_coordinator.functions.setAccountIdentifier(account_identifier_address)
 
@@ -527,7 +518,7 @@ class AvsRegistryWriter:
     def set_ejection_cooldown(
         self,
         ejection_cooldown: int,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         func = self.registry_coordinator.functions.setEjectionCooldown(ejection_cooldown)
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
@@ -538,7 +529,7 @@ class AvsRegistryWriter:
         self,
         quorum_number: int,
         strategy_params: List[Dict],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
 
@@ -549,7 +540,7 @@ class AvsRegistryWriter:
     def update_avs_metadata_uri(
         self,
         metadata_uri: str,
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
@@ -564,7 +555,7 @@ class AvsRegistryWriter:
         self,
         quorum_number: int,
         indices_to_remove: List[int],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
 
         func = self.stake_registry.functions.removeStrategies(quorum_number, indices_to_remove)
 
@@ -575,7 +566,7 @@ class AvsRegistryWriter:
     def create_avs_rewards_submission(
         self,
         rewards_submission: List[Dict],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         self.logger.info(
             "Creating AVS rewards submission", extra={"rewardsSubmission": rewards_submission}
         )
@@ -593,7 +584,7 @@ class AvsRegistryWriter:
     def create_operator_directed_avs_rewards_submission(
         self,
         operator_directed_rewards_submissions: List[Dict],
-    ) -> Optional[Dict]:
+    ) -> TxReceipt:
         service_manager_contract = self.web3.eth.contract(
             address=self.service_manager_addr, abi=self.service_manager_abi
         )

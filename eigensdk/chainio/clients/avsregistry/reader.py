@@ -1,7 +1,7 @@
 import logging
 import math
 from eth_typing import Address
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 from typing import cast
 from web3 import Web3
 from web3.contract.contract import Contract
@@ -26,7 +26,6 @@ from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from eth_account.signers.local import LocalAccount
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
-
 
 class AvsRegistryReader:
     def __init__(
@@ -144,14 +143,12 @@ class AvsRegistryReader:
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, call_options: Optional[TxParams], operator_id: int
     ) -> Optional[Dict[int, int]]:
-        opts = call_options
+        opts = {} if call_options is None else call_options.copy()
 
-        if (
-            "block_hash" not in opts
-        ):  # FIXME what if "block_identifier" in opts, compare with go code
-            opts["block_identifier"] = self.eth_http_client.eth.block_number  # ✅ valid key
+        if "block_hash" not in opts: 
+            opts["block_identifier"] = self.eth_http_client.eth.block_number
 
-        tx_params = cast(TxParams, opts)  # todo why cast?
+        tx_params = cast(TxParams, opts) 
 
         quorums = bitmap_to_quorum_ids(
             self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(tx_params)
@@ -342,9 +339,9 @@ class AvsRegistryReader:
         return self.registry_coordinator.functions.getOperatorFromId(operator_id).call(call_options)
 
     def query_registration_detail(
-        self, call_options: Optional[TxParams], operator_address: str
+        self, call_options: Optional[TxParams], operator_address: Address
     ) -> Optional[List[bool]]:
-        operator_id = self.get_operator_id(call_options, operator_address)
+        operator_id = self.get_operator_id(operator_address=operator_address)
         if operator_id is None:
             return None
 
@@ -429,7 +426,7 @@ class AvsRegistryReader:
                         "fromBlock": i,
                         "toBlock": to_block,
                         "address": self.registry_coordinator.address,
-                        "topics": [event_topic],
+                        "topics": [Web3.to_hex(event_topic)],
                     }
                 )
             except Exception as e:
@@ -485,7 +482,7 @@ class AvsRegistryReader:
                     "fromBlock": i,
                     "toBlock": to_block,
                     "address": self.bls_apk_registry.address,
-                    "topics": [event_topic],
+                    "topics": [Web3.to_hex(event_topic)],
                 }
             )
 
