@@ -183,8 +183,6 @@ class ELWriter:
 
         return receipt
 
-
-
     def modify_allocations(self, operator_address: str, allocations: list):
 
         func = self.allocation_manager.functions.modifyAllocations(
@@ -302,7 +300,6 @@ class ELWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         return receipt
-
 
     def remove_admin(self, request: dict):
 

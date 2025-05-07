@@ -1,4 +1,3 @@
-
 import yaml
 import json
 from eth_account import Account
@@ -15,4 +14,8 @@ cfg = BuildAllConfig(
     prom_metrics_ip_port_address=config["eigen_metrics_ip_port_address"],
 )
 
-clients = build_all(config=cfg, config_ecdsa_private_key=config["ecdsa_private_key"], config_reward_coordinator=config["reward_coordinator_address"])
+clients = build_all(
+    config=cfg,
+    config_ecdsa_private_key=config["ecdsa_private_key"],
+    config_reward_coordinator=config["reward_coordinator_address"],
+)
