@@ -72,9 +72,7 @@ class AvsRegistryService:
 
             for operator_state in operators_avs_state.values():
                 if quorum_num in operator_state.stake_per_quorum:
-                    agg_pubkey_g1 = agg_pubkey_g1.add(
-                        operator_state.operator_info.pub_keys.g1_pub_key
-                    )
+                    agg_pubkey_g1 = agg_pubkey_g1 + operator_state.operator_info.pub_keys.g1_pub_key
                     stake = operator_state.stake_per_quorum[quorum_num]
                     total_stake += stake
 

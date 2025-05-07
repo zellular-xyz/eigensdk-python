@@ -34,7 +34,6 @@ class OperatorsInfoServiceInMemory:
         self.operator_addr_to_id: Dict[Address, bytes] = {}
         self.socket_dict: Dict[bytes, str] = {}
 
-        # Start the service in a separate thread
         self.get_events()
         self.thread = Thread(target=self._service_thread)
         self.thread.start()
@@ -68,9 +67,8 @@ class OperatorsInfoServiceInMemory:
         )
 
         for i, operator_addr in enumerate(operator_addresses):
-            operator_pubkeys = operator_pubkeys[i]
-            operator_id = self.operator_id_from_g1_pubkey(operator_pubkeys.g1_pub_key)
-            self.pubkey_dict[operator_id] = operator_pubkeys
+            operator_id = self.operator_id_from_g1_pubkey(operator_pubkeys[i].g1_pub_key)
+            self.pubkey_dict[operator_id] = operator_pubkeys[i]
             self.operator_addr_to_id[operator_addr] = operator_id
 
         self.socket_dict.update(operator_sockets)
