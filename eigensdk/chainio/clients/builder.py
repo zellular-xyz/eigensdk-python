@@ -34,58 +34,6 @@ class BuildAllConfig:
         reward_coordinator: Address,
     ) -> Tuple[el_reader.ELReader, el_writer.ELWriter]:
 
-        eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
-        pk_wallet = Account.from_key(ecdsa_private_key)
-        registry_coordinator_instance = eth_http_client.eth.contract(
-            address=self.registry_coordinator_addr,
-            abi=ABIs.REGISTRY_COORDINATOR_ABI,
-        )
-
-        stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
-        stake_registry = eth_http_client.eth.contract(
-            address=stake_registry_addr,
-            abi=ABIs.STAKE_REGISTRY_ABI,
-        )
-
-        delegation_manager_addr = stake_registry.functions.delegation().call()
-        delegation_manager_instance = eth_http_client.eth.contract(
-            address=delegation_manager_addr,
-            abi=ABIs.DELEGATION_MANAGER_ABI,
-        )
-
-        strategy_manager_addr = delegation_manager_instance.functions.strategyManager().call()
-        strategy_manager_instance = eth_http_client.eth.contract(
-            address=strategy_manager_addr,
-            abi=ABIs.STRATEGY_MANAGER_ABI,
-        )
-
-        # allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
-        # allocation_manager_instance = eth_http_client.eth.contract(
-        #     address=allocation_manager_addr,
-        #     abi=ABIs.ALLOCATION_MANAGER_ABI,
-        # )
-
-        # permission_controller_addr = delegation_manager_instance.functions.permissionController().call()
-        # permission_controller_instance = eth_http_client.eth.contract(
-        #     address=permission_controller_addr,
-        #     abi=ABIs.PERMISSION_CONTROLLER_ABI,
-        # )
-
-        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
-        service_manager = eth_http_client.eth.contract(
-            address=service_manager_addr,
-            abi=ABIs.SERVICE_MANAGER_BASE_ABI,
-        )
-        avs_directory_addr = service_manager.functions.avsDirectory().call()
-        avs_directory_instance = eth_http_client.eth.contract(
-            address=avs_directory_addr,
-            abi=ABIs.AVS_DIRECTORY_ABI,
-        )
-
-        # rewards_coordinator_instance = self.eth_http_client.eth.contract(
-        #     address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
-        # )
-
         dummy_address = "0x0000000000000000000000000000000000000000"
         
         dummy_abi: list[dict[str, Any]] = []
@@ -96,26 +44,126 @@ class BuildAllConfig:
         )
 
 
+        eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
+        pk_wallet = Account.from_key(ecdsa_private_key)
+        try:
+            registry_coordinator_instance = eth_http_client.eth.contract(
+                address=self.registry_coordinator_addr,
+                abi=ABIs.REGISTRY_COORDINATOR_ABI,
+            )
+        except Exception as e:
+            registry_coordinator_instance = dummy_contract
+            self.logger.error(f"Failed to create registry coordinator instance: {e}")
+            raise e
+
+        stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
+        try:
+            stake_registry_instance = eth_http_client.eth.contract(
+                address=stake_registry_addr,
+                abi=ABIs.STAKE_REGISTRY_ABI,
+            )
+        except Exception as e:
+            stake_registry_instance = dummy_contract
+            self.logger.error(f"Failed to create stake registry instance: {e}")
+            raise e
+
+        delegation_manager_addr = stake_registry_instance.functions.delegation().call()
+        try:
+            delegation_manager_instance = eth_http_client.eth.contract(
+                address=delegation_manager_addr,
+                abi=ABIs.DELEGATION_MANAGER_ABI,
+            )
+        except Exception as e:
+            delegation_manager_instance = dummy_contract
+            self.logger.error(f"Failed to create delegation manager instance: {e}")
+            raise e
+
+        strategy_manager_addr = delegation_manager_instance.functions.strategyManager().call()
+        try:
+            strategy_manager_instance = eth_http_client.eth.contract(
+                address=strategy_manager_addr,
+                abi=ABIs.STRATEGY_MANAGER_ABI,
+            )
+        except Exception as e:
+            strategy_manager_instance = dummy_contract      
+            self.logger.error(f"Failed to create strategy manager instance: {e}")
+            raise e
+
+        allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
+        try:
+            allocation_manager_instance = eth_http_client.eth.contract(
+                address=allocation_manager_addr,
+                abi=ABIs.ALLOCATION_MANAGER_ABI,
+            )
+        except Exception as e:
+            allocation_manager_instance = dummy_contract
+            self.logger.error(f"Failed to create allocation manager instance: {e}")
+            raise e
+
+        permission_controller_addr = delegation_manager_instance.functions.permissionController().call()
+        try:
+            permission_controller_instance = eth_http_client.eth.contract(
+                address=permission_controller_addr,
+                abi=ABIs.PERMISSION_CONTROLLER_ABI,
+            )
+        except Exception as e:
+            permission_controller_instance = dummy_contract
+            self.logger.error(f"Failed to create permission controller instance: {e}")
+            raise e
+
+        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
+        try:
+            service_manager = eth_http_client.eth.contract(
+                address=service_manager_addr,
+                abi=ABIs.SERVICE_MANAGER_BASE_ABI,
+            )
+        except Exception as e:
+            service_manager_instance = dummy_contract
+            self.logger.error(f"Failed to create service manager instance: {e}")
+            raise e
+
+        avs_directory_addr = service_manager.functions.avsDirectory().call()
+        try:
+            avs_directory_instance = eth_http_client.eth.contract(
+                address=avs_directory_addr,
+                abi=ABIs.AVS_DIRECTORY_ABI,
+            )
+        except Exception as e:
+            avs_directory_instance = dummy_contract
+            self.logger.error(f"Failed to create AVS directory instance: {e}")
+            raise e
+
+        try:
+            rewards_coordinator_instance = self.eth_http_client.eth.contract(
+                address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
+            )
+        except Exception as e:
+            rewards_coordinator_instance = dummy_contract
+            self.logger.error(f"Failed to create rewards coordinator instance: {e}")
+            raise e
+
+        
+
         el_reader_instance = el_reader.ELReader(
-            allocation_manager=dummy_contract,
-            avs_directory=dummy_contract,
-            delegation_manager=dummy_contract,
-            permission_controller=dummy_contract,
-            reward_coordinator=dummy_contract,
-            strategy_manager=dummy_contract,
+            allocation_manager=allocation_manager_instance,
+            avs_directory=avs_directory_instance,
+            delegation_manager=delegation_manager_instance,
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
+            strategy_manager=strategy_manager_instance,
             logger=self.logger,
             eth_http_client=eth_http_client,
             strategy_abi=ABIs.I_STRATEGY_ABI,
             erc20_abi=ABIs.IERC20_ABI,
         )
         el_writer_instance = el_writer.ELWriter(
-            allocation_manager=dummy_contract,  # allocation_manager_instance,#
+            allocation_manager=allocation_manager_instance,
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=dummy_contract,  # permission_controller_instance,#
-            reward_coordinator=dummy_contract,  # rewards_coordinator_instance,#
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
             registry_coordinator=registry_coordinator_instance,
-            strategy_manager=strategy_manager_instance,  #
+            strategy_manager=strategy_manager_instance,
             el_chain_reader=el_reader_instance,
             logger=self.logger,
             pk_wallet=pk_wallet,

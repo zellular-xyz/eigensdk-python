@@ -1,0 +1,12 @@
+operator_address: 0x3D3534BFf2cB9cB174eBF7DF9de6386E881d1792
+avs_registry_coordinator_address: 0xC908fAFAE29B5C9F0b5E0Da1d3025b8d6D42bfa0
+operator_state_retriever_address: 0xB4baAfee917fb4449f5ec64804217bccE9f46C67
+reward_coordinator_address: 0xA3c31d2FBAD3d924baA64f8789E03E9FA7d70d69
+eth_rpc_url: https://holesky.infura.io/v3/889a5bab533a43e993049f577a2c136b
+eth_ws_url: ws://localhost:8545
+ecdsa_private_key: f38b6d3c2effbb7afef9aea7ff23a42a09911dec3a75ec12b230c150ec833b52
+bls_private_key_store_path: tests/keys/test.bls.key.json
+aggregator_server_ip_port_address: localhost:8090
+eigen_metrics_ip_port_address: localhost:9090
+strategy_addr: 0x5FdD6a71a3C88111474C812Ca6d60942d7923C1e
+avs_name: "EigenDA"
