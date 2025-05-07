@@ -863,23 +863,6 @@ def test_query_existing_registered_operator_sockets():
 def test_query_existing_registered_operator_pubkeys():
     """Test querying existing registered operator public keys"""
     try:
-<<<<<<< HEAD
-        # No need to pass specific parameters, use defaults
-        # This will query from block 0 to the current block
-        operator_addresses, operator_pubkeys, stop_block = (
-            clients.avs_reader.query_existing_registered_operator_pubkeys()
-        )
-
-        # Verify the results are lists and stop_block is an integer
-        assert isinstance(operator_addresses, list)
-        assert isinstance(operator_pubkeys, list)
-        assert isinstance(stop_block, int)
-
-        # Check that the lists have the same length
-        assert len(operator_addresses) == len(operator_pubkeys)
-
-        # Check list items if there are any results
-=======
         operator_addresses, operator_pubkeys, stop_block = clients.avs_reader.query_existing_registered_operator_pubkeys()
         
         assert isinstance(operator_addresses, list)
@@ -888,7 +871,6 @@ def test_query_existing_registered_operator_pubkeys():
         
         assert len(operator_addresses) == len(operator_pubkeys)
         
->>>>>>> 285c207 (Fix: lint and MyPy Done)
         for addr, pubkey in zip(operator_addresses, operator_pubkeys):
             assert isinstance(addr, str)
             assert hasattr(pubkey, "g1_pub_key")

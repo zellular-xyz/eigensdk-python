@@ -34,17 +34,10 @@ class BuildAllConfig:
         reward_coordinator: Address,
     ) -> Tuple[el_reader.ELReader, el_writer.ELWriter]:
 
-        dummy_address = "0x0000000000000000000000000000000000000000"
-        
-        dummy_abi: list[dict[str, Any]] = []
-
-        dummy_contract: Contract = eth_http_client.eth.contract(
-            address=Web3.to_checksum_address(dummy_address),
-            abi=dummy_abi,
-        )
-
-
         eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
+
+        
+
         pk_wallet = Account.from_key(ecdsa_private_key)
         try:
             registry_coordinator_instance = eth_http_client.eth.contract(
@@ -52,7 +45,7 @@ class BuildAllConfig:
                 abi=ABIs.REGISTRY_COORDINATOR_ABI,
             )
         except Exception as e:
-            registry_coordinator_instance = dummy_contract
+            registry_coordinator_instance = None
             self.logger.error(f"Failed to create registry coordinator instance: {e}")
             raise e
 
@@ -63,7 +56,7 @@ class BuildAllConfig:
                 abi=ABIs.STAKE_REGISTRY_ABI,
             )
         except Exception as e:
-            stake_registry_instance = dummy_contract
+            stake_registry_instance = None
             self.logger.error(f"Failed to create stake registry instance: {e}")
             raise e
 
@@ -74,7 +67,7 @@ class BuildAllConfig:
                 abi=ABIs.DELEGATION_MANAGER_ABI,
             )
         except Exception as e:
-            delegation_manager_instance = dummy_contract
+            delegation_manager_instance = None
             self.logger.error(f"Failed to create delegation manager instance: {e}")
             raise e
 
@@ -85,7 +78,7 @@ class BuildAllConfig:
                 abi=ABIs.STRATEGY_MANAGER_ABI,
             )
         except Exception as e:
-            strategy_manager_instance = dummy_contract      
+            strategy_manager_instance = None      
             self.logger.error(f"Failed to create strategy manager instance: {e}")
             raise e
 
@@ -96,7 +89,7 @@ class BuildAllConfig:
                 abi=ABIs.ALLOCATION_MANAGER_ABI,
             )
         except Exception as e:
-            allocation_manager_instance = dummy_contract
+            allocation_manager_instance = None
             self.logger.error(f"Failed to create allocation manager instance: {e}")
             raise e
 
@@ -107,7 +100,7 @@ class BuildAllConfig:
                 abi=ABIs.PERMISSION_CONTROLLER_ABI,
             )
         except Exception as e:
-            permission_controller_instance = dummy_contract
+            permission_controller_instance = None
             self.logger.error(f"Failed to create permission controller instance: {e}")
             raise e
 
@@ -118,7 +111,7 @@ class BuildAllConfig:
                 abi=ABIs.SERVICE_MANAGER_BASE_ABI,
             )
         except Exception as e:
-            service_manager_instance = dummy_contract
+            service_manager_instance = None
             self.logger.error(f"Failed to create service manager instance: {e}")
             raise e
 
@@ -129,7 +122,7 @@ class BuildAllConfig:
                 abi=ABIs.AVS_DIRECTORY_ABI,
             )
         except Exception as e:
-            avs_directory_instance = dummy_contract
+            avs_directory_instance = None
             self.logger.error(f"Failed to create AVS directory instance: {e}")
             raise e
 
@@ -138,7 +131,7 @@ class BuildAllConfig:
                 address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
             )
         except Exception as e:
-            rewards_coordinator_instance = dummy_contract
+            rewards_coordinator_instance = None
             self.logger.error(f"Failed to create rewards coordinator instance: {e}")
             raise e
 

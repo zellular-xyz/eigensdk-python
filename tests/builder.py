@@ -6,10 +6,11 @@ from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
 
 # Get the directory where builder.py is located
 current_dir = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(current_dir, "config", "anvil.yaml")
+config_path = os.path.join(current_dir, "config", "holesky.yaml")
 
 with open(config_path, "r") as f:
     config = yaml.load(f, Loader=yaml.BaseLoader)
+
 
 cfg = BuildAllConfig(
     eth_http_url=config["eth_rpc_url"],

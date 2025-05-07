@@ -16,90 +16,13 @@ def test_register_as_operator():
 
     # Register as operator
     receipt = clients.el_writer.register_as_operator(operator)
-<<<<<<< HEAD
-
-=======
     print(f"Receipt: {receipt}")
->>>>>>> 285c207 (Fix: lint and MyPy Done)
     # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
 
 
-<<<<<<< HEAD
-def test_delegate_to_operator():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
-
-    # Delegate to the operator
-    receipt = clients.el_writer.delegate_to_operator(operator_addr)
-
-    # Verify the transaction was successful
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Delegated to operator with tx hash: {receipt['transactionHash'].hex()}")
-
-
-def test_deposit_into_strategy():
-    strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-    # Use a small amount for testing
-    amount = 100
-
-    # Deposit into strategy
-    receipt = clients.el_writer.deposit_into_strategy(strategy_addr, amount)
-
-    # Verify the transaction was successful
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Deposited into strategy with tx hash: {receipt['transactionHash'].hex()}")
-
-
-def test_queue_withdrawal():
-    strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-    # Use a small amount of shares for testing
-    shares = 50
-
-    # Queue withdrawal
-    receipt = clients.el_writer.queue_withdrawal(strategy_addr, shares)
-
-    # Verify the transaction was successful
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Queued withdrawal with tx hash: {receipt['transactionHash'].hex()}")
-
-
-def test_update_operator_metadata():
-    metadata_url = "https://example.com/updated-metadata"
-
-    # Update operator metadata
-    receipt = clients.el_writer.update_operator_metadata(metadata_url)
-
-    # Verify the transaction was successful
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Updated operator metadata with tx hash: {receipt['transactionHash'].hex()}")
-
-
-def test_update_operator_details():
-    # Create an operator with updated details
-    operator = Operator(
-        address=Web3.to_checksum_address(config["operator_address"]),
-        delegation_approver_address="0x0000000000000000000000000000000000000000",  # No delegation approver
-        allocation_delay=100,  # Not used in this function call
-        metadata_url="https://example.com/operator-metadata",  # Not used in this function call
-    )
-
-    # Update operator details
-    receipt = clients.el_writer.update_operator_details(operator)
-
-    # Verify the transaction was successful
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Updated operator details with tx hash: {receipt['transactionHash'].hex()}")
-
-
-=======
->>>>>>> 285c207 (Fix: lint and MyPy Done)
 def test_update_metadata_uri():
     # Get operator address from config
     operator_addr = config["operator_address"]

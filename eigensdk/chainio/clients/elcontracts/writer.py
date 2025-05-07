@@ -184,11 +184,7 @@ class ELWriter:
 
         return receipt
 
-<<<<<<< HEAD
-    def modify_allocations(self, operator_address: str, allocations: list):
-=======
     def modify_allocations(self, operator_address: str, allocations: list) -> TxReceipt:
->>>>>>> 285c207 (Fix: lint and MyPy Done)
 
         func = self.allocation_manager.functions.modifyAllocations(
             Web3.to_checksum_address(operator_address),
@@ -307,12 +303,7 @@ class ELWriter:
 
         return receipt
 
-<<<<<<< HEAD
-    def remove_admin(self, request: dict):
-
-=======
     def remove_admin(self, request: dict) -> TxReceipt:
->>>>>>> 285c207 (Fix: lint and MyPy Done)
         func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
