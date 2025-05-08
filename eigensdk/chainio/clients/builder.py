@@ -17,13 +17,20 @@ class BuildAllConfig:
         eth_http_url: str,
         registry_coordinator_addr: Address,
         operator_state_retriever_addr: Address,
+        rewards_coordinator_addr: Address,
+        permission_controller_addr: Address,
+        service_manager_addr: Address,
         avs_name: str,
         prom_metrics_ip_port_address: str,
+        
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
         self.registry_coordinator_addr: Address = registry_coordinator_addr
         self.operator_state_retriever_addr: Address = operator_state_retriever_addr
+        self.rewards_coordinator_addr: Address = rewards_coordinator_addr
+        self.permission_controller_addr: Address = permission_controller_addr
+        self.service_manager_addr: Address = service_manager_addr
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)
@@ -31,111 +38,59 @@ class BuildAllConfig:
     def build_el_clients(
         self,
         ecdsa_private_key: str,
-        reward_coordinator: Address,
     ) -> Tuple[el_reader.ELReader, el_writer.ELWriter]:
-
         eth_http_client = Web3(Web3.HTTPProvider(self.eth_http_url))
 
-        
-
         pk_wallet = Account.from_key(ecdsa_private_key)
-        try:
-            registry_coordinator_instance = eth_http_client.eth.contract(
-                address=self.registry_coordinator_addr,
-                abi=ABIs.REGISTRY_COORDINATOR_ABI,
-            )
-        except Exception as e:
-            registry_coordinator_instance = None
-            self.logger.error(f"Failed to create registry coordinator instance: {e}")
-            raise e
+        registry_coordinator_instance = eth_http_client.eth.contract(
+            address=self.registry_coordinator_addr,
+            abi=ABIs.REGISTRY_COORDINATOR_ABI,
+        )
 
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
-        try:
-            stake_registry_instance = eth_http_client.eth.contract(
-                address=stake_registry_addr,
-                abi=ABIs.STAKE_REGISTRY_ABI,
-            )
-        except Exception as e:
-            stake_registry_instance = None
-            self.logger.error(f"Failed to create stake registry instance: {e}")
-            raise e
+        stake_registry_instance = eth_http_client.eth.contract(
+            address=stake_registry_addr,
+            abi=ABIs.STAKE_REGISTRY_ABI,
+        )
 
         delegation_manager_addr = stake_registry_instance.functions.delegation().call()
-        try:
-            delegation_manager_instance = eth_http_client.eth.contract(
-                address=delegation_manager_addr,
-                abi=ABIs.DELEGATION_MANAGER_ABI,
-            )
-        except Exception as e:
-            delegation_manager_instance = None
-            self.logger.error(f"Failed to create delegation manager instance: {e}")
-            raise e
+        delegation_manager_instance = eth_http_client.eth.contract(
+            address=delegation_manager_addr,
+            abi=ABIs.DELEGATION_MANAGER_ABI,
+        )
 
         strategy_manager_addr = delegation_manager_instance.functions.strategyManager().call()
-        try:
-            strategy_manager_instance = eth_http_client.eth.contract(
-                address=strategy_manager_addr,
-                abi=ABIs.STRATEGY_MANAGER_ABI,
-            )
-        except Exception as e:
-            strategy_manager_instance = None      
-            self.logger.error(f"Failed to create strategy manager instance: {e}")
-            raise e
+        strategy_manager_instance = eth_http_client.eth.contract(
+            address=strategy_manager_addr,
+            abi=ABIs.STRATEGY_MANAGER_ABI,
+        )
 
         allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
-        try:
-            allocation_manager_instance = eth_http_client.eth.contract(
-                address=allocation_manager_addr,
-                abi=ABIs.ALLOCATION_MANAGER_ABI,
-            )
-        except Exception as e:
-            allocation_manager_instance = None
-            self.logger.error(f"Failed to create allocation manager instance: {e}")
-            raise e
+        allocation_manager_instance = eth_http_client.eth.contract(
+            address=allocation_manager_addr,
+            abi=ABIs.ALLOCATION_MANAGER_ABI,
+        )
 
-        permission_controller_addr = delegation_manager_instance.functions.permissionController().call()
-        try:
-            permission_controller_instance = eth_http_client.eth.contract(
-                address=permission_controller_addr,
-                abi=ABIs.PERMISSION_CONTROLLER_ABI,
-            )
-        except Exception as e:
-            permission_controller_instance = None
-            self.logger.error(f"Failed to create permission controller instance: {e}")
-            raise e
+        permission_controller_instance = eth_http_client.eth.contract(
+            address=self.permission_controller_addr,
+            abi=ABIs.PERMISSION_CONTROLLER_ABI,
+        )
 
-        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
-        try:
-            service_manager = eth_http_client.eth.contract(
-                address=service_manager_addr,
-                abi=ABIs.SERVICE_MANAGER_BASE_ABI,
-            )
-        except Exception as e:
-            service_manager_instance = None
-            self.logger.error(f"Failed to create service manager instance: {e}")
-            raise e
+        service_manager = eth_http_client.eth.contract(
+            address=self.service_manager_addr,
+            abi=ABIs.SERVICE_MANAGER_BASE_ABI,
+        )
 
         avs_directory_addr = service_manager.functions.avsDirectory().call()
-        try:
-            avs_directory_instance = eth_http_client.eth.contract(
-                address=avs_directory_addr,
-                abi=ABIs.AVS_DIRECTORY_ABI,
-            )
-        except Exception as e:
-            avs_directory_instance = None
-            self.logger.error(f"Failed to create AVS directory instance: {e}")
-            raise e
+        avs_directory_instance = eth_http_client.eth.contract(
+            address=avs_directory_addr,
+            abi=ABIs.AVS_DIRECTORY_ABI,
+        )
 
-        try:
-            rewards_coordinator_instance = self.eth_http_client.eth.contract(
-                address=reward_coordinator, abi=ABIs.REWARDS_COORDINATOR_ABI
-            )
-        except Exception as e:
-            rewards_coordinator_instance = None
-            self.logger.error(f"Failed to create rewards coordinator instance: {e}")
-            raise e
+        rewards_coordinator_instance = eth_http_client.eth.contract(
+            address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
+        )
 
-        
 
         el_reader_instance = el_reader.ELReader(
             allocation_manager=allocation_manager_instance,
