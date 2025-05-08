@@ -20,17 +20,23 @@ class BuildAllConfig:
         rewards_coordinator_addr: Address,
         permission_controller_addr: Address,
         service_manager_addr: Address,
+        allocation_manager_addr: Address,
+        instant_slasher_addr: Address,
+        delegation_manager_addr: Address,
         avs_name: str,
         prom_metrics_ip_port_address: str,
         
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
-        self.registry_coordinator_addr: Address = registry_coordinator_addr
-        self.operator_state_retriever_addr: Address = operator_state_retriever_addr
-        self.rewards_coordinator_addr: Address = rewards_coordinator_addr
-        self.permission_controller_addr: Address = permission_controller_addr
-        self.service_manager_addr: Address = service_manager_addr
+        self.registry_coordinator_addr: Address = Web3.to_checksum_address(registry_coordinator_addr.lower())
+        self.operator_state_retriever_addr: Address = Web3.to_checksum_address(operator_state_retriever_addr.lower())
+        self.rewards_coordinator_addr: Address = Web3.to_checksum_address(rewards_coordinator_addr.lower())
+        self.permission_controller_addr: Address = Web3.to_checksum_address(permission_controller_addr.lower())
+        self.service_manager_addr: Address = Web3.to_checksum_address(service_manager_addr.lower())
+        self.allocation_manager_addr: Address = Web3.to_checksum_address(allocation_manager_addr.lower())
+        self.instant_slasher_addr: Address = Web3.to_checksum_address(instant_slasher_addr.lower())
+        self.delegation_manager_addr: Address = Web3.to_checksum_address(delegation_manager_addr.lower())
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)
@@ -65,21 +71,27 @@ class BuildAllConfig:
             abi=ABIs.STRATEGY_MANAGER_ABI,
         )
 
-        allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
-        allocation_manager_instance = eth_http_client.eth.contract(
-            address=allocation_manager_addr,
-            abi=ABIs.ALLOCATION_MANAGER_ABI,
-        )
-
-        permission_controller_instance = eth_http_client.eth.contract(
-            address=self.permission_controller_addr,
-            abi=ABIs.PERMISSION_CONTROLLER_ABI,
-        )
-
+        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
         service_manager = eth_http_client.eth.contract(
-            address=self.service_manager_addr,
+            address=service_manager_addr,
             abi=ABIs.SERVICE_MANAGER_BASE_ABI,
         )
+
+        # allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
+        # allocation_manager_instance = eth_http_client.eth.contract(
+        #     address=self.allocation_manager_addr,
+        #     abi=ABIs.ALLOCATION_MANAGER_ABI,
+        # )
+
+        # permission_controller_instance = eth_http_client.eth.contract(
+        #     address=self.permission_controller_addr,
+        #     abi=ABIs.PERMISSION_CONTROLLER_ABI,
+        # )
+
+        # service_manager = eth_http_client.eth.contract(
+        #     address=self.service_manager_addr,
+        #     abi=ABIs.SERVICE_MANAGER_BASE_ABI,
+        # )
 
         avs_directory_addr = service_manager.functions.avsDirectory().call()
         avs_directory_instance = eth_http_client.eth.contract(
@@ -87,17 +99,17 @@ class BuildAllConfig:
             abi=ABIs.AVS_DIRECTORY_ABI,
         )
 
-        rewards_coordinator_instance = eth_http_client.eth.contract(
-            address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
-        )
+        # rewards_coordinator_instance = eth_http_client.eth.contract(
+        #     address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
+        # )
 
 
         el_reader_instance = el_reader.ELReader(
-            allocation_manager=allocation_manager_instance,
+            allocation_manager=None,
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=permission_controller_instance,
-            reward_coordinator=rewards_coordinator_instance,
+            permission_controller=None,
+            reward_coordinator=None,
             strategy_manager=strategy_manager_instance,
             logger=self.logger,
             eth_http_client=eth_http_client,
@@ -105,11 +117,11 @@ class BuildAllConfig:
             erc20_abi=ABIs.IERC20_ABI,
         )
         el_writer_instance = el_writer.ELWriter(
-            allocation_manager=allocation_manager_instance,
+            allocation_manager=None,
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=permission_controller_instance,
-            reward_coordinator=rewards_coordinator_instance,
+            permission_controller=None,
+            reward_coordinator=None,
             registry_coordinator=registry_coordinator_instance,
             strategy_manager=strategy_manager_instance,
             el_chain_reader=el_reader_instance,
@@ -201,7 +213,6 @@ class Clients:
 def build_all(
     config: BuildAllConfig,
     config_ecdsa_private_key: str,
-    config_reward_coordinator: Address,
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
     pk_wallet: LocalAccount = (
@@ -209,13 +220,12 @@ def build_all(
     )
 
     el_reader, el_writer = config.build_el_clients(
-        ecdsa_private_key=config_ecdsa_private_key,
-        reward_coordinator=config_reward_coordinator,
+        ecdsa_private_key=config_ecdsa_private_key
     )
 
     avs_reader, avs_writer = config.build_avs_registry_clients(
         ecdsa_private_key=config_ecdsa_private_key,
-        el_chain_reader=el_reader,
+        el_chain_reader=el_reader
     )
 
     return Clients(
