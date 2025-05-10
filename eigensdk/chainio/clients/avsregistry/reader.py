@@ -81,7 +81,7 @@ class AvsRegistryReader:
             self.logger.warning("PKWallet not provided")
 
     def get_quorum_count(self, call_options: Optional[TxParams] = None) -> int:
-        return self.registry_coordinator.functions.quorumCount().call(call_options)
+        return self.registry_coordinator.functions.quorumCount().call()
 
     def get_operators_stake_in_quorums_at_current_block(
         self, quorum_numbers: List[int]
@@ -112,21 +112,20 @@ class AvsRegistryReader:
         ]
 
     def get_operator_addrs_in_quorums_at_current_block(
-        self, call_options: Optional[TxParams], quorum_numbers: List[int]
+        self, quorum_numbers: List[int]
     ) -> List[List[str]]:
         stakes = self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr, quorum_numbers, self.eth_http_client.eth.block_number
-        ).call(call_options)
-
+            self.registry_coordinator_addr, utils.nums_to_bytes(quorum_numbers), self.eth_http_client.eth.block_number
+        ).call()
         return [
             [op[0] for op in quorum] for quorum in stakes
-        ]  # Access first element of tuple (operator address)
+        ]  
 
     def get_operators_stake_in_quorums_of_operator_at_block(
         self, call_options: Optional[TxParams], operator_id: int, block_number: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
         bitmap, stakes = self.operator_state_retriever.functions.getOperatorState(
-            self.registry_coordinator_addr, operator_id, block_number
+            self.registry_coordinator_addr, utils.nums_to_bytes(operator_id), block_number
         ).call(call_options)
         return bitmap_to_quorum_ids(bitmap), stakes
 

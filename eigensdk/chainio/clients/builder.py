@@ -148,6 +148,10 @@ class BuildAllConfig:
             address=stake_registry_addr,
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
+
+        print("bls_apk_registry_addr",bls_apk_registry_addr)
+        print("stake_registry_addr",stake_registry_addr)
+        print("self.registry_coordinator_addr",self.registry_coordinator_addr)
         avs_reader_instance = avs_reader.AvsRegistryReader(
             registry_coordinator=registry_coordinator_instance,
             registry_coordinator_addr=self.registry_coordinator_addr,
@@ -171,6 +175,7 @@ class BuildAllConfig:
             logger=self.logger,
             eth_http_client=eth_http_client,
             pk_wallet=pk_wallet,
+            service_manager_abi=ABIs.SERVICE_MANAGER_BASE_ABI,
         )
         return avs_reader_instance, avs_writer_instance
 

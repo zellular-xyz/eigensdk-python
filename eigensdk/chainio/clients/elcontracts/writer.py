@@ -112,7 +112,7 @@ class ELWriter:
 
     def update_metadata_uri(self, operator_address: str, uri: str) -> TxReceipt:
 
-        func = self.delegation_manager.functions.modifyOperatorDetails(
+        func = self.delegation_manager.functions.updateOperatorMetadataURI(
             Web3.to_checksum_address(operator_address),
             uri,
         )
@@ -156,7 +156,6 @@ class ELWriter:
             claim,
             Web3.to_checksum_address(recipient_address),
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         return receipt

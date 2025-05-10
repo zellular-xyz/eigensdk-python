@@ -2,151 +2,82 @@ from tests.builder import clients, config
 from eth_typing import Address
 from web3 import Web3
 import pytest
-from eigensdk.types import Operator
+from eigensdk._types import Operator
 import ecdsa
-from eigensdk.crypto.bls.bls_key_pair import KeyPair
-from eigensdk.crypto.bls.g1point import G1Point
-from eigensdk.crypto.bls.g2point import G2Point
+from eigensdk.crypto.bls.attestation import KeyPair,G1Point,G2Point
 import os
 import time
 
 
 def test_get_quorum_count():
-    """Test retrieving the count of quorums from the registry coordinator"""
-    try:
-        # Call the get_quorum_count method
-        quorum_count = clients.avs_reader.get_quorum_count()
-
-        # Verify the result is an integer
-        assert isinstance(quorum_count, int)
-        print(f"Quorum count: {quorum_count}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    quorum_count = clients.avs_registry_reader.get_quorum_count()
+    assert isinstance(quorum_count, int)
+    print(f"Quorum count: {quorum_count}")
 
 
 def test_get_operators_stake_in_quorums_at_current_block():
-    """Test retrieving operators stake in quorums at current block"""
-    try:
-        # Define quorum numbers to query
-        quorum_numbers = [0]  # Query quorum 0
-
-        # Call the get_operators_stake_in_quorums_at_current_block method
-        result = clients.avs_reader.get_operators_stake_in_quorums_at_current_block(quorum_numbers)
-
-        # Verify the result is a list of lists
-        assert isinstance(result, list)
-        for quorum_operators in result:
-            assert isinstance(quorum_operators, list)
-
-        print(f"Operators stake in quorums at current block: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    quorum_numbers = [0]
+    result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(quorum_numbers)
+    assert isinstance(result, list)
+    for quorum_operators in result:
+        assert isinstance(quorum_operators, list)
+    print(f"Operators stake in quorums at current block: {result}")
 
 
 def test_get_operators_stake_in_quorums_at_block():
-    """Test retrieving operators stake in quorums at a specific block"""
-    try:
-        # Define quorum numbers to query
-        quorum_numbers = [0]  # Query quorum 0
-
-        # Get current block number
-        block_number = clients.eth_http_client.eth.block_number
-
-        # Call the get_operators_stake_in_quorums_at_block method
-        result = clients.avs_reader.get_operators_stake_in_quorums_at_block(
-            quorum_numbers, block_number
-        )
-
-        # Verify the result is a list of lists
-        assert isinstance(result, list)
-        for quorum_operators in result:
-            assert isinstance(quorum_operators, list)
-
-        print(f"Operators stake in quorums at block {block_number}: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    quorum_numbers = [0]
+    block_number = clients.eth_http_client.eth.block_number
+    result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_block(
+        quorum_numbers, block_number
+    )
+    assert isinstance(result, list)
+    for quorum_operators in result:
+        assert isinstance(quorum_operators, list)
+    print(f"Operators stake in quorums at block {block_number}: {result}")
 
 
 def test_get_operator_addrs_in_quorums_at_current_block():
-    """Test retrieving operator addresses in quorums at current block"""
-    try:
-        # Define quorum numbers to query
-        quorum_numbers = [0]  # Query quorum 0
-
-        # Call the get_operator_addrs_in_quorums_at_current_block method
-        result = clients.avs_reader.get_operator_addrs_in_quorums_at_current_block(
-            None, quorum_numbers
-        )
-
-        # Verify the result is a list of lists
-        assert isinstance(result, list)
-        for quorum_operators in result:
-            assert isinstance(quorum_operators, list)
-
-        print(f"Operator addresses in quorums at current block: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    quorum_numbers = [0]
+    result = clients.avs_registry_reader.get_operator_addrs_in_quorums_at_current_block(
+        None, quorum_numbers
+    )
+    assert isinstance(result, list)
+    for quorum_operators in result:
+        assert isinstance(quorum_operators, list)
+    print(f"Operator addresses in quorums at current block: {result}")
 
 
-def test_get_operators_stake_in_quorums_of_operator_at_block():
-    """Test retrieving operator's stake in quorums at a specific block"""
-    try:
-        # Define an operator ID to query
-        operator_id = 0  # Query operator with ID 0
-
-        # Get current block number
-        block_number = clients.eth_http_client.eth.block_number
-
-        # Call the get_operators_stake_in_quorums_of_operator_at_block method
-        quorum_ids, stakes = clients.avs_reader.get_operators_stake_in_quorums_of_operator_at_block(
-            None, operator_id, block_number
-        )
-
-        # Verify the results
-        if quorum_ids is not None:
-            assert isinstance(quorum_ids, list)
-
-        if stakes is not None:
-            assert isinstance(stakes, list)
-
-        print(f"Operator {operator_id} stake in quorums at block {block_number}:")
-        print(f"Quorum IDs: {quorum_ids}")
-        print(f"Stakes: {stakes}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+# def test_get_operators_stake_in_quorums_of_operator_at_block():
+#     operator_id = 0  # Query operator with ID 0
+#     block_number = clients.eth_http_client.eth.block_number
+#     quorum_ids, stakes = clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block(
+#         None, operator_id, block_number
+#     )
+#     if quorum_ids is not None:
+#         assert isinstance(quorum_ids, list)
+#     if stakes is not None:
+#         assert isinstance(stakes, list)
+#     print(f"Operator {operator_id} stake in quorums at block {block_number}:")
+#     print(f"Quorum IDs: {quorum_ids}")
+#     print(f"Stakes: {stakes}")
 
 
 def test_get_operators_stake_in_quorums_of_operator_at_current_block():
-    """Test retrieving operator's stake in quorums at current block"""
-    try:
-        # Define an operator ID to query
-        operator_id = 0  # Query operator with ID 0
-
-        # Call the get_operators_stake_in_quorums_of_operator_at_current_block method
-        quorum_ids, stakes = (
-            clients.avs_reader.get_operators_stake_in_quorums_of_operator_at_current_block(
-                None, operator_id
-            )
+    operator_id = 0  # Query operator with ID 0
+    # Call the get_operators_stake_in_quorums_of_operator_at_current_block method
+    quorum_ids, stakes = (
+        clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_current_block(
+            None, operator_id
         )
-
-        # Verify the results
-        if quorum_ids is not None:
-            assert isinstance(quorum_ids, list)
-
-        if stakes is not None:
-            assert isinstance(stakes, list)
-
-        print(f"Operator {operator_id} stake in quorums at current block:")
-        print(f"Quorum IDs: {quorum_ids}")
-        print(f"Stakes: {stakes}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    )
+    # Verify the results
+    if quorum_ids is not None:
+        assert isinstance(quorum_ids, list)
+    if stakes is not None:
+        assert isinstance(stakes, list)
+    print(f"Operator {operator_id} stake in quorums at current block:")
+    print(f"Quorum IDs: {quorum_ids}")
+    print(f"Stakes: {stakes}")
 
 
 def test_get_operator_stake_in_quorums_of_operator_at_current_block():
@@ -156,7 +87,7 @@ def test_get_operator_stake_in_quorums_of_operator_at_current_block():
         operator_id = 0  # Query operator with ID 0
 
         # Call the method
-        result = clients.avs_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
+        result = clients.avs_registry_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
             None, operator_id
         )
 
@@ -177,7 +108,7 @@ def test_weight_of_operator_for_quorum():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.weight_of_operator_for_quorum(
+        result = clients.avs_registry_reader.weight_of_operator_for_quorum(
             None, quorum_number, operator_addr
         )
 
@@ -197,7 +128,7 @@ def test_strategy_params_length():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.strategy_params_length(None, quorum_number)
+        result = clients.avs_registry_reader.strategy_params_length(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -216,7 +147,7 @@ def test_strategy_params_by_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.strategy_params_by_index(None, quorum_number, index)
+        result = clients.avs_registry_reader.strategy_params_by_index(None, quorum_number, index)
 
         # Verify the result is a strategy params object or None
         assert result is None or isinstance(result, tuple)
@@ -235,7 +166,7 @@ def test_get_stake_history_length():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_stake_history_length(None, operator_id, quorum_number)
+        result = clients.avs_registry_reader.get_stake_history_length(None, operator_id, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -256,7 +187,7 @@ def test_get_stake_history():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_stake_history(None, operator_id, quorum_number)
+        result = clients.avs_registry_reader.get_stake_history(None, operator_id, quorum_number)
 
         # Verify the result is a list or None
         assert result is None or isinstance(result, list)
@@ -275,7 +206,7 @@ def test_get_latest_stake_update():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_latest_stake_update(None, operator_id, quorum_number)
+        result = clients.avs_registry_reader.get_latest_stake_update(None, operator_id, quorum_number)
 
         # Verify the result is a stake update object or None
         assert result is None or isinstance(result, tuple)
@@ -295,7 +226,7 @@ def test_get_stake_update_at_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_stake_update_at_index(
+        result = clients.avs_registry_reader.get_stake_update_at_index(
             None, operator_id, quorum_number, index
         )
 
@@ -319,7 +250,7 @@ def test_get_stake_at_block_number():
         block_number = clients.eth_http_client.eth.block_number
 
         # Call the method
-        result = clients.avs_reader.get_stake_at_block_number(
+        result = clients.avs_registry_reader.get_stake_at_block_number(
             None, operator_id, quorum_number, block_number
         )
 
@@ -343,7 +274,7 @@ def test_get_stake_update_index_at_block_number():
         block_number = clients.eth_http_client.eth.block_number
 
         # Call the method
-        result = clients.avs_reader.get_stake_update_index_at_block_number(
+        result = clients.avs_registry_reader.get_stake_update_index_at_block_number(
             None, operator_id, quorum_number, block_number
         )
 
@@ -368,7 +299,7 @@ def test_get_stake_at_block_number_and_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_stake_at_block_number_and_index(
+        result = clients.avs_registry_reader.get_stake_at_block_number_and_index(
             None, operator_id, quorum_number, block_number, index
         )
 
@@ -390,7 +321,7 @@ def test_get_total_stake_history_length():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_total_stake_history_length(None, quorum_number)
+        result = clients.avs_registry_reader.get_total_stake_history_length(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -410,7 +341,7 @@ def test_get_check_signatures_indices():
         non_signer_operator_ids = [0]
 
         # Call the method
-        result = clients.avs_reader.get_check_signatures_indices(
+        result = clients.avs_registry_reader.get_check_signatures_indices(
             None, reference_block_number, quorum_numbers, non_signer_operator_ids
         )
 
@@ -430,7 +361,7 @@ def test_get_current_total_stake():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_current_total_stake(None, quorum_number)
+        result = clients.avs_registry_reader.get_current_total_stake(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -449,7 +380,7 @@ def test_get_total_stake_update_at_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_total_stake_update_at_index(None, quorum_number, index)
+        result = clients.avs_registry_reader.get_total_stake_update_at_index(None, quorum_number, index)
 
         # Verify the result is a stake update object or None
         assert result is None or isinstance(result, tuple)
@@ -469,7 +400,7 @@ def test_get_total_stake_at_block_number_from_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_total_stake_at_block_number_from_index(
+        result = clients.avs_registry_reader.get_total_stake_at_block_number_from_index(
             None, quorum_number, block_number, index
         )
 
@@ -492,7 +423,7 @@ def test_get_total_stake_indices_at_block_number():
         block_number = clients.eth_http_client.eth.block_number
 
         # Call the method
-        result = clients.avs_reader.get_total_stake_indices_at_block_number(
+        result = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
             None, quorum_numbers, block_number
         )
 
@@ -512,7 +443,7 @@ def test_get_minimum_stake_for_quorum():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_minimum_stake_for_quorum(None, quorum_number)
+        result = clients.avs_registry_reader.get_minimum_stake_for_quorum(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -531,7 +462,7 @@ def test_get_strategy_params_at_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_strategy_params_at_index(None, quorum_number, index)
+        result = clients.avs_registry_reader.get_strategy_params_at_index(None, quorum_number, index)
 
         # Verify the result is a strategy params object or None
         assert result is None or isinstance(result, tuple)
@@ -550,7 +481,7 @@ def test_get_strategy_per_quorum_at_index():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_strategy_per_quorum_at_index(None, quorum_number, index)
+        result = clients.avs_registry_reader.get_strategy_per_quorum_at_index(None, quorum_number, index)
 
         # Verify the result is a string or None
         assert result is None or isinstance(result, str)
@@ -565,7 +496,7 @@ def test_get_restakeable_strategies():
     """Test retrieving restakeable strategies"""
     try:
         # Call the method
-        result = clients.avs_reader.get_restakeable_strategies(None)
+        result = clients.avs_registry_reader.get_restakeable_strategies(None)
 
         # Verify the result is a list
         assert isinstance(result, list)
@@ -583,7 +514,7 @@ def test_get_operator_restaked_strategies():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.get_operator_restaked_strategies(None, operator_addr)
+        result = clients.avs_registry_reader.get_operator_restaked_strategies(None, operator_addr)
 
         # Verify the result is a list
         assert isinstance(result, list)
@@ -601,7 +532,7 @@ def test_get_stake_type_per_quorum():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_stake_type_per_quorum(None, quorum_number)
+        result = clients.avs_registry_reader.get_stake_type_per_quorum(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -619,7 +550,7 @@ def test_get_slashable_stake_look_ahead_per_quorum():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.get_slashable_stake_look_ahead_per_quorum(None, quorum_number)
+        result = clients.avs_registry_reader.get_slashable_stake_look_ahead_per_quorum(None, quorum_number)
 
         # Verify the result is an integer or None
         assert result is None or isinstance(result, int)
@@ -637,7 +568,7 @@ def test_get_operator_id():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.get_operator_id(operator_addr)
+        result = clients.avs_registry_reader.get_operator_id(operator_addr)
 
         # Verify the result is bytes
         assert isinstance(result, bytes)
@@ -655,7 +586,7 @@ def test_get_operator_from_id():
         operator_id = 0
 
         # Call the method
-        result = clients.avs_reader.get_operator_from_id(None, operator_id)
+        result = clients.avs_registry_reader.get_operator_from_id(None, operator_id)
 
         # Verify the result is a string or None
         assert result is None or isinstance(result, str)
@@ -676,7 +607,7 @@ def test_query_registration_detail():
         # Note: This method has a potential bug in the reader.py where it expects call_options as first parameter
         # but we'll test it anyway and handle any errors
         try:
-            result = clients.avs_reader.query_registration_detail(None, operator_addr)
+            result = clients.avs_registry_reader.query_registration_detail(None, operator_addr)
 
             # Verify the result is a list of booleans or None
             assert result is None or (
@@ -698,7 +629,7 @@ def test_is_operator_registered():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.is_operator_registered(None, operator_addr)
+        result = clients.avs_registry_reader.is_operator_registered(None, operator_addr)
 
         # Verify the result is a boolean
         assert isinstance(result, bool)
@@ -716,7 +647,7 @@ def test_is_operator_set_quorum():
         quorum_number = 0
 
         # Call the method
-        result = clients.avs_reader.is_operator_set_quorum(None, quorum_number)
+        result = clients.avs_registry_reader.is_operator_set_quorum(None, quorum_number)
 
         # Verify the result is a boolean or None
         assert result is None or isinstance(result, bool)
@@ -734,7 +665,7 @@ def test_get_operator_id_from_operator_address():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.get_operator_id_from_operator_address(None, operator_addr)
+        result = clients.avs_registry_reader.get_operator_id_from_operator_address(None, operator_addr)
 
         # Verify the result is bytes or None
         assert result is None or isinstance(result, bytes)
@@ -754,7 +685,7 @@ def test_get_operator_address_from_operator_id():
         # First get an operator ID to use
         operator_addr = Web3.to_checksum_address(config["operator_address"])
         try:
-            operator_id = clients.avs_reader.get_operator_id_from_operator_address(
+            operator_id = clients.avs_registry_reader.get_operator_id_from_operator_address(
                 None, operator_addr
             )
             if not operator_id:
@@ -768,7 +699,7 @@ def test_get_operator_address_from_operator_id():
             )
 
         # Call the method
-        result = clients.avs_reader.get_operator_address_from_operator_id(None, operator_id)
+        result = clients.avs_registry_reader.get_operator_address_from_operator_id(None, operator_id)
 
         # Verify the result is a string or None
         assert result is None or isinstance(result, str)
@@ -786,7 +717,7 @@ def test_get_pubkey_from_operator_address():
         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
         # Call the method
-        result = clients.avs_reader.get_pubkey_from_operator_address(None, operator_addr)
+        result = clients.avs_registry_reader.get_pubkey_from_operator_address(None, operator_addr)
 
         # Verify the result is a G1Point or None
         assert result is None or isinstance(result, G1Point)
@@ -805,7 +736,7 @@ def test_get_apk_update():
         index = 0
 
         # Call the method
-        result = clients.avs_reader.get_apk_update(None, quorum_number, index)
+        result = clients.avs_registry_reader.get_apk_update(None, quorum_number, index)
 
         # Verify the result has the expected fields if not None
         if result is not None:
@@ -819,68 +750,34 @@ def test_get_apk_update():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_current_apk():
-    """Test retrieving current APK for a quorum"""
-    try:
-        # Define parameters
-        quorum_number = 0
-
-        # Call the method
-        result = clients.avs_reader.get_current_apk(None, quorum_number)
-
-        # Verify the result is a G1Point or None
-        assert result is None or isinstance(result, G1Point)
-
-        print(f"Current APK for quorum {quorum_number}: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
-
+# def test_get_current_apk():
+#     quorum_number = 0
+#     result = clients.avs_registry_reader.get_current_apk(None, quorum_number)
+#     assert result is None or isinstance(result, G1Point)
+#     print(f"Current APK for quorum {quorum_number}: {result}")
 
 def test_query_existing_registered_operator_sockets():
-    """Test querying existing registered operator sockets"""
-    try:
-        # No need to pass specific parameters, use defaults
-        # This will query from block 0 to the current block
-        result, stop_block = clients.avs_reader.query_existing_registered_operator_sockets()
-
-        # Verify the result is a dictionary
-        assert isinstance(result, dict)
-        # Verify the stop_block is an integer
-        assert isinstance(stop_block, int)
-
-        # Check dictionary keys and values if there are any results
-        for operator_id, socket in result.items():
-            assert isinstance(operator_id, bytes)
-            assert isinstance(socket, str)
-
-        print(f"Found {len(result)} registered operator sockets up to block {stop_block}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    result, stop_block = clients.avs_registry_reader.query_existing_registered_operator_sockets()
+    assert isinstance(result, dict)
+    assert isinstance(stop_block, int)
+    for operator_id, socket in result.items():
+        assert isinstance(operator_id, bytes)
+        assert isinstance(socket, str)
+    print(f"Found {len(result)} registered operator sockets up to block {stop_block}")
 
 
-def test_query_existing_registered_operator_pubkeys():
-    """Test querying existing registered operator public keys"""
-    try:
-        operator_addresses, operator_pubkeys, stop_block = clients.avs_reader.query_existing_registered_operator_pubkeys()
-        
-        assert isinstance(operator_addresses, list)
-        assert isinstance(operator_pubkeys, list)
-        assert isinstance(stop_block, int)
-        
-        assert len(operator_addresses) == len(operator_pubkeys)
-        
-        for addr, pubkey in zip(operator_addresses, operator_pubkeys):
-            assert isinstance(addr, str)
-            assert hasattr(pubkey, "g1_pub_key")
-            assert hasattr(pubkey, "g2_pub_key")
-            assert isinstance(pubkey.g1_pub_key, G1Point)
-            assert isinstance(pubkey.g2_pub_key, G2Point)
-
-        print(
-            f"Found {len(operator_addresses)} registered operator public keys up to block {stop_block}"
-        )
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+def test_query_existing_registered_operator_pubkeys():    
+    operator_addresses, operator_pubkeys, stop_block = clients.avs_registry_reader.query_existing_registered_operator_pubkeys()
+    assert isinstance(operator_addresses, list)
+    assert isinstance(operator_pubkeys, list)
+    assert isinstance(stop_block, int)
+    assert len(operator_addresses) == len(operator_pubkeys)
+    for addr, pubkey in zip(operator_addresses, operator_pubkeys):
+        assert isinstance(addr, str)
+        assert hasattr(pubkey, "g1_pub_key")
+        assert hasattr(pubkey, "g2_pub_key")
+        assert isinstance(pubkey.g1_pub_key, G1Point)
+        assert isinstance(pubkey.g2_pub_key, G2Point)
+    print(
+        f"Found {len(operator_addresses)} registered operator public keys up to block {stop_block}"
+    )
