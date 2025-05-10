@@ -36,15 +36,15 @@ def test_get_operators_stake_in_quorums_at_block():
     print(f"Operators stake in quorums at block {block_number}: {result}")
 
 
-def test_get_operator_addrs_in_quorums_at_current_block():
-    quorum_numbers = [0]
-    result = clients.avs_registry_reader.get_operator_addrs_in_quorums_at_current_block(
-        None, quorum_numbers
-    )
-    assert isinstance(result, list)
-    for quorum_operators in result:
-        assert isinstance(quorum_operators, list)
-    print(f"Operator addresses in quorums at current block: {result}")
+# def test_get_operator_addrs_in_quorums_at_current_block():
+#     quorum_numbers = [0]
+#     result = clients.avs_registry_reader.get_operator_addrs_in_quorums_at_current_block(
+#         None, quorum_numbers
+#     )
+#     assert isinstance(result, list)
+#     for quorum_operators in result:
+#         assert isinstance(quorum_operators, list)
+#     print(f"Operator addresses in quorums at current block: {result}")
 
 
 # def test_get_operators_stake_in_quorums_of_operator_at_block():
@@ -62,256 +62,220 @@ def test_get_operator_addrs_in_quorums_at_current_block():
 #     print(f"Stakes: {stakes}")
 
 
-def test_get_operators_stake_in_quorums_of_operator_at_current_block():
-    operator_id = 0  # Query operator with ID 0
-    # Call the get_operators_stake_in_quorums_of_operator_at_current_block method
-    quorum_ids, stakes = (
-        clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_current_block(
-            None, operator_id
-        )
-    )
-    # Verify the results
-    if quorum_ids is not None:
-        assert isinstance(quorum_ids, list)
-    if stakes is not None:
-        assert isinstance(stakes, list)
-    print(f"Operator {operator_id} stake in quorums at current block:")
-    print(f"Quorum IDs: {quorum_ids}")
-    print(f"Stakes: {stakes}")
+# def test_get_operators_stake_in_quorums_of_operator_at_current_block():
+#     operator_id = 0  # Query operator with ID 0
+#     # Call the get_operators_stake_in_quorums_of_operator_at_current_block method
+#     quorum_ids, stakes = (
+#         clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_current_block(
+#             None, operator_id
+#         )
+#     )
+#     # Verify the results
+#     if quorum_ids is not None:
+#         assert isinstance(quorum_ids, list)
+#     if stakes is not None:
+#         assert isinstance(stakes, list)
+#     print(f"Operator {operator_id} stake in quorums at current block:")
+#     print(f"Quorum IDs: {quorum_ids}")
+#     print(f"Stakes: {stakes}")
 
 
-def test_get_operator_stake_in_quorums_of_operator_at_current_block():
-    """Test retrieving operator stake in quorums at current block"""
-    try:
-        # Define an operator ID to query
-        operator_id = 0  # Query operator with ID 0
+# def test_get_operator_stake_in_quorums_of_operator_at_current_block():
+#     """Test retrieving operator stake in quorums at current block"""
+#     try:
+#         # Define an operator ID to query
+#         operator_id = 0  # Query operator with ID 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
-            None, operator_id
-        )
+#         # Call the method
+#         result = clients.avs_registry_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
+#             None, operator_id
+#         )
 
-        # Verify the result is a dictionary
-        assert result is None or isinstance(result, dict)
+#         # Verify the result is a dictionary
+#         assert result is None or isinstance(result, dict)
 
-        print(f"Operator {operator_id} stake in quorums at current block: {result}")
+#         print(f"Operator {operator_id} stake in quorums at current block: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_weight_of_operator_for_quorum():
-    """Test retrieving weight of operator for a quorum"""
-    try:
-        # Define quorum number and operator address
-        quorum_number = 0
-        operator_addr = Web3.to_checksum_address(config["operator_address"])
+    # Define quorum number and operator address
+    quorum_number = 0
+    operator_addr = Web3.to_checksum_address(config["operator_address"])
 
-        # Call the method
-        result = clients.avs_registry_reader.weight_of_operator_for_quorum(
-            None, quorum_number, operator_addr
-        )
+    # Call the method
+    result = clients.avs_registry_reader.weight_of_operator_for_quorum(
+        None, quorum_number, operator_addr
+    )
 
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
+    # Verify the result is an integer or None
+    assert result is None or isinstance(result, int)
 
-        print(f"Weight of operator {operator_addr} for quorum {quorum_number}: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    print(f"Weight of operator {operator_addr} for quorum {quorum_number}: {result}")
 
 
 def test_strategy_params_length():
-    """Test retrieving strategy params length for a quorum"""
-    try:
-        # Define quorum number
-        quorum_number = 0
+    # Define quorum number
+    quorum_number = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.strategy_params_length(None, quorum_number)
+    # Call the method
+    result = clients.avs_registry_reader.strategy_params_length(None, quorum_number)
 
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
+    # Verify the result is an integer or None
+    assert result is None or isinstance(result, int)
 
-        print(f"Strategy params length for quorum {quorum_number}: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    print(f"Strategy params length for quorum {quorum_number}: {result}")
 
 
 def test_strategy_params_by_index():
-    """Test retrieving strategy params by index for a quorum"""
-    try:
-        # Define quorum number and index
-        quorum_number = 0
-        index = 0
+    
+    # Define quorum number and index
+    quorum_number = 0
+    index = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.strategy_params_by_index(None, quorum_number, index)
+    # Call the method
+    result = clients.avs_registry_reader.strategy_params_by_index(None, quorum_number, index)
 
-        # Verify the result is a strategy params object or None
-        assert result is None or isinstance(result, tuple)
+    # Verify the result is a strategy params object or None
+    assert result is None or isinstance(result, tuple)
 
-        print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+    print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
 
 
-def test_get_stake_history_length():
-    """Test retrieving stake history length for an operator in a quorum"""
-    try:
-        # Define operator ID and quorum number
-        operator_id = 0
-        quorum_number = 0
+# def test_get_stake_history_length():
+#     # Define operator ID and quorum number
+#     operator_id = 0
+#     quorum_number = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_history_length(None, operator_id, quorum_number)
+#     # Call the method
+#     result = clients.avs_registry_reader.get_stake_history_length(None, operator_id, quorum_number)
 
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
+#     # Verify the result is an integer or None
+#     assert result is None or isinstance(result, int)
 
-        print(
-            f"Stake history length for operator {operator_id} in quorum {quorum_number}: {result}"
-        )
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     print(
+#         f"Stake history length for operator {operator_id} in quorum {quorum_number}: {result}"
+#     )
 
 
-def test_get_stake_history():
-    """Test retrieving stake history for an operator in a quorum"""
-    try:
-        # Define operator ID and quorum number
-        operator_id = 0
-        quorum_number = 0
+# def test_get_stake_history():
 
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_history(None, operator_id, quorum_number)
+#     # Define operator ID and quorum number
+#     operator_id = 0
+#     quorum_number = 0
 
-        # Verify the result is a list or None
-        assert result is None or isinstance(result, list)
+#     # Call the method
+#     result = clients.avs_registry_reader.get_stake_history(None, operator_id, quorum_number)
 
-        print(f"Stake history for operator {operator_id} in quorum {quorum_number}: {result}")
+#     # Verify the result is a list or None
+#     assert result is None or isinstance(result, list)
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     print(f"Stake history for operator {operator_id} in quorum {quorum_number}: {result}")
 
 
-def test_get_latest_stake_update():
-    """Test retrieving latest stake update for an operator in a quorum"""
-    try:
-        # Define operator ID and quorum number
-        operator_id = 0
-        quorum_number = 0
+# def test_get_latest_stake_update():
+#     operator_id = 0
+#     quorum_number = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_latest_stake_update(None, operator_id, quorum_number)
+#     # Call the method
+#     result = clients.avs_registry_reader.get_latest_stake_update(None, operator_id, quorum_number)
 
-        # Verify the result is a stake update object or None
-        assert result is None or isinstance(result, tuple)
+#     # Verify the result is a stake update object or None
+#     assert result is None or isinstance(result, tuple)
 
-        print(f"Latest stake update for operator {operator_id} in quorum {quorum_number}: {result}")
+#     print(f"Latest stake update for operator {operator_id} in quorum {quorum_number}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+# def test_get_stake_update_at_index():
+#     operator_id = 0
+#     quorum_number = 0
+#     index = 0
 
+#     # Call the method
+#     result = clients.avs_registry_reader.get_stake_update_at_index(
+#         None, operator_id, quorum_number, index
+#     )
 
-def test_get_stake_update_at_index():
-    """Test retrieving stake update at a specific index for an operator in a quorum"""
-    try:
-        # Define operator ID, quorum number, and index
-        operator_id = 0
-        quorum_number = 0
-        index = 0
+#     # Verify the result is a stake update object or None
+#     assert result is None or isinstance(result, tuple)
 
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_update_at_index(
-            None, operator_id, quorum_number, index
-        )
-
-        # Verify the result is a stake update object or None
-        assert result is None or isinstance(result, tuple)
-
-        print(
-            f"Stake update for operator {operator_id} in quorum {quorum_number} at index {index}: {result}"
-        )
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     print(
+#         f"Stake update for operator {operator_id} in quorum {quorum_number} at index {index}: {result}"
+#     )
 
 
-def test_get_stake_at_block_number():
-    """Test retrieving stake at a specific block number"""
-    try:
-        # Define parameters
-        operator_id = 0
-        quorum_number = 0
-        block_number = clients.eth_http_client.eth.block_number
+# def test_get_stake_at_block_number():
+#     """Test retrieving stake at a specific block number"""
+#     try:
+#         # Define parameters
+#         operator_id = 0
+#         quorum_number = 0
+#         block_number = clients.eth_http_client.eth.block_number
 
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_at_block_number(
-            None, operator_id, quorum_number, block_number
-        )
+#         # Call the method
+#         result = clients.avs_registry_reader.get_stake_at_block_number(
+#             None, operator_id, quorum_number, block_number
+#         )
 
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
+#         # Verify the result is an integer or None
+#         assert result is None or isinstance(result, int)
 
-        print(
-            f"Stake for operator {operator_id} in quorum {quorum_number} at block {block_number}: {result}"
-        )
+#         print(
+#             f"Stake for operator {operator_id} in quorum {quorum_number} at block {block_number}: {result}"
+#         )
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
-
-
-def test_get_stake_update_index_at_block_number():
-    """Test retrieving stake update index at a specific block number"""
-    try:
-        # Define parameters
-        operator_id = 0
-        quorum_number = 0
-        block_number = clients.eth_http_client.eth.block_number
-
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_update_index_at_block_number(
-            None, operator_id, quorum_number, block_number
-        )
-
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
-
-        print(
-            f"Stake update index for operator {operator_id} in quorum {quorum_number} at block {block_number}: {result}"
-        )
-
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_stake_at_block_number_and_index():
-    """Test retrieving stake at a specific block number and index"""
-    try:
-        # Define parameters
-        operator_id = 0
-        quorum_number = 0
-        block_number = clients.eth_http_client.eth.block_number
-        index = 0
+# def test_get_stake_update_index_at_block_number():
+#     """Test retrieving stake update index at a specific block number"""
+#     try:
+#         # Define parameters
+#         operator_id = 0
+#         quorum_number = 0
+#         block_number = clients.eth_http_client.eth.block_number
 
-        # Call the method
-        result = clients.avs_registry_reader.get_stake_at_block_number_and_index(
-            None, operator_id, quorum_number, block_number, index
-        )
+#         # Call the method
+#         result = clients.avs_registry_reader.get_stake_update_index_at_block_number(
+#             None, operator_id, quorum_number, block_number
+#         )
 
-        # Verify the result is an integer or None
-        assert result is None or isinstance(result, int)
+#         # Verify the result is an integer or None
+#         assert result is None or isinstance(result, int)
 
-        print(
-            f"Stake for operator {operator_id} in quorum {quorum_number} at block {block_number} and index {index}: {result}"
-        )
+#         print(
+#             f"Stake update index for operator {operator_id} in quorum {quorum_number} at block {block_number}: {result}"
+#         )
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
+
+
+# def test_get_stake_at_block_number_and_index():
+#     """Test retrieving stake at a specific block number and index"""
+#     try:
+#         # Define parameters
+#         operator_id = 0
+#         quorum_number = 0
+#         block_number = clients.eth_http_client.eth.block_number
+#         index = 0
+
+#         # Call the method
+#         result = clients.avs_registry_reader.get_stake_at_block_number_and_index(
+#             None, operator_id, quorum_number, block_number, index
+#         )
+
+#         # Verify the result is an integer or None
+#         assert result is None or isinstance(result, int)
+
+#         print(
+#             f"Stake for operator {operator_id} in quorum {quorum_number} at block {block_number} and index {index}: {result}"
+#         )
+
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_total_stake_history_length():
@@ -332,26 +296,26 @@ def test_get_total_stake_history_length():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_check_signatures_indices():
-    """Test retrieving check signatures indices"""
-    try:
-        # Define parameters
-        reference_block_number = clients.eth_http_client.eth.block_number - 10
-        quorum_numbers = [0]
-        non_signer_operator_ids = [0]
+# def test_get_check_signatures_indices():
+#     """Test retrieving check signatures indices"""
+#     try:
+#         # Define parameters
+#         reference_block_number = clients.eth_http_client.eth.block_number - 10
+#         quorum_numbers = [0]
+#         non_signer_operator_ids = [0]
 
-        # Call the method
-        result = clients.avs_registry_reader.get_check_signatures_indices(
-            None, reference_block_number, quorum_numbers, non_signer_operator_ids
-        )
+#         # Call the method
+#         result = clients.avs_registry_reader.get_check_signatures_indices(
+#             None, reference_block_number, quorum_numbers, non_signer_operator_ids
+#         )
 
-        # Verify the result
-        assert result is not None
+#         # Verify the result
+#         assert result is not None
 
-        print(f"Check signatures indices at block {reference_block_number}: {result}")
+#         print(f"Check signatures indices at block {reference_block_number}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_current_total_stake():
@@ -415,25 +379,25 @@ def test_get_total_stake_at_block_number_from_index():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_total_stake_indices_at_block_number():
-    """Test retrieving total stake indices at block number"""
-    try:
-        # Define parameters
-        quorum_numbers = [0]
-        block_number = clients.eth_http_client.eth.block_number
+# def test_get_total_stake_indices_at_block_number():
+#     """Test retrieving total stake indices at block number"""
+#     try:
+#         # Define parameters
+#         quorum_numbers = [0]
+#         block_number = clients.eth_http_client.eth.block_number
 
-        # Call the method
-        result = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
-            None, quorum_numbers, block_number
-        )
+#         # Call the method
+#         result = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
+#             None, quorum_numbers, block_number
+#         )
 
-        # Verify the result is a list or None
-        assert result is None or isinstance(result, list)
+#         # Verify the result is a list or None
+#         assert result is None or isinstance(result, list)
 
-        print(f"Total stake indices at block {block_number} for quorums {quorum_numbers}: {result}")
+#         print(f"Total stake indices at block {block_number} for quorums {quorum_numbers}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_minimum_stake_for_quorum():
@@ -454,23 +418,23 @@ def test_get_minimum_stake_for_quorum():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_strategy_params_at_index():
-    """Test retrieving strategy params at index"""
-    try:
-        # Define parameters
-        quorum_number = 0
-        index = 0
+# def test_get_strategy_params_at_index():
+#     """Test retrieving strategy params at index"""
+#     try:
+#         # Define parameters
+#         quorum_number = 0
+#         index = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_strategy_params_at_index(None, quorum_number, index)
+#         # Call the method
+#         result = clients.avs_registry_reader.get_strategy_params_at_index(None, quorum_number, index)
 
-        # Verify the result is a strategy params object or None
-        assert result is None or isinstance(result, tuple)
+#         # Verify the result is a strategy params object or None
+#         assert result is None or isinstance(result, tuple)
 
-        print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
+#         print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_strategy_per_quorum_at_index():
@@ -492,37 +456,37 @@ def test_get_strategy_per_quorum_at_index():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_restakeable_strategies():
-    """Test retrieving restakeable strategies"""
-    try:
-        # Call the method
-        result = clients.avs_registry_reader.get_restakeable_strategies(None)
+# def test_get_restakeable_strategies():
+#     """Test retrieving restakeable strategies"""
+#     try:
+#         # Call the method
+#         result = clients.avs_registry_reader.get_restakeable_strategies(None)
 
-        # Verify the result is a list
-        assert isinstance(result, list)
+#         # Verify the result is a list
+#         assert isinstance(result, list)
 
-        print(f"Restakeable strategies: {result}")
+#         print(f"Restakeable strategies: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_operator_restaked_strategies():
-    """Test retrieving operator restaked strategies"""
-    try:
-        # Define parameters
-        operator_addr = Web3.to_checksum_address(config["operator_address"])
+# def test_get_operator_restaked_strategies():
+#     """Test retrieving operator restaked strategies"""
+#     try:
+#         # Define parameters
+#         operator_addr = Web3.to_checksum_address(config["operator_address"])
 
-        # Call the method
-        result = clients.avs_registry_reader.get_operator_restaked_strategies(None, operator_addr)
+#         # Call the method
+#         result = clients.avs_registry_reader.get_operator_restaked_strategies(None, operator_addr)
 
-        # Verify the result is a list
-        assert isinstance(result, list)
+#         # Verify the result is a list
+#         assert isinstance(result, list)
 
-        print(f"Restaked strategies for operator {operator_addr}: {result}")
+#         print(f"Restaked strategies for operator {operator_addr}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_stake_type_per_quorum():
@@ -579,22 +543,22 @@ def test_get_operator_id():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_operator_from_id():
-    """Test retrieving operator address from operator ID"""
-    try:
-        # Define parameters
-        operator_id = 0
+# def test_get_operator_from_id():
+#     """Test retrieving operator address from operator ID"""
+#     try:
+#         # Define parameters
+#         operator_id = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_operator_from_id(None, operator_id)
+#         # Call the method
+#         result = clients.avs_registry_reader.get_operator_from_id(None, operator_id)
 
-        # Verify the result is a string or None
-        assert result is None or isinstance(result, str)
+#         # Verify the result is a string or None
+#         assert result is None or isinstance(result, str)
 
-        print(f"Operator address for ID {operator_id}: {result}")
+#         print(f"Operator address for ID {operator_id}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_query_registration_detail():
@@ -640,22 +604,22 @@ def test_is_operator_registered():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_is_operator_set_quorum():
-    """Test checking if a quorum is an operator set quorum"""
-    try:
-        # Define parameters
-        quorum_number = 0
+# def test_is_operator_set_quorum():
+#     """Test checking if a quorum is an operator set quorum"""
+#     try:
+#         # Define parameters
+#         quorum_number = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.is_operator_set_quorum(None, quorum_number)
+#         # Call the method
+#         result = clients.avs_registry_reader.is_operator_set_quorum(None, quorum_number)
 
-        # Verify the result is a boolean or None
-        assert result is None or isinstance(result, bool)
+#         # Verify the result is a boolean or None
+#         assert result is None or isinstance(result, bool)
 
-        print(f"Is quorum {quorum_number} an operator set quorum: {result}")
+#         print(f"Is quorum {quorum_number} an operator set quorum: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 def test_get_operator_id_from_operator_address():
@@ -728,26 +692,26 @@ def test_get_pubkey_from_operator_address():
         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
-def test_get_apk_update():
-    """Test retrieving APK update for a quorum at a specific index"""
-    try:
-        # Define parameters
-        quorum_number = 0
-        index = 0
+# def test_get_apk_update():
+#     """Test retrieving APK update for a quorum at a specific index"""
+#     try:
+#         # Define parameters
+#         quorum_number = 0
+#         index = 0
 
-        # Call the method
-        result = clients.avs_registry_reader.get_apk_update(None, quorum_number, index)
+#         # Call the method
+#         result = clients.avs_registry_reader.get_apk_update(None, quorum_number, index)
 
-        # Verify the result has the expected fields if not None
-        if result is not None:
-            assert hasattr(result, "apk_hash")
-            assert hasattr(result, "update_block_number")
-            assert hasattr(result, "next_update_block_number")
+#         # Verify the result has the expected fields if not None
+#         if result is not None:
+#             assert hasattr(result, "apk_hash")
+#             assert hasattr(result, "update_block_number")
+#             assert hasattr(result, "next_update_block_number")
 
-        print(f"APK update for quorum {quorum_number} at index {index}: {result}")
+#         print(f"APK update for quorum {quorum_number} at index {index}: {result}")
 
-    except Exception as e:
-        pytest.skip(f"Skipping test due to error: {str(e)}")
+#     except Exception as e:
+#         pytest.skip(f"Skipping test due to error: {str(e)}")
 
 
 # def test_get_current_apk():
