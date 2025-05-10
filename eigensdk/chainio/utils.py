@@ -35,18 +35,16 @@ def send_transaction(
     pk_wallet: LocalAccount,
     eth_http_client: Web3,
     gas_limit: int = 1000000,
-    skip_estimation: bool = False,
+    skip_estimation: bool = True,
 ) -> TxReceipt:
-    gas_estimate = gas_limit or 1000000  # Default high gas limit if skipping estimation
-    # # Use provided gas limit or estimate gas
-    # if gas_limit is None and not skip_estimation:
-    #     try:
-    #         gas_estimate = func.estimate_gas({"from": pk_wallet.address})
-    #     except Exception as e:
-    #         raise Exception(f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit.")
-    # else:
-    #     gas_estimate = gas_limit or 1000000  # Default high gas limit if skipping estimation
-
+    if skip_estimation:
+        gas_estimate = gas_limit
+    else:
+        try:
+            gas_estimate = func.estimate_gas({"from": pk_wallet.address})
+        except Exception as e:
+            raise Exception(f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit.")
+    
     current_gas_price = eth_http_client.eth.gas_price
 
     tx = func.build_transaction(

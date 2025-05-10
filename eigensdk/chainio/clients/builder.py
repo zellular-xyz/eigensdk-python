@@ -52,64 +52,50 @@ class BuildAllConfig:
             address=self.registry_coordinator_addr,
             abi=ABIs.REGISTRY_COORDINATOR_ABI,
         )
-
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
         stake_registry_instance = eth_http_client.eth.contract(
             address=stake_registry_addr,
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
-
         delegation_manager_addr = stake_registry_instance.functions.delegation().call()
         delegation_manager_instance = eth_http_client.eth.contract(
             address=delegation_manager_addr,
             abi=ABIs.DELEGATION_MANAGER_ABI,
         )
-
         strategy_manager_addr = delegation_manager_instance.functions.strategyManager().call()
         strategy_manager_instance = eth_http_client.eth.contract(
             address=strategy_manager_addr,
             abi=ABIs.STRATEGY_MANAGER_ABI,
         )
-
-        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
         service_manager = eth_http_client.eth.contract(
-            address=service_manager_addr,
+            address=self.service_manager_addr,
             abi=ABIs.SERVICE_MANAGER_BASE_ABI,
         )
 
-        # allocation_manager_addr = delegation_manager_instance.functions.allocationManager().call()
-        # allocation_manager_instance = eth_http_client.eth.contract(
-        #     address=self.allocation_manager_addr,
-        #     abi=ABIs.ALLOCATION_MANAGER_ABI,
-        # )
-
-        # permission_controller_instance = eth_http_client.eth.contract(
-        #     address=self.permission_controller_addr,
-        #     abi=ABIs.PERMISSION_CONTROLLER_ABI,
-        # )
-
-        # service_manager = eth_http_client.eth.contract(
-        #     address=self.service_manager_addr,
-        #     abi=ABIs.SERVICE_MANAGER_BASE_ABI,
-        # )
+        allocation_manager_instance = eth_http_client.eth.contract(
+            address=self.allocation_manager_addr,
+            abi=ABIs.ALLOCATION_MANAGER_ABI,
+        )
+        permission_controller_instance = eth_http_client.eth.contract(
+            address=self.permission_controller_addr,
+            abi=ABIs.PERMISSION_CONTROLLER_ABI,
+        )
 
         avs_directory_addr = service_manager.functions.avsDirectory().call()
         avs_directory_instance = eth_http_client.eth.contract(
             address=avs_directory_addr,
             abi=ABIs.AVS_DIRECTORY_ABI,
         )
-
-        # rewards_coordinator_instance = eth_http_client.eth.contract(
-        #     address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
-        # )
-
+        rewards_coordinator_instance = eth_http_client.eth.contract(
+            address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
+        )
 
         el_reader_instance = el_reader.ELReader(
-            allocation_manager=None,
+            allocation_manager=allocation_manager_instance,
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=None,
-            reward_coordinator=None,
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
             strategy_manager=strategy_manager_instance,
             logger=self.logger,
             eth_http_client=eth_http_client,
@@ -117,11 +103,11 @@ class BuildAllConfig:
             erc20_abi=ABIs.IERC20_ABI,
         )
         el_writer_instance = el_writer.ELWriter(
-            allocation_manager=None,
+            allocation_manager=allocation_manager_instance,
             avs_directory=avs_directory_instance,
             delegation_manager=delegation_manager_instance,
-            permission_controller=None,
-            reward_coordinator=None,
+            permission_controller=permission_controller_instance,
+            reward_coordinator=rewards_coordinator_instance,
             registry_coordinator=registry_coordinator_instance,
             strategy_manager=strategy_manager_instance,
             el_chain_reader=el_reader_instance,
@@ -153,9 +139,8 @@ class BuildAllConfig:
             address=bls_apk_registry_addr,
             abi=ABIs.BLS_APK_REGISTRY_ABI,
         )
-        service_manager_addr = registry_coordinator_instance.functions.serviceManager().call()
         service_manager_instance = eth_http_client.eth.contract(
-            address=service_manager_addr,
+            address=self.service_manager_addr,
             abi=ABIs.STRATEGY_MANAGER_ABI,
         )
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
@@ -179,7 +164,7 @@ class BuildAllConfig:
             registry_coordinator=registry_coordinator_instance,
             operator_state_retriever=operator_state_retriever_instance,
             service_manager=service_manager_instance,
-            service_manager_addr=service_manager_addr,
+            service_manager_addr=self.service_manager_addr,
             stake_registry=stake_registry_instance,
             bls_apk_registry=bls_apk_registry_instance,
             el_reader=el_chain_reader,
