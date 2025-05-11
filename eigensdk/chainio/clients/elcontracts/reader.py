@@ -315,36 +315,26 @@ class ELReader:
         return self.reward_coordinator.functions.cumulativeClaimed(earner, token).call()
 
     def check_claim(self, claim: Dict[str, Any]) -> bool:
-        # Validate array lengths match
         token_indices = claim.get("tokenIndices", [])
         token_tree_proofs = claim.get("tokenTreeProofs", [])
         token_leaves = claim.get("tokenLeaves", [])
-        
         if not (len(token_indices) == len(token_tree_proofs) == len(token_leaves)):
             raise ValueError("tokenIndices, tokenTreeProofs, and tokenLeaves must have the same length")
-
-        # Validate rootIndex is within bounds
         root_index = claim.get("rootIndex", 0)
         distribution_roots_length = self.get_distribution_roots_length()
         if distribution_roots_length == 0:
             raise ValueError("No distribution roots exist in the contract yet")
         if root_index < 0 or root_index >= distribution_roots_length:
             raise ValueError(f"rootIndex {root_index} is out of bounds. Must be between 0 and {distribution_roots_length - 1}")
-
-        # Validate earnerLeaf data
         earner_leaf = claim.get("earnerLeaf", {})
         if not earner_leaf.get("earner") or not Web3.is_address(earner_leaf.get("earner")):
             raise ValueError("Invalid earner address in earnerLeaf")
         if not earner_leaf.get("earnerTokenRoot") or len(earner_leaf.get("earnerTokenRoot")) != 32:
             raise ValueError("earnerTokenRoot must be 32 bytes")
-
-        # Construct the earnerLeaf tuple
         earner_leaf_tuple = (
             Web3.to_checksum_address(earner_leaf.get("earner")),
             earner_leaf.get("earnerTokenRoot"),
         )
-
-        # Validate and construct token leaves
         token_leaves_tuples = []
         for i, leaf in enumerate(token_leaves):
             if not leaf.get("token") or not Web3.is_address(leaf.get("token")):
@@ -358,8 +348,6 @@ class ELReader:
                     leaf.get("cumulativeEarnings", 0),
                 )
             )
-
-        # Construct the complete claim tuple
         claim_tuple = (
             root_index,
             claim.get("earnerIndex", 0),
@@ -369,7 +357,6 @@ class ELReader:
             token_tree_proofs,
             token_leaves_tuples,
         )
-        
         return self.reward_coordinator.functions.checkClaim(claim_tuple).call()
 
     def get_operator_avs_split(self, operator: Address, avs: Address) -> int:
