@@ -1,95 +1,63 @@
 from tests.builder import clients, config
-from eth_typing import Address
 from web3 import Web3
-import pytest
 from eigensdk._types import Operator
-
+from eigensdk.chainio.utils import nums_to_bytes
 
 def test_register_as_operator():
-    # Create a new operator for testing
     operator = Operator(
         address=Web3.to_checksum_address(config["operator_address"]),
         earnings_receiver_address=Web3.to_checksum_address(config["operator_address"]),
-        delegation_approver_address="0x0000000000000000000000000000000000000000",  # No delegation approver
-        allocation_delay=100,  # 100 blocks
+        delegation_approver_address="0x0000000000000000000000000000000000000000",  
+        allocation_delay=100,  
         metadata_url="https://example.com/operator-metadata",
         staker_opt_out_window_blocks=100,
     )
-
-    # Register as operator
     receipt = clients.el_writer.register_as_operator(operator)
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_update_metadata_uri():
-    # Get operator address from config
     operator_addr = config["operator_address"]
-
-    # New metadata URI
     metadata_uri = "https://example.com/updated-metadata-uri"
-
-    # Update metadata URI
     receipt = clients.el_writer.update_metadata_uri(operator_addr, metadata_uri)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Updated metadata URI with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_deposit_erc20_into_strategy():
-    # Get strategy address from config
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-
-    # Use a small amount for testing
     amount = 100
-
-    # Deposit ERC20 tokens into strategy
     receipt = clients.el_writer.deposit_erc20_into_strategy(strategy_addr, amount)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Deposited ERC20 tokens into strategy with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_set_claimer_for():
-    # Use operator address as the claimer address for testing
     claimer_addr = config["operator_address"]
-
-    # Set claimer for rewards
     receipt = clients.el_writer.set_claimer_for(claimer_addr)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set claimer with tx hash: {receipt['transactionHash'].hex()}")
 
+# TODO: fix this test, unknown error
 
 # def test_process_claim():
-#     # Get address from config for the recipient
 #     recipient_addr = Web3.to_checksum_address(config["operator_address"])
 #     token_addr = Web3.to_checksum_address(config["strategy_addr"])
-
-#     # Check if there are any distribution roots
-#     distribution_roots_length = clients.el_reader.get_distribution_roots_length()
-#     if distribution_roots_length == 0:
-#         pytest.skip("No distribution roots exist in the contract yet")
-
-#     # Create a sample claim dictionary matching IRewardsCoordinatorTypesRewardsMerkleClaim
 #     claim = {
 #         "rootIndex": 0,
 #         "earnerIndex": 0,
-#         "earnerTreeProof": b"\x00" * 32,  # 32 bytes for merkle proof
+#         "earnerTreeProof": b"\x00" * 32,  
 #         "earnerLeaf": {
 #             "earner": recipient_addr,
-#             "earnerTokenRoot": b"\x00" * 32,  # 32 bytes for root
+#             "earnerTokenRoot": b"\x00" * 32,  
 #         },
 #         "tokenIndices": [0],
-#         "tokenTreeProofs": [b"\x00" * 32],  # 32 bytes for merkle proof
+#         "tokenTreeProofs": [b"\x00" * 32],  
 #         "tokenLeaves": [
 #             {
 #                 "token": token_addr,
@@ -97,250 +65,192 @@ def test_set_claimer_for():
 #             }
 #         ],
 #     }
-
-#     # Process the claim
 #     receipt = clients.el_writer.process_claim(claim, recipient_addr)
-    
-#     # Verify the transaction was successful
+#     print("\n\n\n\n",receipt,"\n\n\n\n")
 #     assert receipt is not None
 #     assert receipt["status"] == 1
 #     print(f"Processed claim with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_set_operator_avs_split():
-    # Get operator address from config
     operator_addr = config["operator_address"]
-
-    # Get AVS address from config
     avs_addr = config["avs_registry_coordinator_address"]
-
-    # Set split to 50% (5000 basis points)
     split = 5000
-
-    # Set operator AVS split
     receipt = clients.el_writer.set_operator_avs_split(operator_addr, avs_addr, split)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set operator AVS split with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_set_operator_pi_split():
-    # Get operator address from config
     operator_addr = config["operator_address"]
-
-    # Set split to 30% (3000 basis points)
     split = 3000
-
-    # Set operator PI split
     receipt = clients.el_writer.set_operator_pi_split(operator_addr, split)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set operator PI split with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# def test_modify_allocations():
-#     # Get operator address from config
-#     operator_addr = config["operator_address"]
+# TODO: fix this test, set correct avs address
 
-#     # Create a sample allocations list
-#     # Each allocation is a tuple of (strategy_address, AVS_address, operator_set_id, magnitude)
+# def test_modify_allocations():
+#     operator_addr = config["operator_address"]
 #     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
 #     avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-#     allocations = [(strategy_addr, avs_addr, 1, 1000)]  # Operator set ID 1, magnitude 1000
-
-#     # Modify allocations
+#     allocations = [{
+#         "operatorSet": {
+#             "id": 1,
+#             "avs": avs_addr
+#         },
+#         "strategies": [strategy_addr],
+#         "newMagnitudes": [1000]
+#     }]
 #     receipt = clients.el_writer.modify_allocations(operator_addr, allocations)
-
-#     # Verify the transaction was successful
+#     print("\n\n\n\n",receipt,"\n\n\n\n")
 #     assert receipt is not None
 #     assert receipt["status"] == 1
 #     print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_clear_deallocation_queue():
-    # Get operator address from config
     operator_addr = config["operator_address"]
-
-    # Strategy address from config
     strategy_addr = config["strategy_addr"]
-
-    # Create a list of strategies and numbers to clear
     strategies = [strategy_addr]
-    nums_to_clear = [1]  # Clear 1 deallocation from the queue for each strategy
-
-    # Clear deallocation queue
+    nums_to_clear = [1]
     receipt = clients.el_writer.clear_deallocation_queue(operator_addr, strategies, nums_to_clear)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Cleared deallocation queue with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_set_allocation_delay():
-    # Get operator address from config
     operator_addr = config["operator_address"]
-
-    # Set allocation delay to 50 blocks
     delay = 50
-
-    # Set allocation delay
     receipt = clients.el_writer.set_allocation_delay(operator_addr, delay)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set allocation delay with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# def test_deregister_from_operator_sets():
-#     # Get operator address from config
-#     operator_addr = config["operator_address"]
+# TODO: fix this test, set correct avs address
 
-#     # Create request dictionary
+# def test_deregister_from_operator_sets():
+#     operator_addr = config["operator_address"]
 #     request = {
 #         "avs_address": config["avs_registry_coordinator_address"],
-#         "operator_set_ids": [1],  # Deregister from operator set ID 1
+#         "operator_set_ids": [1],
 #     }
-
-#     # Deregister from operator sets
 #     receipt = clients.el_writer.deregister_from_operator_sets(operator_addr, request)
-
-#     # Verify the transaction was successful
 #     assert receipt is not None
 #     assert receipt["status"] == 1
 #     print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# def test_register_for_operator_sets():
-#     # Get registry coordinator address
-#     registry_coordinator_addr = config["avs_registry_coordinator_address"]
+# TODO: fix this test, unknown error
 
-#     # Create request dictionary with minimal required fields
-#     # Note: In a real test, you would need actual BLS key pair data
+# def test_register_for_operator_sets():
+#     registry_coordinator_addr = config["avs_registry_coordinator_address"]
 #     request = {
 #         "operator_address": config["operator_address"],
 #         "avs_address": config["avs_registry_coordinator_address"],
-#         "operator_set_ids": [1],  # Register for operator set ID 1
-#         "socket": "localhost:9000",  # Example socket
+#         "operator_set_ids": [1],
+#         "socket": "localhost:9000",
 #         "bls_key_pair": {
-#             "pubkey": "0x" + "00" * 48,  # Mock BLS public key
-#             "privkey": "0x" + "00" * 32,  # Mock BLS private key
+#             "pubkey": "0x" + "00" * 48,  # 48 bytes for BLS public key
+#             "privkey": "0x" + "00" * 32,  # 32 bytes for BLS private key
 #         },
 #     }
 
-#     # Skip actual test execution if BLS keys are required
-#     # This is to prevent test failures in environments where real keys are needed
-#     pytest.skip("Skipping test as it requires real BLS key pair data")
+#     receipt = clients.el_writer.register_for_operator_sets(registry_coordinator_addr, request)
+#     print(f"\nTransaction hash: {receipt['transactionHash'].hex()}")
+#     print(f"Transaction status: {receipt['status']}")
+#     if receipt['status'] == 0:
+#         try:
+#             tx = clients.el_writer.eth_http_client.eth.get_transaction(receipt['transactionHash'])
+#             print(f"Transaction input: {tx['input']}")
+#             print(f"Gas used: {receipt['gasUsed']}")
+#             print(f"Block number: {receipt['blockNumber']}")
+#         except Exception as e:
+#             print(f"Could not get transaction details: {str(e)}")
 
-#     # In a real environment with proper BLS keys:
-#     # receipt = clients.el_writer.register_for_operator_sets(registry_coordinator_addr, request)
-#     # assert receipt is not None
-#     # assert receipt['status'] == 1
-#     # print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
-
-
-# def test_remove_permission():
-#     # Create request dictionary
-#     request = {
-#         "account_address": config["operator_address"],
-#         "appointee_address": config[
-#             "operator_address"
-#         ],  # Using same address as appointee for testing
-#         "target": config["avs_registry_coordinator_address"],
-#         "selector": b"\x12\x34\x56\x78",  # Example selector (4 bytes)
-#     }
-
-#     # Remove permission
-#     receipt = clients.el_writer.remove_permission(request)
-
-#     # Verify the transaction was successful
 #     assert receipt is not None
 #     assert receipt["status"] == 1
-#     print(f"Removed permission with tx hash: {receipt['transactionHash'].hex()}")
+#     print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
+
+# TODO: fix this test, unknown error, Maybe because of the target is not a contract or correct contract address.
 
 # def test_set_permission():
-#     # Create request dictionary
 #     request = {
 #         "account_address": config["operator_address"],
 #         "appointee_address": config[
 #             "operator_address"
-#         ],  # Using same address as appointee for testing
+#         ],  
 #         "target": config["avs_registry_coordinator_address"],
-#         "selector": b"\x12\x34\x56\x78",  # Example selector (4 bytes)
+#         "selector": nums_to_bytes([12, 34, 56, 78]), 
 #         "wait_for_receipt": True,
 #     }
-
-#     # Set permission
 #     receipt = clients.el_writer.set_permission(request)
-
-#     # Verify the transaction was successful
 #     assert receipt is not None
 #     assert receipt["status"] == 1
 #     print(f"Set permission with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# def test_accept_admin():
-#     # Create request dictionary
-#     request = {"account_address": config["operator_address"]}
+# TODO: fix this test, unknown error, Maybe because of the target is not a contract or correct contract address.
 
-#     # Accept admin
-#     receipt = clients.el_writer.accept_admin(request)
-
-#     # Verify the transaction was successful
+# def test_remove_permission():
+#     request = {
+#         "account_address": config["operator_address"],
+#         "appointee_address": config[
+#             "operator_address"
+#         ],  
+#         "target": config["avs_registry_coordinator_address"],
+#         "selector": b"\x12\x34\x56\x78",  
+#     }
+#     receipt = clients.el_writer.remove_permission(request)
 #     assert receipt is not None
 #     assert receipt["status"] == 1
-#     print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
+#     print(f"Removed permission with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_add_pending_admin():
-    # Create request dictionary
     request = {
         "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],  # Using same address as admin for testing
+        "admin_address": config["operator_address"],  
     }
-
-    # Add pending admin
     receipt = clients.el_writer.add_pending_admin(request)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Added pending admin with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# def test_remove_admin():
-#     # Create request dictionary
-#     request = {
-#         "account_address": config["operator_address"],
-#         "admin_address": config["operator_address"],  # Using same address as admin for testing
-#     }
-
-#     # Remove admin
-#     receipt = clients.el_writer.remove_admin(request)
-
-#     # Verify the transaction was successful
-#     assert receipt is not None
-#     assert receipt["status"] == 1
-#     print(f"Removed admin with tx hash: {receipt['transactionHash'].hex()}")
+def test_accept_admin():
+    request = {"account_address": config["operator_address"]}
+    receipt = clients.el_writer.accept_admin(request)
+    print("\n\n\n\n",receipt,"\n\n\n\n")
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_remove_pending_admin():
-    # Create request dictionary
     request = {
         "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],  # Using same address as admin for testing
+        "admin_address": config["operator_address"],
     }
-
-    # Remove pending admin
     receipt = clients.el_writer.remove_pending_admin(request)
-
-    # Verify the transaction was successful
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Removed pending admin with tx hash: {receipt['transactionHash'].hex()}")
+
+
+def test_remove_admin():
+    request = {
+        "account_address": config["operator_address"],
+        "admin_address": config["operator_address"],  
+    }
+    receipt = clients.el_writer.remove_admin(request)
+    print("\n\n\n\n",receipt,"\n\n\n\n")
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Removed admin with tx hash: {receipt['transactionHash'].hex()}")

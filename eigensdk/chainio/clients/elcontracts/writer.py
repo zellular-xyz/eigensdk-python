@@ -14,7 +14,6 @@ class RegistrationType(IntEnum):
     NORMAL = 0
     TRUSTED = 1
 
-
 class ELWriter:
     def __init__(
         self,
@@ -88,37 +87,28 @@ class ELWriter:
             if operator.delegation_approver_address is not None
             else "0x0000000000000000000000000000000000000000"
         )
-
         func = self.delegation_manager.functions.registerAsOperator(
             delegation_approver,
             operator.allocation_delay,
             operator.metadata_url,
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def update_operator_details(self, operator: Operator) -> TxReceipt:
-
         func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator.address),
             Web3.to_checksum_address(operator.delegation_approver_address),
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def update_metadata_uri(self, operator_address: str, uri: str) -> TxReceipt:
-
         func = self.delegation_manager.functions.updateOperatorMetadataURI(
             Web3.to_checksum_address(operator_address),
             uri,
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int) -> TxReceipt:
@@ -189,9 +179,7 @@ class ELWriter:
             Web3.to_checksum_address(operator_address),
             allocations,
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def clear_deallocation_queue(
@@ -273,9 +261,9 @@ class ELWriter:
     def set_permission(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removeAppointee(
-            Web3.to_checksum_address(request["account_address"]),
-            Web3.to_checksum_address(request["appointee_address"]),
-            request["target"],
+            Web3.to_checksum_address(request["account_address"].lower()),
+            Web3.to_checksum_address(request["appointee_address"].lower()),
+            Web3.to_checksum_address(request["target"].lower()),
             request["selector"],
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
