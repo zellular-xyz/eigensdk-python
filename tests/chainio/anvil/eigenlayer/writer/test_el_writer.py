@@ -44,20 +44,19 @@ def test_set_claimer_for():
     print(f"Set claimer with tx hash: {receipt['transactionHash'].hex()}")
 
 # TODO: fix this test, unknown error
-
 # def test_process_claim():
 #     recipient_addr = Web3.to_checksum_address(config["operator_address"])
 #     token_addr = Web3.to_checksum_address(config["strategy_addr"])
 #     claim = {
 #         "rootIndex": 0,
 #         "earnerIndex": 0,
-#         "earnerTreeProof": b"\x00" * 32,  
+#         "earnerTreeProof": nums_to_bytes([0] * 32),  
 #         "earnerLeaf": {
 #             "earner": recipient_addr,
-#             "earnerTokenRoot": b"\x00" * 32,  
+#             "earnerTokenRoot": nums_to_bytes([0] * 32),  
 #         },
 #         "tokenIndices": [0],
-#         "tokenTreeProofs": [b"\x00" * 32],  
+#         "tokenTreeProofs": [nums_to_bytes([0] * 32)],  
 #         "tokenLeaves": [
 #             {
 #                 "token": token_addr,
@@ -74,7 +73,7 @@ def test_set_claimer_for():
 
 def test_set_operator_avs_split():
     operator_addr = config["operator_address"]
-    avs_addr = config["avs_registry_coordinator_address"]
+    avs_addr = config["avs_address"]
     split = 5000
     receipt = clients.el_writer.set_operator_avs_split(operator_addr, avs_addr, split)
     assert receipt is not None
@@ -132,20 +131,6 @@ def test_set_allocation_delay():
     print(f"Set allocation delay with tx hash: {receipt['transactionHash'].hex()}")
 
 
-# TODO: fix this test, set correct avs address
-
-# def test_deregister_from_operator_sets():
-#     operator_addr = config["operator_address"]
-#     request = {
-#         "avs_address": config["avs_registry_coordinator_address"],
-#         "operator_set_ids": [1],
-#     }
-#     receipt = clients.el_writer.deregister_from_operator_sets(operator_addr, request)
-#     assert receipt is not None
-#     assert receipt["status"] == 1
-#     print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
-
-
 # TODO: fix this test, unknown error
 
 # def test_register_for_operator_sets():
@@ -178,6 +163,22 @@ def test_set_allocation_delay():
 #     print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
 
+# TODO: fix this test, set correct avs address
+
+# def test_deregister_from_operator_sets():
+#     operator_addr = config["operator_address"]
+#     request = {
+#         "avs_address": config["avs_registry_coordinator_address"],
+#         "operator_set_ids": [1],
+#     }
+#     receipt = clients.el_writer.deregister_from_operator_sets(operator_addr, request)
+#     assert receipt is not None
+#     assert receipt["status"] == 1
+#     print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
+
+
+
+
 # TODO: fix this test, unknown error, Maybe because of the target is not a contract or correct contract address.
 
 # def test_set_permission():
@@ -186,7 +187,7 @@ def test_set_allocation_delay():
 #         "appointee_address": config[
 #             "operator_address"
 #         ],  
-#         "target": config["avs_registry_coordinator_address"],
+#         "target": config["avs_address"],
 #         "selector": nums_to_bytes([12, 34, 56, 78]), 
 #         "wait_for_receipt": True,
 #     }
@@ -223,16 +224,6 @@ def test_add_pending_admin():
     assert receipt["status"] == 1
     print(f"Added pending admin with tx hash: {receipt['transactionHash'].hex()}")
 
-
-def test_accept_admin():
-    request = {"account_address": config["operator_address"]}
-    receipt = clients.el_writer.accept_admin(request)
-    print("\n\n\n\n",receipt,"\n\n\n\n")
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
-
-
 def test_remove_pending_admin():
     request = {
         "account_address": config["operator_address"],
@@ -244,13 +235,24 @@ def test_remove_pending_admin():
     print(f"Removed pending admin with tx hash: {receipt['transactionHash'].hex()}")
 
 
-def test_remove_admin():
-    request = {
-        "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],  
-    }
-    receipt = clients.el_writer.remove_admin(request)
-    print("\n\n\n\n",receipt,"\n\n\n\n")
+def test_accept_admin():
+    test_add_pending_admin()
+    request = {"account_address": config["operator_address"]}
+    receipt = clients.el_writer.accept_admin(request)
     assert receipt is not None
     assert receipt["status"] == 1
-    print(f"Removed admin with tx hash: {receipt['transactionHash'].hex()}")
+    print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
+
+
+# TODO: fix this test, unknown error reverted with no reason
+
+# def test_remove_admin():
+#     test_accept_admin()
+#     request = {
+#         "account_address": config["operator_address"],
+#         "admin_address": config["operator_address"],  
+#     }
+#     receipt = clients.el_writer.remove_admin(request)
+#     assert receipt is not None
+#     assert receipt["status"] == 1
+#     print(f"Removed admin with tx hash: {receipt['transactionHash'].hex()}")

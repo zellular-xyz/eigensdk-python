@@ -75,7 +75,7 @@ class BN254G2Point:
 
 
 def convert_bn254_geth_to_gnark(input_point: BN254G1Point) -> G1Point:
-    return G1Point(input_point[0], input_point[1])
+    return G1Point(input_point.X, input_point.Y)
 
 
 def convert_to_bn254_g1_point(input_point: G1Point) -> BN254G1Point:
@@ -234,7 +234,6 @@ def get_pubkey_registration_params(
     g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
     g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
 
-    # Create and return the pubkey registration params
     pubkey_reg_params = {
         "pubkeyRegistrationSignature": convert_to_bn254_g1_point(
             G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))

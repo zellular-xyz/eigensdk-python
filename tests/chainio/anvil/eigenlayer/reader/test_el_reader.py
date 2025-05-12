@@ -1,5 +1,6 @@
 from tests.builder import clients, config
 from web3 import Web3
+from eigensdk.chainio.utils import nums_to_bytes
 
 def test_get_allocatable_magnitude():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
@@ -28,7 +29,6 @@ def test_get_allocation_info():
         assert "CurrentMagnitude" in allocation
         assert "PendingDiff" in allocation
         assert "EffectBlock" in allocation
-        
     print(f"Allocation info: {result}")
 
 def test_get_operator_shares():
@@ -63,13 +63,12 @@ def test_get_registered_sets():
         assert isinstance(registered_set, dict)
         assert "Id" in registered_set
         assert "Avs" in registered_set
-        
     print(f"Registered sets: {result}")
 
 
 def test_is_operator_registered_with_avs():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.is_operator_registered_with_avs(operator_addr, avs_addr)
     assert isinstance(result, bool)
     print(f"Is operator registered with AVS: {result}")
@@ -120,7 +119,7 @@ def test_get_allocated_stake():
     print(f"Allocated stake: {result}")
 
 def test_get_operators_for_operator_set():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
     operator_set = {
         "id":1,
         "avs": avs_addr,
@@ -145,7 +144,7 @@ def test_get_num_operators_for_operator_set():
     print(f"Number of operators for operator set: {result}")
 
 def test_get_strategies_for_operator_set():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])    
     operator_set = {
         "id":1,
         "avs": avs_addr,
@@ -177,7 +176,7 @@ def test_get_staker_shares():
     print(f"Staker shares: strategies={strategies}, shares={shares}")
 
 def test_get_avs_registrar():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.get_avs_registrar(avs_addr)
     assert Web3.is_address(result)
     print(f"AVS registrar: {result}")
@@ -221,7 +220,7 @@ def test_calculate_delegation_approval_digest_hash():
     staker_addr = Web3.to_checksum_address(config["operator_address"])
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     delegation_approver = Web3.to_checksum_address("0x0000000000000000000000000000000000000000")
-    approver_salt = b"\x00" * 32
+    approver_salt = nums_to_bytes([0] * 32)
     expiry = 2**32 - 1
     result = clients.el_reader.calculate_delegation_approval_digest_hash(
         staker_addr, operator_addr, delegation_approver, approver_salt, expiry
@@ -243,14 +242,14 @@ def test_get_operators_shares():
 
 def test_get_delegation_approver_salt_is_spent():
     delegation_approver = Web3.to_checksum_address(config["operator_address"])
-    approver_salt = b"\x00" * 32
+    approver_salt = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_delegation_approver_salt_is_spent(delegation_approver, approver_salt)
     assert isinstance(result, bool)
     print(f"Delegation approver salt is spent: {result}")
 
 
 def test_get_pending_withdrawal_status():
-    withdrawal_root = b"\x00" * 32
+    withdrawal_root = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_pending_withdrawal_status(withdrawal_root)
     assert isinstance(result, bool)
     print(f"Pending withdrawal status: {result}")
@@ -266,7 +265,7 @@ def test_can_call():
     account_addr = Web3.to_checksum_address(config["operator_address"])
     appointee_addr = Web3.to_checksum_address(config["operator_address"])
     target_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    selector = b"\x12\x34\x56\x78"
+    selector = nums_to_bytes([12, 34, 56, 78])
     result = clients.el_reader.can_call(account_addr, appointee_addr, target_addr, selector)
     assert isinstance(result, bool)
     print(f"Can call: {result}")
@@ -274,15 +273,11 @@ def test_can_call():
 def test_list_appointees():
     account_addr = Web3.to_checksum_address(config["operator_address"])
     target_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    selector = b"\x12\x34\x56\x78"
-    
+    selector = nums_to_bytes([12, 34, 56, 78])
     result = clients.el_reader.list_appointees(account_addr, target_addr, selector)
-    
     assert isinstance(result, list)
     for appointee in result:
         assert Web3.is_address(appointee)
-    
     print(f"Appointees: {result}")
 
 def test_list_appointee_permissions():
@@ -298,92 +293,72 @@ def test_list_appointee_permissions():
 
 def test_list_pending_admins():
     account_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.list_pending_admins(account_addr)
-    
     assert isinstance(result, list)
     for admin in result:
         assert Web3.is_address(admin)
-    
     print(f"Pending admins: {result}")
 
 def test_list_admins():
     account_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.list_admins(account_addr)
-    
     assert isinstance(result, list)
     for admin in result:
         assert Web3.is_address(admin)
-    
     print(f"Admins: {result}")
 
 def test_is_pending_admin():
     account_addr = Web3.to_checksum_address(config["operator_address"])
     pending_admin_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.is_pending_admin(account_addr, pending_admin_addr)
-    
     assert isinstance(result, bool)
     print(f"Is pending admin: {result}")
 
 def test_is_admin():
     account_addr = Web3.to_checksum_address(config["operator_address"])
     admin_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.is_admin(account_addr, admin_addr)
-    
     assert isinstance(result, bool)
     print(f"Is admin: {result}")
 
 def test_get_distribution_roots_length():
     result = clients.el_reader.get_distribution_roots_length()
-    
     assert isinstance(result, int)
     print(f"Distribution roots length: {result}")
 
 def test_get_curr_rewards_calculation_end_timestamp():
     result = clients.el_reader.get_curr_rewards_calculation_end_timestamp()
-    
     assert isinstance(result, int)
     print(f"Current rewards calculation end timestamp: {result}")
 
 def test_get_current_claimable_distribution_root():
     result = clients.el_reader.get_current_claimable_distribution_root()
-    
     assert isinstance(result, dict)
     assert "root" in result
     assert "startBlock" in result
     assert "endBlock" in result
     assert "totalClaimable" in result
-    
     print(f"Current claimable distribution root: {result}")
 
 
 def test_get_cumulative_claimed():
     earner_addr = Web3.to_checksum_address(config["operator_address"])
     token_addr = Web3.to_checksum_address(config["strategy_addr"])
-    
     result = clients.el_reader.get_cumulative_claimed(earner_addr, token_addr)
-    
     assert isinstance(result, int)
     print(f"Cumulative claimed: {result}")
 
 
 def test_get_operator_avs_split():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.get_operator_avs_split(operator_addr, avs_addr)
-    
     assert isinstance(result, int)
     print(f"Operator AVS split: {result}")
 
 def test_get_operator_pi_split():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.get_operator_pi_split(operator_addr)
-    
     assert isinstance(result, int)
     print(f"Operator PI split: {result}")
 
@@ -400,133 +375,96 @@ def test_get_operator_set_split():
 
 def test_get_rewards_updater():
     result = clients.el_reader.get_rewards_updater()
-    
     assert Web3.is_address(result)
     print(f"Rewards updater: {result}")
 
 def test_get_default_operator_split_bips():
     result = clients.el_reader.get_default_operator_split_bips()
-    
     assert isinstance(result, int)
     print(f"Default operator split bips: {result}")
 
 def test_get_claimer_for():
     earner_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.get_claimer_for(earner_addr)
-    
     assert Web3.is_address(result)
     print(f"Claimer for {earner_addr}: {result}")
 
 def test_get_submission_nonce():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.get_submission_nonce(avs_addr)
-    
     assert isinstance(result, int)
     print(f"Submission nonce: {result}")
 
 def test_get_is_avs_rewards_submission_hash():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    hash_value = b"\x00" * 32
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    hash_value = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_is_avs_rewards_submission_hash(avs_addr, hash_value)
-    
     assert isinstance(result, bool)
     print(f"Is AVS rewards submission hash: {result}")
 
 def test_get_is_rewards_submission_for_all_hash():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    hash_value = b"\x00" * 32
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    hash_value = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_is_rewards_submission_for_all_hash(avs_addr, hash_value)
-    
     assert isinstance(result, bool)
     print(f"Is rewards submission for all hash: {result}")
 
 def test_get_is_rewards_for_all_submitter():
     submitter_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.get_is_rewards_for_all_submitter(submitter_addr)
-    
     assert isinstance(result, bool)
     print(f"Is rewards for all submitter: {result}")
 
 def test_get_is_rewards_submission_for_all_earners_hash():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    hash_value = b"\x00" * 32
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    hash_value = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_is_rewards_submission_for_all_earners_hash(avs_addr, hash_value)
-    
     assert isinstance(result, bool)
     print(f"Is rewards submission for all earners hash: {result}")
 
 def test_get_is_operator_directed_avs_rewards_submission_hash():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    hash_value = b"\x00" * 32
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    hash_value = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_is_operator_directed_avs_rewards_submission_hash(avs_addr, hash_value)
-    
     assert isinstance(result, bool)
     print(f"Is operator directed AVS rewards submission hash: {result}")
 
 def test_get_is_operator_directed_operator_set_rewards_submission_hash():
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    
-    hash_value = b"\x00" * 32
-    
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    hash_value = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_is_operator_directed_operator_set_rewards_submission_hash(avs_addr, hash_value)
-    
     assert isinstance(result, bool)
     print(f"Is operator directed operator set rewards submission hash: {result}")
 
 
 def test_get_strategy_and_underlying_token():
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-
     result = clients.el_reader.get_strategy_and_underlying_token(strategy_addr)
-    
     assert isinstance(result, tuple)
     assert len(result) == 2
-
     strategy_contract, token_addr = result
-    
     assert Web3.is_address(token_addr)
-
     print(f"Strategy and underlying token: contract={strategy_contract.address}, token_addr={token_addr}")
 
 
 def test_get_strategy_and_underlying_erc20_token():
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-
     result = clients.el_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
-
-    
     assert isinstance(result, tuple)
     assert len(result) == 3
-
     strategy_contract, token_contract, token_addr = result
-
-    
     assert Web3.is_address(token_addr)
-
-    print(f"Strategy and underlying ERC20 token: token_addr={token_addr}")
+    print(f"Strategy and underlying ERC20 token: token_addr={token_addr}, token_contract={token_contract.address}, strategy_contract={strategy_contract.address}")
 
 
 def test_calculate_operator_avs_registration_digest_hash():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    avs_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
-    salt = b"\x00" * 32  
+    avs_addr = Web3.to_checksum_address(config["avs_address"])
+    salt = nums_to_bytes([0] * 32)  
     expiry = 2**32 - 1  
-
     result = clients.el_reader.calculate_operator_avs_registration_digest_hash(
         operator_addr, avs_addr, salt, expiry
     )
-
     assert isinstance(result, bytes)
     assert len(result) == 32  
     print(f"Operator AVS registration digest hash: 0x{result.hex()}")
@@ -534,65 +472,53 @@ def test_calculate_operator_avs_registration_digest_hash():
 def test_get_encumbered_magnitude():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-    
     result = clients.el_reader.get_encumbered_magnitude(operator_addr, strategy_addr)
-    
     assert isinstance(result, int)
     print(f"Encumbered magnitude: {result}")
 
 def test_get_calculation_interval_seconds():
     result = clients.el_reader.get_calculation_interval_seconds()
-    
     assert isinstance(result, int)
     print(f"Calculation interval seconds: {result}")
 
 def test_get_max_rewards_duration():
     result = clients.el_reader.get_max_rewards_duration()
-    
     assert isinstance(result, int)
     print(f"Max rewards duration: {result}")
 
 def test_get_max_retroactive_length():
     result = clients.el_reader.get_max_retroactive_length()
-    
     assert isinstance(result, int)
     print(f"Max retroactive length: {result}")
 
 def test_get_max_future_length():
     result = clients.el_reader.get_max_future_length()
-    
     assert isinstance(result, int)
     print(f"Max future length: {result}")
 
 def test_get_genesis_rewards_timestamp():
     result = clients.el_reader.get_genesis_rewards_timestamp()
-    
     assert isinstance(result, int)
     print(f"Genesis rewards timestamp: {result}")
 
 def test_get_activation_delay():
     result = clients.el_reader.get_activation_delay()
-    
     assert isinstance(result, int)
     print(f"Activation delay: {result}")
 
 def test_get_deallocation_delay():
     result = clients.el_reader.get_deallocation_delay()
-    
     assert isinstance(result, int)
     print(f"Deallocation delay: {result}")
 
 def test_get_allocation_configuration_delay():
     result = clients.el_reader.get_allocation_configuration_delay()
-    
     assert isinstance(result, int)
     print(f"Allocation configuration delay: {result}")
 
 def test_get_num_operator_sets_for_operator():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    
     result = clients.el_reader.get_num_operator_sets_for_operator(operator_addr)
-    
     print(f"Number of operator sets for operator: {result}")
 
 def test_get_slashable_shares():
@@ -627,39 +553,26 @@ def test_get_slashable_shares_for_operator_sets():
             "avs": Web3.to_checksum_address(config["avs_registry_coordinator_address"])
         }]
     result = clients.el_reader.get_slashable_shares_for_operator_sets(operator_sets)
-    
     assert isinstance(result, list)
     for item in result:
         assert isinstance(item, dict)
-        
         assert "OperatorSet" in item
         assert "Strategies" in item
         assert "Operators" in item
         assert "SlashableStakes" in item
-        
-        
         operator_set = item["OperatorSet"]
         assert isinstance(operator_set, dict)
         assert "id" in operator_set
         assert "avs" in operator_set
         assert isinstance(operator_set["id"], int)
         assert Web3.is_address(operator_set["avs"])
-        
-        
         assert isinstance(item["Strategies"], list)
         assert isinstance(item["Operators"], list)
         assert isinstance(item["SlashableStakes"], list)
-        
-        
         for strategy in item["Strategies"]:
             assert Web3.is_address(strategy)
-            
-        
         for operator in item["Operators"]:
             assert Web3.is_address(operator)
-            
-        
         for stake in item["SlashableStakes"]:
             assert isinstance(stake, int)
-    
     print(f"Slashable shares for operator sets: {result}")

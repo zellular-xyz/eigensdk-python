@@ -80,26 +80,21 @@ class AvsRegistryWriter:
         quorum_numbers: List[int],
         socket: str,
     ) -> TxReceipt:
-        print(operator_ecdsa_private_key)
         operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
-        print(operator_addr)
         account = Account.from_key(operator_ecdsa_private_key)
-        print(account)
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
-        print(g1_hashed_msg_to_sign)
         g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
             convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
         )
-        print(signed_msg)
         pubkey_reg_params = (
             (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
             (
                 int(bls_key_pair.pub_g1.getX().getStr()),
                 int(bls_key_pair.pub_g1.getY().getStr()),
-            ),  # pubkeyG1 as tuple
+            ),
             (
                 (
                     int(bls_key_pair.pub_g2.getX().get_a().getStr()),
@@ -111,36 +106,29 @@ class AvsRegistryWriter:
                 ),
             ),
         )
-        print(pubkey_reg_params)
         signature_salt, sig_valid_for_seconds = (
             os.urandom(32),
             60 * 60,
         )
-        print(signature_salt)
         current_timestamp = self.web3.eth.get_block("latest")["timestamp"]
         signature_expiry = current_timestamp + sig_valid_for_seconds
 
         msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
-        print(msg_to_sign)
         operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-        print(operator_signature)
         operator_signature_with_salt_and_expiry = (
-            operator_signature,  # signature as bytes
-            signature_salt,  # salt as bytes32
-            signature_expiry,  # expiry as uint256
+            operator_signature,
+            signature_salt,
+            signature_expiry,
         )
-        print(operator_signature_with_salt_and_expiry)
         func = self.registry_coordinator.functions.registerOperator(
             utils.nums_to_bytes(quorum_numbers),
             socket,
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
         )
-        print(func)
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        print(receipt)
         return receipt
 
     def register_operator_in_quorum_with_avs_registry_coordinator(
@@ -155,15 +143,7 @@ class AvsRegistryWriter:
         account = Account.from_key(operator_ecdsa_private_key)
 
         operator_addr = account.address
-        self.logger.info(
-            "Registering operator with the AVS's registry coordinator",
-            extra={
-                "avs-service-manager": self.service_manager_addr,
-                "operator": operator_addr,
-                "quorumNumbers": quorum_numbers,
-                "socket": socket,
-            },
-        )
+
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
@@ -206,10 +186,6 @@ class AvsRegistryWriter:
             operator_to_avs_registration_sig_expiry,
         )
 
-        print(utils.nums_to_bytes(quorum_numbers), "\n\n")
-        print(socket, "\n\n")
-        print(pubkey_reg_params, "\n\n")
-        print(operator_signature_with_salt_and_expiry, "\n\n")
         func = self.registry_coordinator.functions.registerOperator(
             utils.nums_to_bytes(quorum_numbers),
             socket,
@@ -230,7 +206,7 @@ class AvsRegistryWriter:
 
         func = self.registry_coordinator.functions.updateOperatorsForQuorum(
             operators_per_quorum,
-            quorum_numbers,
+            utils.nums_to_bytes(quorum_numbers),
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
@@ -447,7 +423,7 @@ class AvsRegistryWriter:
 
         func = self.registry_coordinator.functions.ejectOperator(
             operator_address,
-            quorum_numbers,
+            utils.nums_to_bytes(quorum_numbers),
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)

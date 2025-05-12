@@ -9,7 +9,7 @@ from web3.types import TxParams
 from web3._utils.events import get_event_data
 from eth_utils import event_abi_to_log_topic
 from eigensdk.chainio import utils
-
+from eigensdk.chainio.utils import nums_to_bytes
 from eigensdk._types import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
@@ -140,18 +140,12 @@ class AvsRegistryReader:
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self,  operator_id: int
     ) -> Optional[Dict[int, int]]:
-        opts = {}
-
-        if "block_hash" not in opts: 
-            opts["block_identifier"] = self.eth_http_client.eth.block_number
-
-        tx_params = cast(TxParams, opts) 
 
         quorums = bitmap_to_quorum_ids(
-            self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call(tx_params)
+            self.registry_coordinator.functions.getCurrentQuorumBitmap(nums_to_bytes([operator_id])).call()
         )
         return {
-            q: self.stake_registry.functions.getCurrentStake(operator_id, q).call(tx_params)
+            q: self.stake_registry.functions.getCurrentStake(nums_to_bytes([operator_id]), q).call()
             for q in quorums
         }
 
@@ -175,7 +169,7 @@ class AvsRegistryReader:
     def get_stake_history_length(
         self,  operator_id: int, quorum_number: int
     ) -> Optional[int]:
-        return self.stake_registry.functions.getStakeHistoryLength(operator_id, quorum_number).call()
+        return self.stake_registry.functions.getStakeHistoryLength(nums_to_bytes([operator_id]), quorum_number).call()
 
     def get_stake_history(
         self,  operator_id: int, quorum_number: int
@@ -274,12 +268,12 @@ class AvsRegistryReader:
     def get_minimum_stake_for_quorum(
         self,  quorum_number: int
     ) -> Optional[int]:
-        return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call(call_options)
+        return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call()
 
     def get_strategy_params_at_index(
         self,  quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
-        return self.stake_registry.functions.strategyParams(quorum_number, index).call(call_options)
+        return self.stake_registry.functions.strategyParams(quorum_number, index).call()
 
     def get_strategy_per_quorum_at_index(
         self,  quorum_number: int, index: int
@@ -301,7 +295,7 @@ class AvsRegistryReader:
     def get_stake_type_per_quorum(
         self,  quorum_number: int
     ) -> Optional[int]:
-        return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call(call_options)
+        return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call()
 
     def get_slashable_stake_look_ahead_per_quorum(
         self,  quorum_number: int
@@ -315,7 +309,7 @@ class AvsRegistryReader:
     def get_operator_from_id(
         self,  operator_id: int
     ) -> Optional[str]:
-        return self.registry_coordinator.functions.getOperatorFromId(operator_id).call(call_options)
+        return self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
 
     def query_registration_detail(
         self,  operator_address: Address
