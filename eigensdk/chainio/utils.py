@@ -43,8 +43,10 @@ def send_transaction(
         try:
             gas_estimate = func.estimate_gas({"from": pk_wallet.address})
         except Exception as e:
-            raise Exception(f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit.")
-    
+            raise Exception(
+                f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit."
+            )
+
     current_gas_price = eth_http_client.eth.gas_price
 
     tx = func.build_transaction(

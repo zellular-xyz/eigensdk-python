@@ -11,6 +11,7 @@ from eth_account.signers.local import LocalAccount
 from eth_account import Account
 from web3.contract import Contract
 
+
 class BuildAllConfig:
     def __init__(
         self,
@@ -25,18 +26,29 @@ class BuildAllConfig:
         delegation_manager_addr: Address,
         avs_name: str,
         prom_metrics_ip_port_address: str,
-        
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
-        self.registry_coordinator_addr: Address = Web3.to_checksum_address(registry_coordinator_addr.lower())
-        self.operator_state_retriever_addr: Address = Web3.to_checksum_address(operator_state_retriever_addr.lower())
-        self.rewards_coordinator_addr: Address = Web3.to_checksum_address(rewards_coordinator_addr.lower())
-        self.permission_controller_addr: Address = Web3.to_checksum_address(permission_controller_addr.lower())
+        self.registry_coordinator_addr: Address = Web3.to_checksum_address(
+            registry_coordinator_addr.lower()
+        )
+        self.operator_state_retriever_addr: Address = Web3.to_checksum_address(
+            operator_state_retriever_addr.lower()
+        )
+        self.rewards_coordinator_addr: Address = Web3.to_checksum_address(
+            rewards_coordinator_addr.lower()
+        )
+        self.permission_controller_addr: Address = Web3.to_checksum_address(
+            permission_controller_addr.lower()
+        )
         self.service_manager_addr: Address = Web3.to_checksum_address(service_manager_addr.lower())
-        self.allocation_manager_addr: Address = Web3.to_checksum_address(allocation_manager_addr.lower())
+        self.allocation_manager_addr: Address = Web3.to_checksum_address(
+            allocation_manager_addr.lower()
+        )
         self.instant_slasher_addr: Address = Web3.to_checksum_address(instant_slasher_addr.lower())
-        self.delegation_manager_addr: Address = Web3.to_checksum_address(delegation_manager_addr.lower())
+        self.delegation_manager_addr: Address = Web3.to_checksum_address(
+            delegation_manager_addr.lower()
+        )
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)
@@ -149,9 +161,9 @@ class BuildAllConfig:
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
 
-        print("bls_apk_registry_addr",bls_apk_registry_addr)
-        print("stake_registry_addr",stake_registry_addr)
-        print("self.registry_coordinator_addr",self.registry_coordinator_addr)
+        print("bls_apk_registry_addr", bls_apk_registry_addr)
+        print("stake_registry_addr", stake_registry_addr)
+        print("self.registry_coordinator_addr", self.registry_coordinator_addr)
         avs_reader_instance = avs_reader.AvsRegistryReader(
             registry_coordinator=registry_coordinator_instance,
             registry_coordinator_addr=self.registry_coordinator_addr,
@@ -205,17 +217,12 @@ def build_all(
     config_ecdsa_private_key: str,
 ) -> Clients:
     eth_http_client = Web3(Web3.HTTPProvider(config.eth_http_url))
-    pk_wallet: LocalAccount = (
-        Account.from_key(config_ecdsa_private_key)
-    )
+    pk_wallet: LocalAccount = Account.from_key(config_ecdsa_private_key)
 
-    el_reader, el_writer = config.build_el_clients(
-        ecdsa_private_key=config_ecdsa_private_key
-    )
+    el_reader, el_writer = config.build_el_clients(ecdsa_private_key=config_ecdsa_private_key)
 
     avs_reader, avs_writer = config.build_avs_registry_clients(
-        ecdsa_private_key=config_ecdsa_private_key,
-        el_chain_reader=el_reader
+        ecdsa_private_key=config_ecdsa_private_key, el_chain_reader=el_reader
     )
 
     return Clients(

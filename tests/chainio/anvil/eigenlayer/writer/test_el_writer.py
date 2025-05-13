@@ -3,12 +3,13 @@ from web3 import Web3
 from eigensdk._types import Operator
 from eigensdk.chainio.utils import nums_to_bytes
 
+
 def test_register_as_operator():
     operator = Operator(
         address=Web3.to_checksum_address(config["operator_address"]),
         earnings_receiver_address=Web3.to_checksum_address(config["operator_address"]),
-        delegation_approver_address="0x0000000000000000000000000000000000000000",  
-        allocation_delay=100,  
+        delegation_approver_address="0x0000000000000000000000000000000000000000",
+        allocation_delay=100,
         metadata_url="https://example.com/operator-metadata",
         staker_opt_out_window_blocks=100,
     )
@@ -43,6 +44,7 @@ def test_set_claimer_for():
     assert receipt["status"] == 1
     print(f"Set claimer with tx hash: {receipt['transactionHash'].hex()}")
 
+
 # TODO: fix this test, unknown error
 # def test_process_claim():
 #     recipient_addr = Web3.to_checksum_address(config["operator_address"])
@@ -50,13 +52,13 @@ def test_set_claimer_for():
 #     claim = {
 #         "rootIndex": 0,
 #         "earnerIndex": 0,
-#         "earnerTreeProof": nums_to_bytes([0] * 32),  
+#         "earnerTreeProof": nums_to_bytes([0] * 32),
 #         "earnerLeaf": {
 #             "earner": recipient_addr,
-#             "earnerTokenRoot": nums_to_bytes([0] * 32),  
+#             "earnerTokenRoot": nums_to_bytes([0] * 32),
 #         },
 #         "tokenIndices": [0],
-#         "tokenTreeProofs": [nums_to_bytes([0] * 32)],  
+#         "tokenTreeProofs": [nums_to_bytes([0] * 32)],
 #         "tokenLeaves": [
 #             {
 #                 "token": token_addr,
@@ -177,8 +179,6 @@ def test_set_allocation_delay():
 #     print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
 
-
-
 # TODO: fix this test, unknown error, Maybe because of the target is not a contract or correct contract address.
 
 # def test_set_permission():
@@ -186,9 +186,9 @@ def test_set_allocation_delay():
 #         "account_address": config["operator_address"],
 #         "appointee_address": config[
 #             "operator_address"
-#         ],  
+#         ],
 #         "target": config["avs_address"],
-#         "selector": nums_to_bytes([12, 34, 56, 78]), 
+#         "selector": nums_to_bytes([12, 34, 56, 78]),
 #         "wait_for_receipt": True,
 #     }
 #     receipt = clients.el_writer.set_permission(request)
@@ -204,9 +204,9 @@ def test_set_allocation_delay():
 #         "account_address": config["operator_address"],
 #         "appointee_address": config[
 #             "operator_address"
-#         ],  
+#         ],
 #         "target": config["avs_registry_coordinator_address"],
-#         "selector": b"\x12\x34\x56\x78",  
+#         "selector": b"\x12\x34\x56\x78",
 #     }
 #     receipt = clients.el_writer.remove_permission(request)
 #     assert receipt is not None
@@ -217,12 +217,13 @@ def test_set_allocation_delay():
 def test_add_pending_admin():
     request = {
         "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],  
+        "admin_address": config["operator_address"],
     }
     receipt = clients.el_writer.add_pending_admin(request)
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Added pending admin with tx hash: {receipt['transactionHash'].hex()}")
+
 
 def test_remove_pending_admin():
     request = {
@@ -250,7 +251,7 @@ def test_accept_admin():
 #     test_accept_admin()
 #     request = {
 #         "account_address": config["operator_address"],
-#         "admin_address": config["operator_address"],  
+#         "admin_address": config["operator_address"],
 #     }
 #     receipt = clients.el_writer.remove_admin(request)
 #     assert receipt is not None

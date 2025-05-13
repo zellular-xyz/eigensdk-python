@@ -10,9 +10,12 @@ from eth_account.signers.local import LocalAccount
 from ...utils import send_transaction
 from typing import Optional
 from web3.types import TxReceipt
+
+
 class RegistrationType(IntEnum):
     NORMAL = 0
     TRUSTED = 1
+
 
 class ELWriter:
     def __init__(
@@ -221,7 +224,9 @@ class ELWriter:
 
         return receipt
 
-    def register_for_operator_sets(self, registry_coordinator_addr: str, request: dict) -> TxReceipt:
+    def register_for_operator_sets(
+        self, registry_coordinator_addr: str, request: dict
+    ) -> TxReceipt:
 
         func = self.allocation_manager.functions.registerForOperatorSets(
             Web3.to_checksum_address(request["operator_address"]),
@@ -268,7 +273,7 @@ class ELWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-    
+
     def accept_admin(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.acceptAdmin(

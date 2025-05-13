@@ -12,8 +12,6 @@ with open(config_path, "r") as f:
     config = yaml.load(f, Loader=yaml.BaseLoader)
 
 
-
-
 cfg = BuildAllConfig(
     eth_http_url=config["eth_rpc_url"],
     avs_name="incredible-squaring",

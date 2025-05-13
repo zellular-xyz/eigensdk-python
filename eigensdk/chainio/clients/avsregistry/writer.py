@@ -136,7 +136,7 @@ class AvsRegistryWriter:
         operator_ecdsa_private_key: str,
         operator_to_avs_registration_sig_salt: bytes,
         operator_to_avs_registration_sig_expiry: int,
-        bls_key_pair: KeyPair,  
+        bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
     ) -> TxReceipt:
@@ -194,7 +194,6 @@ class AvsRegistryWriter:
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
 
         return receipt
 
@@ -310,9 +309,7 @@ class AvsRegistryWriter:
 
         return receipt
 
-    def update_stakes_of_operator_subset_for_all_quorums(
-        self, operators: List[str]
-    ) -> TxReceipt:
+    def update_stakes_of_operator_subset_for_all_quorums(self, operators: List[str]) -> TxReceipt:
 
         func = self.registry_coordinator.functions.updateOperators(operators)
 

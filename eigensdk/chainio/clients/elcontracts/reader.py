@@ -319,13 +319,17 @@ class ELReader:
         token_tree_proofs = claim.get("tokenTreeProofs", [])
         token_leaves = claim.get("tokenLeaves", [])
         if not (len(token_indices) == len(token_tree_proofs) == len(token_leaves)):
-            raise ValueError("tokenIndices, tokenTreeProofs, and tokenLeaves must have the same length")
+            raise ValueError(
+                "tokenIndices, tokenTreeProofs, and tokenLeaves must have the same length"
+            )
         root_index = claim.get("rootIndex", 0)
         distribution_roots_length = self.get_distribution_roots_length()
         if distribution_roots_length == 0:
             raise ValueError("No distribution roots exist in the contract yet")
         if root_index < 0 or root_index >= distribution_roots_length:
-            raise ValueError(f"rootIndex {root_index} is out of bounds. Must be between 0 and {distribution_roots_length - 1}")
+            raise ValueError(
+                f"rootIndex {root_index} is out of bounds. Must be between 0 and {distribution_roots_length - 1}"
+            )
         earner_leaf = claim.get("earnerLeaf", {})
         if not earner_leaf.get("earner") or not Web3.is_address(earner_leaf.get("earner")):
             raise ValueError("Invalid earner address in earnerLeaf")
@@ -341,7 +345,7 @@ class ELReader:
                 raise ValueError(f"Invalid token address in tokenLeaves[{i}]")
             if not isinstance(leaf.get("cumulativeEarnings"), int):
                 raise ValueError(f"cumulativeEarnings must be an integer in tokenLeaves[{i}]")
-            
+
             token_leaves_tuples.append(
                 (
                     Web3.to_checksum_address(leaf.get("token")),

@@ -247,8 +247,8 @@ class BlsAggregationService(BlsAggregationServiceInterface):
                 task_response_digest
             ]
 
-            digest_aggregated_operators.signers_agg_sig_g1 = (
-                Signature.from_g1_point(digest_aggregated_operators.signers_agg_sig_g1 + bls_sign)
+            digest_aggregated_operators.signers_agg_sig_g1 = Signature.from_g1_point(
+                digest_aggregated_operators.signers_agg_sig_g1 + bls_sign
             )
             digest_aggregated_operators.signers_apk_g2 = (
                 digest_aggregated_operators.signers_apk_g2
