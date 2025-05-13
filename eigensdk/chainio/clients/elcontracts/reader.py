@@ -329,7 +329,8 @@ class ELReader:
             raise ValueError("No distribution roots exist in the contract yet")
         if root_index < 0 or root_index >= distribution_roots_length:
             raise ValueError(
-                f"rootIndex {root_index} is out of bounds. Must be between 0 and {distribution_roots_length - 1}"
+                f"""rootIndex {root_index} is out of bounds. Must be
+                between 0 and {distribution_roots_length - 1}"""
             )
         earner_leaf = claim.get("earnerLeaf", {})
         if not earner_leaf.get("earner") or not Web3.is_address(earner_leaf.get("earner")):

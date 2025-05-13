@@ -8,8 +8,6 @@ from eth_utils import event_abi_to_log_topic
 from web3 import Web3
 from web3._utils.events import get_event_data
 from web3.contract.contract import Contract
-from web3.types import TxParams
-
 from eigensdk._types import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
@@ -123,7 +121,7 @@ class AvsRegistryReader:
         return [[op[0] for op in quorum] for quorum in stakes]
 
     def get_operators_stake_in_quorums_of_operator_at_block(
-        self, operator_id: int, block_number: int
+        self, operator_id: List[int], block_number: int
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
         bitmap, stakes = self.operator_state_retriever.functions.getOperatorState(
             self.registry_coordinator_addr, utils.nums_to_bytes(operator_id), block_number
@@ -131,22 +129,22 @@ class AvsRegistryReader:
         return bitmap_to_quorum_ids(bitmap), stakes
 
     def get_operators_stake_in_quorums_of_operator_at_current_block(
-        self, operator_id: int
+        self, operator_id: List[int]
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
         block_number = self.eth_http_client.eth.block_number
-        return self.get_operators_stake_in_quorums_of_operator_at_block(operator_id, block_number)
+        return self.get_operators_stake_in_quorums_of_operator_at_block(
+            operator_id, block_number)
 
     def get_operator_stake_in_quorums_of_operator_at_current_block(
-        self, operator_id: int
+        self, operator_id: List[int]
     ) -> Optional[Dict[int, int]]:
-
         quorums = bitmap_to_quorum_ids(
             self.registry_coordinator.functions.getCurrentQuorumBitmap(
-                nums_to_bytes([operator_id])
+                nums_to_bytes(operator_id)
             ).call()
         )
         return {
-            q: self.stake_registry.functions.getCurrentStake(nums_to_bytes([operator_id]), q).call()
+            q: self.stake_registry.functions.getCurrentStake(nums_to_bytes(operator_id), q).call()
             for q in quorums
         }
 
@@ -235,7 +233,7 @@ class AvsRegistryReader:
         ).call()
 
     def get_current_total_stake(self, quorum_number: int) -> Optional[int]:
-        return self.stake_registry.functions.getCurrentTotalStake(quorum_number).call(call_options)
+        return self.stake_registry.functions.getCurrentTotalStake(quorum_number).call()
 
     def get_total_stake_update_at_index(
         self, quorum_number: int, index: int
@@ -267,9 +265,9 @@ class AvsRegistryReader:
     def get_strategy_per_quorum_at_index(self, quorum_number: int, index: int) -> Optional[str]:
         return self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call()
 
-    def get_restakeable_strategies(self, call_options: Optional[TxParams]) -> List[str]:
+    def get_restakeable_strategies(self) -> List[str]:
         return remove_duplicate_strategies(
-            self.service_manager.functions.getRestakeableStrategies().call(call_options)
+            self.service_manager.functions.getRestakeableStrategies().call()
         )
 
     def get_operator_restaked_strategies(self, operator: str) -> List[str]:

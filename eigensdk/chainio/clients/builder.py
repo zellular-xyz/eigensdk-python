@@ -1,12 +1,9 @@
 import logging
 from typing import Any, Optional, Tuple
-
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from web3 import Web3
-from web3.contract import Contract
-
 from eigensdk.chainio.clients.avsregistry import reader as avs_reader
 from eigensdk.chainio.clients.avsregistry import writer as avs_writer
 from eigensdk.chainio.clients.elcontracts import reader as el_reader
@@ -31,24 +28,24 @@ class BuildAllConfig:
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
-        self.registry_coordinator_addr: Address = Web3.to_checksum_address(
+        self.registry_coordinator_addr = Web3.to_checksum_address(
             registry_coordinator_addr.lower()
         )
-        self.operator_state_retriever_addr: Address = Web3.to_checksum_address(
+        self.operator_state_retriever_addr = Web3.to_checksum_address(
             operator_state_retriever_addr.lower()
         )
-        self.rewards_coordinator_addr: Address = Web3.to_checksum_address(
+        self.rewards_coordinator_addr = Web3.to_checksum_address(
             rewards_coordinator_addr.lower()
         )
-        self.permission_controller_addr: Address = Web3.to_checksum_address(
+        self.permission_controller_addr = Web3.to_checksum_address(
             permission_controller_addr.lower()
         )
-        self.service_manager_addr: Address = Web3.to_checksum_address(service_manager_addr.lower())
-        self.allocation_manager_addr: Address = Web3.to_checksum_address(
+        self.service_manager_addr = Web3.to_checksum_address(service_manager_addr.lower())
+        self.allocation_manager_addr = Web3.to_checksum_address(
             allocation_manager_addr.lower()
         )
-        self.instant_slasher_addr: Address = Web3.to_checksum_address(instant_slasher_addr.lower())
-        self.delegation_manager_addr: Address = Web3.to_checksum_address(
+        self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr.lower())
+        self.delegation_manager_addr = Web3.to_checksum_address(
             delegation_manager_addr.lower()
         )
         self.avs_name: str = avs_name
@@ -168,7 +165,7 @@ class BuildAllConfig:
         print("self.registry_coordinator_addr", self.registry_coordinator_addr)
         avs_reader_instance = avs_reader.AvsRegistryReader(
             registry_coordinator=registry_coordinator_instance,
-            registry_coordinator_addr=self.registry_coordinator_addr,
+            registry_coordinator_addr=Address(bytes.fromhex(self.registry_coordinator_addr[2:])),
             bls_apk_registry=bls_apk_registry_instance,
             bls_apk_registry_addr=bls_apk_registry_addr,
             operator_state_retriever=operator_state_retriever_instance,
@@ -182,7 +179,7 @@ class BuildAllConfig:
             registry_coordinator=registry_coordinator_instance,
             operator_state_retriever=operator_state_retriever_instance,
             service_manager=service_manager_instance,
-            service_manager_addr=self.service_manager_addr,
+            service_manager_addr=Address(bytes.fromhex(self.service_manager_addr[2:])),
             stake_registry=stake_registry_instance,
             bls_apk_registry=bls_apk_registry_instance,
             el_reader=el_chain_reader,

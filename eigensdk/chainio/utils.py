@@ -1,14 +1,11 @@
 from typing import List
 from typing import Tuple, Dict, Any
-
 from eth_abi import encode
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.contract.contract import ContractFunction
 from web3.types import Address
-# from web3.middleware.geth_poa import geth_poa_middleware
 from web3.types import TxReceipt
-
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
 
 
@@ -38,7 +35,8 @@ def send_transaction(
             gas_estimate = func.estimate_gas({"from": pk_wallet.address})
         except Exception as e:
             raise Exception(
-                f"Gas estimation failed: {e}. Consider using skip_estimation=True with a manual gas_limit."
+                f"""Gas estimation failed: {e}. Consider using
+                skip_estimation=True with a manual gas_limit."""
             )
 
     current_gas_price = eth_http_client.eth.gas_price
