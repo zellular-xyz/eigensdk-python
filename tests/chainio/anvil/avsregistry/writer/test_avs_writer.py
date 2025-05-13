@@ -1,13 +1,11 @@
-from tests.builder import clients, config
+import ecdsa
+import pytest
+from eth_account import Account
+from eth_keys import keys
 from eth_typing import Address
 from web3 import Web3
-import pytest
-from eigensdk._types import Operator
-import ecdsa
-from eigensdk.crypto.bls.attestation import KeyPair, G1Point, G2Point
-import os
-from eth_keys import keys
-from eth_account import Account
+
+from tests.builder import clients, config
 
 
 # TODO: Connection reverted error

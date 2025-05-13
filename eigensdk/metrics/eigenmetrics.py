@@ -1,4 +1,5 @@
 import logging
+
 import uvicorn
 from fastapi import FastAPI
 from prometheus_client import Counter, Gauge, make_asgi_app, REGISTRY

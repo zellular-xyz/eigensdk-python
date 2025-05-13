@@ -1,15 +1,16 @@
 import logging
 from enum import IntEnum
-from eth_typing import Address
 from typing import List, Any, Dict, cast
+
+from eth_account.signers.local import LocalAccount
+from eth_typing import Address
 from web3 import Web3
 from web3.contract import Contract
+from web3.types import TxReceipt
+
 from eigensdk._types import Operator
 from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
-from eth_account.signers.local import LocalAccount
 from ...utils import send_transaction
-from typing import Optional
-from web3.types import TxReceipt
 
 
 class RegistrationType(IntEnum):

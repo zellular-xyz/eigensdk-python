@@ -1,8 +1,9 @@
-import pytest
-from web3 import Web3
-from eth_account import Account
-from web3.contract.contract import ContractFunction
 from unittest.mock import MagicMock, patch
+
+import pytest
+from eth_account import Account
+from web3 import Web3
+from web3.contract.contract import ContractFunction
 
 from eigensdk.chainio.utils import (
     nums_to_bytes,
@@ -11,14 +12,8 @@ from eigensdk.chainio.utils import (
     remove_duplicate_strategies,
     convert_bn254_geth_to_gnark,
     convert_to_bn254_g1_point,
-    convert_to_bn254_g2_point,
-    BN254G1Point,
-    BN254G2Point,
-    get_pubkey_registration_params,
-    abi_encode_registration_params,
-    abi_encode_operator_avs_registration_params,
 )
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
+from eigensdk.crypto.bls.attestation import G1Point
 
 
 class TestUtils:

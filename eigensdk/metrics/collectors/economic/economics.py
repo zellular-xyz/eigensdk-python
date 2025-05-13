@@ -1,4 +1,5 @@
 from logging import Logger
+
 from prometheus_client import registry
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 

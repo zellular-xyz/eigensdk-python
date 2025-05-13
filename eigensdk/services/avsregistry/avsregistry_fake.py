@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+from eigensdk.crypto.bls.attestation import KeyPair, G1Point
 from .avsregistry import AvsRegistryService as ARSInterface
 from .avsregistry import (
     OperatorAvsState,
@@ -7,10 +10,6 @@ from .avsregistry import (
     CallOpts,
     OperatorStateRetrieverCheckSignaturesIndices,
 )
-
-from dataclasses import dataclass
-from eigensdk.crypto.bls.attestation import KeyPair, G1Point, G2Point
-from eigensdk.crypto import bls
 
 
 @dataclass

@@ -8,13 +8,12 @@ Usage:
     python deploy_contracts.py
 """
 
-import os
 import json
+import os
 import subprocess
-import time
-from web3 import Web3
+
 from eth_account import Account
-from pathlib import Path
+from web3 import Web3
 
 # Connect to Anvil
 ANVIL_URL = "http://localhost:8545"

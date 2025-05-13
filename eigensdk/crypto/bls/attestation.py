@@ -1,5 +1,6 @@
 import json
 import os
+
 from eth_account import Account
 from mcl import G1, G2, GT, Fr, Fp
 

@@ -1,16 +1,11 @@
-import pytest
-import os
-import json
-from web3 import Web3
-from eth_account import Account
 import logging
-from typing import Dict, Any
+import os
+
+import pytest
+from eth_account import Account
+from web3 import Web3
 
 from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
-from eigensdk.chainio.clients.avsregistry.reader import AvsRegistryReader
-from eigensdk.chainio.clients.avsregistry.writer import AvsRegistryWriter
-from eigensdk.chainio.clients.elcontracts.reader import ELReader
-from eigensdk.chainio.clients.elcontracts.writer import ELWriter
 
 
 class TestWithAnvil:

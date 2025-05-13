@@ -1,7 +1,8 @@
-import yaml
-import json
 import os
+
+import yaml
 from eth_account import Account
+
 from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
 
 # Get the directory where builder.py is located

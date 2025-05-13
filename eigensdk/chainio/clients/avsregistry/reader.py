@@ -1,29 +1,29 @@
 import logging
 import math
-from eth_typing import Address
 from typing import Dict, List, Optional, Tuple
-from typing import cast
+
+from eth_account.signers.local import LocalAccount
+from eth_typing import Address
+from eth_utils import event_abi_to_log_topic
 from web3 import Web3
+from web3._utils.events import get_event_data
 from web3.contract.contract import Contract
 from web3.types import TxParams
-from web3._utils.events import get_event_data
-from eth_utils import event_abi_to_log_topic
-from eigensdk.chainio import utils
-from eigensdk.chainio.utils import nums_to_bytes
+
 from eigensdk._types import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
 )
-
 from eigensdk._types import (
     StakeRegistryTypesStrategyParams,
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
 )
+from eigensdk.chainio import utils
 from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
+from eigensdk.chainio.utils import nums_to_bytes
 from eigensdk.crypto.bls.attestation import G1Point, G2Point
-from eth_account.signers.local import LocalAccount
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 

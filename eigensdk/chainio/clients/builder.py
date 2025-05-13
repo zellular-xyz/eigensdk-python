@@ -1,15 +1,17 @@
 import logging
+from typing import Any, Optional, Tuple
+
+from eth_account import Account
+from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from web3 import Web3
-from typing import Any, Optional, Tuple
+from web3.contract import Contract
+
 from eigensdk.chainio.clients.avsregistry import reader as avs_reader
 from eigensdk.chainio.clients.avsregistry import writer as avs_writer
 from eigensdk.chainio.clients.elcontracts import reader as el_reader
 from eigensdk.chainio.clients.elcontracts import writer as el_writer
 from eigensdk.contracts import ABIs
-from eth_account.signers.local import LocalAccount
-from eth_account import Account
-from web3.contract import Contract
 
 
 class BuildAllConfig:

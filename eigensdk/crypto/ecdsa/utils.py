@@ -3,6 +3,7 @@ import binascii
 import json
 import os
 import uuid
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from ecdsa import SigningKey, SECP256k1
 from eth_utils import to_checksum_address, keccak

@@ -1,6 +1,7 @@
-from tests.builder import clients, config
 from web3 import Web3
+
 from eigensdk.chainio.utils import nums_to_bytes
+from tests.builder import clients, config
 
 
 def test_get_allocatable_magnitude():

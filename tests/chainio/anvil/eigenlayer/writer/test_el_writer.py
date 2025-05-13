@@ -1,7 +1,7 @@
-from tests.builder import clients, config
 from web3 import Web3
+
 from eigensdk._types import Operator
-from eigensdk.chainio.utils import nums_to_bytes
+from tests.builder import clients, config
 
 
 def test_register_as_operator():

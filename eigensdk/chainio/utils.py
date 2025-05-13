@@ -1,21 +1,15 @@
-from eth_abi import encode
-
 from typing import List
 from typing import Tuple, Dict, Any
 
-
-from web3.types import Address
-
-
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
-
-
+from eth_abi import encode
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.contract.contract import ContractFunction
-
+from web3.types import Address
 # from web3.middleware.geth_poa import geth_poa_middleware
 from web3.types import TxReceipt
+
+from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
 
 
 def nums_to_bytes(nums: List[int]) -> bytes:

@@ -1,18 +1,16 @@
 import asyncio
 import unittest
+
+from Crypto.Hash import keccak
+
 from eigensdk.crypto.bls.attestation import (
     KeyPair,
-    Signature,
-    new_g1_point,
-    new_zero_g1_point,
 )
-from .blsagg import BlsAggregationService, BlsAggregationServiceResponse
 from eigensdk.services.avsregistry.avsregistry_fake import (
     FakeAvsRegistryService,
     TestOperator,
 )
-from Crypto.Hash import keccak
-import json
+from .blsagg import BlsAggregationService, BlsAggregationServiceResponse
 
 
 def hash_function(input_str: str):

@@ -1,11 +1,12 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
-import eigensdk.crypto.bls.attestation as bls
-from eigensdk.services.avsregistry.avsregistry import AvsRegistryService
-from eigensdk._types import OperatorAvsState, QuorumAvsState, SignedTaskResponseDigest
 import json
 import queue
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
+import eigensdk.crypto.bls.attestation as bls
+from eigensdk._types import OperatorAvsState, QuorumAvsState, SignedTaskResponseDigest
+from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
+from eigensdk.services.avsregistry.avsregistry import AvsRegistryService
 
 
 def is_json_serializable(obj):

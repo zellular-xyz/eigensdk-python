@@ -1,10 +1,16 @@
-import ecdsa
 import logging
 import os
-from eth_typing import Address
 from typing import List, Optional, Dict, Any
+
+import ecdsa
+from eth_account import Account
+from eth_account.signers.local import LocalAccount
+from eth_typing import Address
 from web3 import Web3
 from web3.contract.contract import Contract
+from web3.types import TxReceipt
+
+from eigensdk.chainio import utils
 from eigensdk.chainio.utils import (
     BN254G1Point,
     convert_to_bn254_g2_point,
@@ -14,10 +20,6 @@ from eigensdk.chainio.utils import (
 from eigensdk.crypto.bls.attestation import G1Point, KeyPair
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
-from eigensdk.chainio import utils
-from eth_account import Account
-from eth_account.signers.local import LocalAccount
-from web3.types import TxReceipt
 
 
 class AvsRegistryWriter:

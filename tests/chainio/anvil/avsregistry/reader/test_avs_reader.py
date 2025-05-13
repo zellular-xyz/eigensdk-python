@@ -1,11 +1,9 @@
-from tests.builder import clients, config
+import pytest
 from eth_typing import Address
 from web3 import Web3
-import pytest
-from eigensdk._types import Operator
-from eigensdk.crypto.bls.attestation import KeyPair, G1Point, G2Point
-import os
-import time
+
+from eigensdk.crypto.bls.attestation import G1Point, G2Point
+from tests.builder import clients, config
 
 
 def test_get_quorum_count():
