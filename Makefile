@@ -1,5 +1,7 @@
 .PHONY: $(MAKECMDGOALS)
 
+DOCKER_DEV = docker compose run dev
+
 build:
 	COMPOSE_BAKE=true docker compose build
 
@@ -39,13 +41,13 @@ test:
 
 # Format code with black
 format:
-	docker compose run dev black .
+	$(DOCKER_DEV) black .
 
 mypy:
-	docker compose run dev mypy --ignore-missing-imports eigensdk/chainio/
+	$(DOCKER_DEV) mypy --ignore-missing-imports eigensdk/chainio/
 
 lint:
-	docker compose run dev flake8 eigensdk/chainio/
+	$(DOCKER_DEV) flake8 eigensdk/chainio/
 
 precommit: format mypy lint
 commit-all-no-verify:
