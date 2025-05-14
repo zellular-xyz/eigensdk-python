@@ -32,7 +32,7 @@ create-env:
 	docker compose run test scripts/create_env.py
 
 # Run tests against the running Anvil instance
-test: create-env
+test: 
 	docker compose run --rm test python -m pytest tests/ -v
 
 # ********** dev targets **********

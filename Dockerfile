@@ -35,12 +35,12 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
     && /root/.foundry/bin/foundryup
 ENV PATH="/root/.foundry/bin:${PATH}"
 
-# Clone and build eigenlayer-contracts
-RUN git clone https://github.com/Layr-Labs/eigenlayer-contracts.git \
-    && cd eigenlayer-contracts \
-    && git checkout 2e53e2f7662d8d9a43b2ca0cca22ecd068604226 \
-    && forge build
-
+RUN git clone https://github.com/Layr-Labs/incredible-squaring-avs.git \
+    && cd incredible-squaring-avs \
+    && git submodule update --init --recursive \
+    && git clone https://github.com/dapphub/ds-test.git contracts/lib/eigenlayer-middleware/lib/ds-test \
+    && cd contracts \
+    && forge build 
 
 # Copy application requirements first for better caching
 COPY setup.py requirements-dev.txt /app/

@@ -132,8 +132,7 @@ class AvsRegistryReader:
         self, operator_id: List[int]
     ) -> Tuple[Optional[List[int]], Optional[List[List[OperatorStateRetrieverOperator]]]]:
         block_number = self.eth_http_client.eth.block_number
-        return self.get_operators_stake_in_quorums_of_operator_at_block(
-            operator_id, block_number)
+        return self.get_operators_stake_in_quorums_of_operator_at_block(operator_id, block_number)
 
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, operator_id: List[int]

@@ -28,26 +28,18 @@ class BuildAllConfig:
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
-        self.registry_coordinator_addr = Web3.to_checksum_address(
-            registry_coordinator_addr.lower()
-        )
+        self.registry_coordinator_addr = Web3.to_checksum_address(registry_coordinator_addr.lower())
         self.operator_state_retriever_addr = Web3.to_checksum_address(
             operator_state_retriever_addr.lower()
         )
-        self.rewards_coordinator_addr = Web3.to_checksum_address(
-            rewards_coordinator_addr.lower()
-        )
+        self.rewards_coordinator_addr = Web3.to_checksum_address(rewards_coordinator_addr.lower())
         self.permission_controller_addr = Web3.to_checksum_address(
             permission_controller_addr.lower()
         )
         self.service_manager_addr = Web3.to_checksum_address(service_manager_addr.lower())
-        self.allocation_manager_addr = Web3.to_checksum_address(
-            allocation_manager_addr.lower()
-        )
+        self.allocation_manager_addr = Web3.to_checksum_address(allocation_manager_addr.lower())
         self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr.lower())
-        self.delegation_manager_addr = Web3.to_checksum_address(
-            delegation_manager_addr.lower()
-        )
+        self.delegation_manager_addr = Web3.to_checksum_address(delegation_manager_addr.lower())
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)
@@ -160,9 +152,6 @@ class BuildAllConfig:
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
 
-        print("bls_apk_registry_addr", bls_apk_registry_addr)
-        print("stake_registry_addr", stake_registry_addr)
-        print("self.registry_coordinator_addr", self.registry_coordinator_addr)
         avs_reader_instance = avs_reader.AvsRegistryReader(
             registry_coordinator=registry_coordinator_instance,
             registry_coordinator_addr=Address(bytes.fromhex(self.registry_coordinator_addr[2:])),
