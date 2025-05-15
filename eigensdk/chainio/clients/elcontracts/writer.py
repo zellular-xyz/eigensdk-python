@@ -152,27 +152,22 @@ class ELWriter:
             claim["earnerTreeProof"],
             (  # earnerLeaf (tuple)
                 Web3.to_checksum_address(claim["earnerLeaf"]["earner"]),
-                claim["earnerLeaf"]["earnerTokenRoot"]
+                claim["earnerLeaf"]["earnerTokenRoot"],
             ),
             claim["tokenIndices"],  # list of uint32
             claim["tokenTreeProofs"],  # list of bytes
             [  # tokenLeaves (list of tuples)
-                (
-                    Web3.to_checksum_address(tl["token"]),
-                    int(tl["cumulativeEarnings"])
-                )
+                (Web3.to_checksum_address(tl["token"]), int(tl["cumulativeEarnings"]))
                 for tl in claim["tokenLeaves"]
-            ]
+            ],
         )
 
         func = self.rewards_coordinator.functions.processClaim(
-            claim_tuple,
-            Web3.to_checksum_address(recipient_address)
+            claim_tuple, Web3.to_checksum_address(recipient_address)
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
 
     def set_operator_avs_split(self, operator: str, avs: str, split: int) -> TxReceipt:
 
@@ -213,13 +208,11 @@ class ELWriter:
         )
 
         func = self.allocation_manager.functions.modifyAllocations(
-            Web3.to_checksum_address(operator_address),
-            [allocation]
+            Web3.to_checksum_address(operator_address), [allocation]
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
 
     def clear_deallocation_queue(
         self, operator_address: str, strategies: list, nums_to_clear: list

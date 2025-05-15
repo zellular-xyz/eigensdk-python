@@ -8,7 +8,6 @@ from web3 import Web3
 from tests.builder import clients, config
 
 
-
 def test_update_stakes_of_operator_subset_for_all_quorums():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     operators = [operator_addr]
@@ -20,14 +19,12 @@ def test_update_stakes_of_operator_subset_for_all_quorums():
     print(f"Updated stakes for operator subset with tx hash: {receipt['transactionHash'].hex()}")
 
 
-
 def test_set_rewards_initiator():
     rewards_initiator_addr = Web3.to_checksum_address(config["operator_address"])
     receipt = clients.avs_registry_writer.set_rewards_initiator(rewards_initiator_addr)
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set rewards initiator with tx hash: {receipt['transactionHash'].hex()}")
-
 
 
 def test_set_minimum_stake_for_quorum():
@@ -97,7 +94,6 @@ def test_modify_strategy_params():
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Modified strategy parameters with tx hash: {receipt['transactionHash'].hex()}")
-
 
 
 def test_set_ejection_cooldown():

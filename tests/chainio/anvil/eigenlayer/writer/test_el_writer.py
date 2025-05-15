@@ -45,7 +45,6 @@ def test_set_claimer_for():
     print(f"Set claimer with tx hash: {receipt['transactionHash'].hex()}")
 
 
-
 def test_set_operator_avs_split():
     operator_addr = config["operator_address"]
     avs_addr = config["avs_address"]
@@ -63,7 +62,6 @@ def test_set_operator_pi_split():
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set operator PI split with tx hash: {receipt['transactionHash'].hex()}")
-
 
 
 def test_clear_deallocation_queue():
@@ -115,5 +113,3 @@ def test_accept_admin():
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
-
-
