@@ -177,14 +177,29 @@ class ELWriter:
 
         return receipt
 
-    def modify_allocations(self, operator_address: str, allocations: list) -> TxReceipt:
+    def modify_allocations(
+        self,
+        operator_address: str,
+        avs_service_manager: str,
+        operator_set_id: int,
+        strategies: list,
+        new_magnitudes: list
+    ) -> TxReceipt:
+
+        allocation = (
+            (Web3.to_checksum_address(avs_service_manager), operator_set_id),  # (address, uint32)
+            [Web3.to_checksum_address(s) for s in strategies],                 # address[]
+            new_magnitudes                                                    # uint64[]
+        )
 
         func = self.allocation_manager.functions.modifyAllocations(
             Web3.to_checksum_address(operator_address),
-            allocations,
+            [allocation]  # wrapping in a list for the array of allocations
         )
+
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
+
 
     def clear_deallocation_queue(
         self, operator_address: str, strategies: list, nums_to_clear: list

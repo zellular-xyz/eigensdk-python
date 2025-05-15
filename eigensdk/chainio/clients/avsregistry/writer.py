@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 import ecdsa
 from eth_account import Account
@@ -382,18 +382,18 @@ class AvsRegistryWriter:
 
     def create_total_delegated_stake_quorum(
         self,
-        operator_set_params: Dict,
+        operator_set_params: Tuple[int, int, int],
         minimum_stake_required: int,
-        strategy_params: List[Dict],
+        strategy_params: List[Tuple[str, int]],
     ) -> TxReceipt:
-
-        func = self.stake_registry.functions.createTotalDelegatedStakeQuorum(
-            operator_set_params, minimum_stake_required, strategy_params
+        func = self.registry_coordinator.functions.createTotalDelegatedStakeQuorum(
+            operator_set_params,
+            minimum_stake_required,
+            strategy_params
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
+
 
     def create_slashable_stake_quorum(
         self,

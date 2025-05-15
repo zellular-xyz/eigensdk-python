@@ -153,23 +153,26 @@ def test_set_minimum_stake_for_quorum():
 
 # TODO: Connection reverted error
 
-# def test_create_total_delegated_stake_quorum():
-#     operator_set_params = {
-#         "maxOperatorCount": 10,
-#         "kickBIPsOfOperatorStake": 10000,
-#         "kickBIPsOfTotalStake": 2000,
-#     }
-#     minimum_stake_required = 1000000
-#     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-#     strategy_params = [{"strategy": strategy_addr, "multiplier": 10000}]
-#     receipt = clients.avs_registry_writer.create_total_delegated_stake_quorum(
-#         operator_set_params, minimum_stake_required, strategy_params
-#     )
-#     assert receipt is not None
-#     assert receipt["status"] == 1
-#     print(
-#         f"Created total delegated stake quorum with tx hash: {receipt['transactionHash'].hex()}"
-#     )
+def test_create_total_delegated_stake_quorum():
+    operator_set_params = (
+        10,     # maxOperatorCount (uint32)
+        10000,  # kickBIPsOfOperatorStake (uint16)
+        2000,   # kickBIPsOfTotalStake (uint16)
+    )
+    minimum_stake_required = 1000000
+    strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
+    strategy_params = [
+        (strategy_addr, 10000)
+    ]
+    receipt = clients.avs_registry_writer.create_total_delegated_stake_quorum(
+        operator_set_params, minimum_stake_required, strategy_params
+    )
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(
+        f"Created total delegated stake quorum with tx hash: {receipt['transactionHash'].hex()}"
+    )
+
 
 # TODO: Connection reverted error
 
