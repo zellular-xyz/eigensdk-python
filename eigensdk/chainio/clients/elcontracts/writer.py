@@ -144,15 +144,35 @@ class ELWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
+    # TODO: fix this function Tests
     def process_claim(self, claim: dict, recipient_address: str) -> TxReceipt:
+        claim_tuple = (
+            claim["rootIndex"],
+            claim["earnerIndex"],
+            claim["earnerTreeProof"],
+            (  # earnerLeaf (tuple)
+                Web3.to_checksum_address(claim["earnerLeaf"]["earner"]),
+                claim["earnerLeaf"]["earnerTokenRoot"]
+            ),
+            claim["tokenIndices"],  # list of uint32
+            claim["tokenTreeProofs"],  # list of bytes
+            [  # tokenLeaves (list of tuples)
+                (
+                    Web3.to_checksum_address(tl["token"]),
+                    int(tl["cumulativeEarnings"])
+                )
+                for tl in claim["tokenLeaves"]
+            ]
+        )
 
         func = self.rewards_coordinator.functions.processClaim(
-            claim,
-            Web3.to_checksum_address(recipient_address),
+            claim_tuple,
+            Web3.to_checksum_address(recipient_address)
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
+
 
     def set_operator_avs_split(self, operator: str, avs: str, split: int) -> TxReceipt:
 
@@ -177,24 +197,24 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def modify_allocations(
         self,
         operator_address: str,
         avs_service_manager: str,
         operator_set_id: int,
         strategies: list,
-        new_magnitudes: list
+        new_magnitudes: list,
     ) -> TxReceipt:
-
         allocation = (
-            (Web3.to_checksum_address(avs_service_manager), operator_set_id),  # (address, uint32)
-            [Web3.to_checksum_address(s) for s in strategies],                 # address[]
-            new_magnitudes                                                    # uint64[]
+            (Web3.to_checksum_address(avs_service_manager), operator_set_id),
+            [Web3.to_checksum_address(s) for s in strategies],
+            new_magnitudes,
         )
 
         func = self.allocation_manager.functions.modifyAllocations(
             Web3.to_checksum_address(operator_address),
-            [allocation]  # wrapping in a list for the array of allocations
+            [allocation]
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
@@ -226,6 +246,7 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def deregister_from_operator_sets(self, operator: str, request: dict) -> TxReceipt:
 
         func = self.allocation_manager.functions.deregisterFromOperatorSets(
@@ -240,6 +261,7 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def register_for_operator_sets(
         self, registry_coordinator_addr: str, request: dict
     ) -> TxReceipt:
@@ -266,6 +288,7 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def remove_permission(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removeAppointee(
@@ -279,6 +302,7 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def set_permission(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removeAppointee(
@@ -311,6 +335,7 @@ class ELWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def remove_admin(self, request: dict) -> TxReceipt:
         func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),

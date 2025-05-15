@@ -75,6 +75,7 @@ class AvsRegistryWriter:
         if service_manager_abi is None:
             self.logger.warning("ServiceManager ABI not provided")
 
+    # TODO: fix this function Tests
     def register_operator(
         self,
         operator_ecdsa_private_key: ecdsa.SigningKey,
@@ -133,6 +134,7 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
+    # TODO: fix this function Tests
     def register_operator_in_quorum_with_avs_registry_coordinator(
         self,
         operator_ecdsa_private_key: str,
@@ -199,6 +201,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
         operators_per_quorum: List[List[str]],
@@ -214,6 +217,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def register_operator_with_churn(
         self,
         operator_ecdsa_private_key: ecdsa.SigningKey,
@@ -319,6 +323,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def deregister_operator(
         self,
         quorum_numbers: List[int],
@@ -330,6 +335,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def update_socket(
         self,
         socket: str,
@@ -354,6 +360,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def set_slashable_stake_lookahead(
         self,
         quorum_number: int,
@@ -387,14 +394,12 @@ class AvsRegistryWriter:
         strategy_params: List[Tuple[str, int]],
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.createTotalDelegatedStakeQuorum(
-            operator_set_params,
-            minimum_stake_required,
-            strategy_params
+            operator_set_params, minimum_stake_required, strategy_params
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-
+    # TODO: fix this function Tests
     def create_slashable_stake_quorum(
         self,
         operator_set_params: Dict,
@@ -414,6 +419,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def eject_operator(
         self,
         operator_address: str,
@@ -481,6 +487,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def set_account_identifier(
         self,
         account_identifier_address: str,
@@ -502,6 +509,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def add_strategies(
         self,
         quorum_number: int,
@@ -528,6 +536,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def remove_strategies(
         self,
         quorum_number: int,
@@ -540,6 +549,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def create_avs_rewards_submission(
         self,
         rewards_submission: List[Dict],
@@ -558,6 +568,7 @@ class AvsRegistryWriter:
 
         return receipt
 
+    # TODO: fix this function Tests
     def create_operator_directed_avs_rewards_submission(
         self,
         operator_directed_rewards_submissions: List[Dict],

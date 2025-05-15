@@ -19,11 +19,11 @@ delegation_manager_address: 0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
 avs_address: 0x7bc06c482DEAd17c0e297aFbC32f6e63d3846650
 
 # ETH RPC URL
-eth_rpc_url: http://anvil:8545
-eth_ws_url: ws://anvil:8545
+# eth_rpc_url: http://anvil:8545
+# eth_ws_url: ws://anvil:8545
 
-# eth_rpc_url: http://localhost:8545
-# eth_ws_url: ws://localhost:8545
+eth_rpc_url: http://localhost:8545
+eth_ws_url: ws://localhost:8545
 
 # If you running this using eigenlayer CLI and the provided AVS packaging structure,
 # this should be /operator_keys/ecdsa_key.json as the host path will be asked while running
