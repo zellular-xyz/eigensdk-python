@@ -2,6 +2,7 @@ from web3 import Web3
 
 from eigensdk._types import Operator
 from tests.builder import clients, config
+from eigensdk.crypto.bls.key_pair import KeyPair
 
 
 def test_register_as_operator():
@@ -113,3 +114,85 @@ def test_accept_admin():
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Accepted admin with tx hash: {receipt['transactionHash'].hex()}")
+
+
+def test_process_claim():
+    claim = {
+        "rootIndex": 0,
+        "earnerIndex": 0,
+        "earnerTreeProof": b"",
+        "earnerLeaf": {
+            "earner": config["operator_address"],
+            "earnerTokenRoot": b""
+        },
+        "tokenIndices": [0],
+        "tokenTreeProofs": [b""],
+        "tokenLeaves": [{
+            "token": config["strategy_addr"],
+            "cumulativeEarnings": 1000000
+        }]
+    }
+    receipt = clients.el_writer.process_claim(claim, config["operator_address"])
+    assert receipt["status"] == 1
+
+
+def test_modify_allocations():
+    receipt = clients.el_writer.modify_allocations(
+        config["operator_address"],
+        config["avs_address"],
+        0,
+        [config["strategy_addr"]],
+        [10000]
+    )
+    assert receipt["status"] == 1
+
+
+def test_deregister_from_operator_sets():
+    receipt = clients.el_writer.deregister_from_operator_sets(
+        config["operator_address"],
+        {"avs_address": config["avs_address"], "operator_set_ids": [0]}
+    )
+    assert receipt["status"] == 1
+
+
+def test_register_for_operator_sets():
+    bls_key_pair = KeyPair.generate()
+    receipt = clients.el_writer.register_for_operator_sets(
+        config["avs_registry_coordinator_address"],
+        {
+            "operator_address": config["operator_address"],
+            "avs_address": config["avs_address"],
+            "operator_set_ids": [0],
+            "socket": "127.0.0.1:1234",
+            "bls_key_pair": bls_key_pair
+        }
+    )
+    assert receipt["status"] == 1
+
+
+def test_remove_permission():
+    receipt = clients.el_writer.remove_permission({
+        "account_address": config["operator_address"],
+        "appointee_address": config["operator_address"],
+        "target": config["avs_address"],
+        "selector": "0x00000000"
+    })
+    assert receipt["status"] == 1
+
+
+def test_set_permission():
+    receipt = clients.el_writer.set_permission({
+        "account_address": config["operator_address"],
+        "appointee_address": config["operator_address"],
+        "target": config["avs_address"],
+        "selector": "0x00000000"
+    })
+    assert receipt["status"] == 1
+
+
+def test_remove_admin():
+    receipt = clients.el_writer.remove_admin({
+        "account_address": config["operator_address"],
+        "admin_address": config["operator_address"]
+    })
+    assert receipt["status"] == 1
