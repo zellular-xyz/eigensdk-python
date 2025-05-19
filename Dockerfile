@@ -6,19 +6,15 @@ WORKDIR /app
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
-    cmake \
     dnsutils \
-    curl \
-    git \
     libgmp3-dev \
     build-essential \
-    unzip \
-    wget \
+    cmake \
+    clang \
     && rm -rf /var/lib/apt/lists/*
 
 # Install MCL
-RUN apt-get update && apt-get install -y clang wget unzip cmake make \
-    && wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip \
+RUN wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip \
     && unzip v1.93.zip \
     && cd mcl-1.93 \
     && mkdir build \
