@@ -17,7 +17,7 @@ from eigensdk.chainio.utils import (
     convert_to_bn254_g1_point,
     convert_bn254_geth_to_gnark,
 )
-from eigensdk.crypto.bls.attestation import G1Point, KeyPair
+from eigensdk.crypto.bls.attestation import KeyPair
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
 
@@ -171,7 +171,7 @@ class AvsRegistryWriter:
                 ),
             ),
         )
-        
+
         signature_salt = operator_to_avs_registration_sig_salt
         signature_expiry = operator_to_avs_registration_sig_expiry
 

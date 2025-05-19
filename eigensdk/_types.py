@@ -9,10 +9,10 @@ from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 @dataclass
 class Operator:
     address: Address
-    earnings_receiver_address: Optional[Address] = field(default=None)
-    delegation_approver_address: Optional[Address] = field(default=None)
-    staker_opt_out_window_blocks: Optional[int] = field(default=None)
-    allocation_delay: Optional[int] = field(default=None)
+    earnings_receiver_address: Address = field(default=None)
+    delegation_approver_address: Address = field(default=None)
+    staker_opt_out_window_blocks: int = field(default=None)
+    allocation_delay: int = field(default=None)
     metadata_url: str = field(default="")
 
 

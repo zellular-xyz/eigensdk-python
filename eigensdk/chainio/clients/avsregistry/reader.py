@@ -1,7 +1,6 @@
 import logging
 import math
 from typing import Dict, List, Optional, Tuple
-from eth_utils import to_bytes
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from eth_utils import event_abi_to_log_topic
@@ -19,8 +18,7 @@ from eigensdk._types import (
     BLSApkRegistryTypesApkUpdate,
 )
 from eigensdk.chainio import utils
-from eigensdk.chainio.utils import bitmap_to_quorum_ids, remove_duplicate_strategies
-from eigensdk.chainio.utils import nums_to_bytes
+from eigensdk.chainio.utils import bitmap_to_quorum_ids
 from eigensdk.crypto.bls.attestation import G1Point, G2Point
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
@@ -228,16 +226,6 @@ class AvsRegistryReader:
         operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")  # ✅ convert to bytes32
         return self.stake_registry.functions.getStakeAtBlockNumber(
             operator_id_bytes32, quorum_number, block_number
-        ).call()
-
-    def get_stake_update_index_at_block_number(
-        self,
-        operator_id: int,
-        quorum_number: int,
-        block_number: int,
-    ) -> Optional[int]:
-        return self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
-            operator_id, quorum_number, block_number
         ).call()
 
     def get_stake_update_index_at_block_number(
