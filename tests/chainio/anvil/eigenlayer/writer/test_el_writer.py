@@ -2,7 +2,7 @@ from web3 import Web3
 
 from eigensdk._types import Operator
 from tests.builder import clients, config
-from eigensdk.crypto.bls.key_pair import KeyPair
+from eigensdk.crypto.bls.attestation import KeyPair
 
 
 def test_register_as_operator():
@@ -121,16 +121,10 @@ def test_process_claim():
         "rootIndex": 0,
         "earnerIndex": 0,
         "earnerTreeProof": b"",
-        "earnerLeaf": {
-            "earner": config["operator_address"],
-            "earnerTokenRoot": b""
-        },
+        "earnerLeaf": {"earner": config["operator_address"], "earnerTokenRoot": b""},
         "tokenIndices": [0],
         "tokenTreeProofs": [b""],
-        "tokenLeaves": [{
-            "token": config["strategy_addr"],
-            "cumulativeEarnings": 1000000
-        }]
+        "tokenLeaves": [{"token": config["strategy_addr"], "cumulativeEarnings": 1000000}],
     }
     receipt = clients.el_writer.process_claim(claim, config["operator_address"])
     assert receipt["status"] == 1
@@ -138,19 +132,14 @@ def test_process_claim():
 
 def test_modify_allocations():
     receipt = clients.el_writer.modify_allocations(
-        config["operator_address"],
-        config["avs_address"],
-        0,
-        [config["strategy_addr"]],
-        [10000]
+        config["operator_address"], config["avs_address"], 0, [config["strategy_addr"]], [10000]
     )
     assert receipt["status"] == 1
 
 
 def test_deregister_from_operator_sets():
     receipt = clients.el_writer.deregister_from_operator_sets(
-        config["operator_address"],
-        {"avs_address": config["avs_address"], "operator_set_ids": [0]}
+        config["operator_address"], {"avs_address": config["avs_address"], "operator_set_ids": [0]}
     )
     assert receipt["status"] == 1
 
@@ -164,35 +153,122 @@ def test_register_for_operator_sets():
             "avs_address": config["avs_address"],
             "operator_set_ids": [0],
             "socket": "127.0.0.1:1234",
-            "bls_key_pair": bls_key_pair
-        }
+            "bls_key_pair": bls_key_pair,
+        },
     )
     assert receipt["status"] == 1
 
 
 def test_remove_permission():
-    receipt = clients.el_writer.remove_permission({
-        "account_address": config["operator_address"],
-        "appointee_address": config["operator_address"],
-        "target": config["avs_address"],
-        "selector": "0x00000000"
-    })
+    receipt = clients.el_writer.remove_permission(
+        {
+            "account_address": config["operator_address"],
+            "appointee_address": config["operator_address"],
+            "target": config["avs_address"],
+            "selector": "0x00000000",
+        }
+    )
     assert receipt["status"] == 1
 
 
 def test_set_permission():
-    receipt = clients.el_writer.set_permission({
+    receipt = clients.el_writer.set_permission(
+        {
+            "account_address": config["operator_address"],
+            "appointee_address": config["operator_address"],
+            "target": config["avs_address"],
+            "selector": "0x00000000",
+        }
+    )
+    assert receipt["status"] == 1
+
+
+def test_set_permission():
+    request = {
         "account_address": config["operator_address"],
         "appointee_address": config["operator_address"],
         "target": config["avs_address"],
-        "selector": "0x00000000"
-    })
+        "selector": "0x12345678"
+    }
+    receipt = clients.el_writer.set_permission(request)
     assert receipt["status"] == 1
 
-
-def test_remove_admin():
-    receipt = clients.el_writer.remove_admin({
+def test_remove_permission():
+    request = {
         "account_address": config["operator_address"],
-        "admin_address": config["operator_address"]
-    })
+        "appointee_address": config["operator_address"],
+        "target": config["avs_address"],
+        "selector": "0x12345678"
+    }
+    receipt = clients.el_writer.remove_permission(request)
     assert receipt["status"] == 1
+
+# TODO: fix this function Tests
+def test_register_for_operator_sets():
+    bls_key_pair = KeyPair()
+    receipt = clients.el_writer.register_for_operator_sets(
+        config["avs_registry_coordinator_address"],
+        {
+            "operator_address": config["operator_address"],
+            "avs_address": config["avs_address"],
+            "operator_set_ids": [0],
+            "socket": "127.0.0.1:1234",
+            "bls_key_pair": bls_key_pair,
+        },
+    )
+    print(receipt)
+    if receipt["status"] == 1:
+        print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+    else:
+        print(f"Failed to register for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+        return
+
+# TODO: fix this function Tests
+def test_deregister_from_operator_sets():
+    receipt = clients.el_writer.deregister_from_operator_sets(
+        config["operator_address"], 
+        {"avs_address": config["avs_address"], "operator_set_ids": [0]}
+    )
+    if receipt["status"] == 1:
+        print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
+    else:
+        print(f"Failed to deregister from operator sets with tx hash: {receipt['transactionHash'].hex()}")
+        return
+
+# TODO: fix this function Tests
+def test_modify_allocations():
+    receipt = clients.el_writer.modify_allocations(
+        config["operator_address"], config["avs_address"], 0, [config["strategy_addr"]], [10000]
+    )
+    if receipt["status"] == 1:
+        print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")
+    else:
+        print(f"Failed to modify allocations with tx hash: {receipt['transactionHash'].hex()}")
+        return
+
+# TODO: fix this function Tests
+def test_process_claim():
+    claim = {
+        "rootIndex": 0,
+        "earnerIndex": 0,
+        "earnerTreeProof": b"",
+        "earnerLeaf": {"earner": config["operator_address"], "earnerTokenRoot": b""},
+        "tokenIndices": [0],
+        "tokenTreeProofs": [b""],
+        "tokenLeaves": [{"token": config["strategy_addr"], "cumulativeEarnings": 1000000}],
+    }
+    receipt = clients.el_writer.process_claim(claim, config["operator_address"])
+    assert receipt["status"] == 1
+
+# TODO: fix this function Tests
+def test_remove_admin():
+    test_accept_admin()
+    receipt = clients.el_writer.remove_admin(
+        {"account_address": config["operator_address"], "admin_address": config["operator_address"]}
+    )
+    if receipt["status"] == 1:
+        print(f"Removed admin with tx hash: {receipt['transactionHash'].hex()}")
+    else:
+        print(f"Failed to remove admin with tx hash: {receipt['transactionHash'].hex()}")
+        return
+

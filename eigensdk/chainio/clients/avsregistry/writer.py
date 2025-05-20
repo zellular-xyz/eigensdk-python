@@ -244,7 +244,7 @@ class AvsRegistryWriter:
             os.urandom(32),
             self.web3.eth.block_number,
             60 * 60,
-        )  
+        )
         signature_expiry = (
             self.web3.eth.get_block(cur_block_num)["timestamp"] + sig_valid_for_seconds
         )

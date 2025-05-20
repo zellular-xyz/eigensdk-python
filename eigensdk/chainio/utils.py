@@ -1,5 +1,4 @@
-from typing import List
-from typing import Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any
 from eth_abi import encode
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
@@ -7,6 +6,7 @@ from web3.contract.contract import ContractFunction
 from web3.types import Address
 from web3.types import TxReceipt
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
+from eigensdk.contracts import ABIs
 
 
 def nums_to_bytes(nums: List[int]) -> bytes:
@@ -92,44 +92,42 @@ def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
     )
 
 
-def abi_encode_registration_params(
+
+def abi_encode_normal_registration_params(
     registration_type: int,
     socket: str,
-    pubkey_reg_params: Dict[str, Any],
+    pubkey_reg_params: Dict[str, Tuple[int, int] | Tuple[Tuple[int, int], Tuple[int, int]]],
 ) -> bytes:
     """
-    ABI encodes the registration parameters.
-
-    Args:
-        registration_type: Type of registration
-        socket: Socket string
-        pubkey_reg_params: Pubkey registration parameters from get_pubkey_registration_params
-
-    Returns:
-        ABI encoded registration parameters
+    ABI encode a normal registration tuple:
+    (uint8, string, ((uint256, uint256), (uint256, uint256), (uint256[2], uint256[2])))
     """
-    # Extract components from pubkey_reg_params
-    signature = pubkey_reg_params["pubkeyRegistrationSignature"]
-    g1_pubkey = pubkey_reg_params["pubkeyG1"]
-    g2_pubkey = pubkey_reg_params["pubkeyG2"]
 
-    # Format data for encoding
-    pubkey_data = (
-        (g1_pubkey.X, g1_pubkey.Y),
-        (g2_pubkey.X[0], g2_pubkey.X[1]),
-        ([g2_pubkey.Y[0], g2_pubkey.Y[1]], [signature.X, signature.Y]),
+    # Extract structured values
+    pubkey_registration_signature = pubkey_reg_params["pubkeyRegistrationSignature"]  # (x, y)
+    pubkey_g1 = pubkey_reg_params["pubkeyG1"]  # (x, y)
+    pubkey_g2 = pubkey_reg_params["pubkeyG2"]  # ((x0, x1), (y0, y1))
+
+    # Structure expected by ABI
+    pubkey_struct = (
+        pubkey_registration_signature,  # (uint256, uint256)
+        pubkey_g1,                      # (uint256, uint256)
+        pubkey_g2                       # ((uint256[2], uint256[2]))
     )
 
-    type_str = "(uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
-
-    data = (
-        registration_type,
-        socket,
-        pubkey_data,
+    # Full data
+    registration_struct = (
+        registration_type,  # uint8
+        socket,             # string
+        pubkey_struct       # pubkeyRegParams struct
     )
 
-    encoded = encode([type_str], [data])
-    return encoded[32:]  # Remove initial offset pointer
+    abi_type = "(uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
+
+    encoded = encode([abi_type], [registration_struct])
+
+    return encoded[32:]
+
 
 
 def abi_encode_operator_avs_registration_params(
@@ -194,25 +192,7 @@ def get_pubkey_registration_params(
     # Create contract instance for registry coordinator
     registry_coordinator = eth_client.eth.contract(
         address=registry_coordinator_addr,
-        abi=[
-            {
-                "inputs": [{"internalType": "address", "name": "operator", "type": "address"}],
-                "name": "pubkeyRegistrationMessageHash",
-                "outputs": [
-                    {
-                        "components": [
-                            {"internalType": "uint256", "name": "X", "type": "uint256"},
-                            {"internalType": "uint256", "name": "Y", "type": "uint256"},
-                        ],
-                        "internalType": "struct BN254.G1Point",
-                        "name": "",
-                        "type": "tuple",
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function",
-            }
-        ],
+        abi=ABIs.REGISTRY_COORDINATOR_ABI,
     )
 
     # Get hashed message to sign
@@ -221,19 +201,21 @@ def get_pubkey_registration_params(
     ).call()
 
     # Convert the hashed message to the format expected by KeyPair
-    gnark_msg = convert_bn254_geth_to_gnark(g1_hashed_msg_to_sign)
+    BN254G1Point_OBJ = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
+    gnark_msg = convert_bn254_geth_to_gnark(BN254G1Point_OBJ)
     # Sign the message
     signed_msg = bls_key_pair.sign_hashed_to_curve_message(gnark_msg)
     # Convert public keys to BN254 format
     g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
     g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-
-    pubkey_reg_params = {
-        "pubkeyRegistrationSignature": convert_to_bn254_g1_point(
+    pubkeyRegistrationSignature = convert_to_bn254_g1_point(
             G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))
-        ),
-        "pubkeyG1": g1_pubkey_bn254,
-        "pubkeyG2": g2_pubkey_bn254,
+        )
+    pubkey_reg_params = {
+        "pubkeyRegistrationSignature": (pubkeyRegistrationSignature.X, pubkeyRegistrationSignature.Y),
+        "pubkeyG1": (g1_pubkey_bn254.X, g1_pubkey_bn254.Y),
+        "pubkeyG2": ((g2_pubkey_bn254.X[0], g2_pubkey_bn254.X[1]), (g2_pubkey_bn254.Y[0], g2_pubkey_bn254.Y[1])),
     }
 
+    print(pubkey_reg_params)
     return pubkey_reg_params

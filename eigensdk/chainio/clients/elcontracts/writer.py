@@ -9,7 +9,7 @@ from web3.contract import Contract
 from web3.types import TxReceipt
 
 from eigensdk._types import Operator
-from eigensdk.chainio.utils import abi_encode_registration_params, get_pubkey_registration_params
+from eigensdk.chainio.utils import abi_encode_normal_registration_params, get_pubkey_registration_params
 from ...utils import send_transaction
 
 
@@ -144,7 +144,6 @@ class ELWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
     def process_claim(self, claim: dict, recipient_address: str) -> TxReceipt:
         claim_tuple = (
             claim["rootIndex"],
@@ -192,7 +191,6 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def modify_allocations(
         self,
         operator_address: str,
@@ -239,7 +237,6 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def deregister_from_operator_sets(self, operator: str, request: dict) -> TxReceipt:
 
         func = self.allocation_manager.functions.deregisterFromOperatorSets(
@@ -254,7 +251,6 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def register_for_operator_sets(
         self, registry_coordinator_addr: str, request: dict
     ) -> TxReceipt:
@@ -264,7 +260,7 @@ class ELWriter:
             {
                 "avs": Web3.to_checksum_address(request["avs_address"]),
                 "operatorSetIds": request["operator_set_ids"],
-                "data": abi_encode_registration_params(
+                "data": abi_encode_normal_registration_params(
                     RegistrationType.NORMAL,
                     request["socket"],
                     get_pubkey_registration_params(
@@ -281,7 +277,6 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def remove_permission(self, request: dict) -> TxReceipt:
 
         func = self.permission_controller.functions.removeAppointee(
@@ -295,10 +290,9 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def set_permission(self, request: dict) -> TxReceipt:
 
-        func = self.permission_controller.functions.removeAppointee(
+        func = self.permission_controller.functions.setAppointee(
             Web3.to_checksum_address(request["account_address"].lower()),
             Web3.to_checksum_address(request["appointee_address"].lower()),
             Web3.to_checksum_address(request["target"].lower()),
@@ -328,7 +322,6 @@ class ELWriter:
 
         return receipt
 
-    # TODO: fix this function Tests
     def remove_admin(self, request: dict) -> TxReceipt:
         func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
