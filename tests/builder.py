@@ -27,3 +27,5 @@ cfg = BuildAllConfig(
     prom_metrics_ip_port_address="",
 )
 clients = build_all(cfg, config["ecdsa_private_key"])
+
+clients_2 = build_all(cfg, config["ecdsa_private_key_2"])

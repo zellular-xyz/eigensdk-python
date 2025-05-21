@@ -14,7 +14,6 @@ from eigensdk.chainio.utils import (
     get_pubkey_registration_params,
 )
 from ...utils import send_transaction
-from eigensdk.chainio import utils
 
 
 class RegistrationType(IntEnum):
@@ -331,9 +330,7 @@ class ELWriter:
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def remove_pending_admin(self, request: dict) -> TxReceipt:
