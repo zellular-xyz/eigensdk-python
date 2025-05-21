@@ -202,7 +202,6 @@ def test_register_for_operator_sets():
         return
 
 
-
 # TODO: fix this function Tests
 def test_deregister_from_operator_sets():
     receipt = clients.el_writer.deregister_from_operator_sets(

@@ -16,6 +16,7 @@ from eigensdk.chainio.utils import (
 from ...utils import send_transaction
 from eigensdk.chainio import utils
 
+
 class RegistrationType(IntEnum):
     NORMAL = 0
     TRUSTED = 1
