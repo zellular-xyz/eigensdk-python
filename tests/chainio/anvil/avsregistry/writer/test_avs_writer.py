@@ -9,6 +9,7 @@ import time
 from tests.builder import clients, config
 from eigensdk.crypto.bls.attestation import KeyPair
 
+
 def test_update_stakes_of_operator_subset_for_all_quorums():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     operators = [operator_addr]
@@ -112,57 +113,71 @@ def test_update_avs_metadata_uri():
     assert receipt["status"] == 1
     print(f"Updated AVS metadata URI with tx hash: {receipt['transactionHash'].hex()}")
 
+
 # TODO: fix this function Tests
 def test_update_stakes_of_entire_operator_set_for_quorums():
     return
+
 
 # TODO: fix this function Tests
 def test_register_operator_in_quorum_with_avs_registry_coordinator():
     return
 
+
 # TODO: fix this function Tests
 def test_register_operator_with_churn():
     return
+
 
 # TODO: fix this function Tests
 def test_deregister_operator():
     return
 
+
 # TODO: fix this function Tests
 def test_update_socket():
     return
+
 
 # TODO: fix this function Tests
 def test_set_slashable_stake_lookahead():
     return
 
+
 # TODO: fix this function Tests
 def test_create_slashable_stake_quorum():
     return
+
 
 # TODO: fix this function Tests
 def test_eject_operator():
     return
 
+
 # TODO: fix this function Tests
 def test_set_account_identifier():
     return
+
 
 # TODO: fix this function Tests
 def test_add_strategies():
     return
 
+
 # TODO: fix this function Tests
 def test_remove_strategies():
     return
+
 
 # TODO: fix this function Tests
 def test_create_avs_rewards_submission():
     return
 
+
 # TODO: fix this function Tests
 def test_create_operator_directed_avs_rewards_submission():
     return
+
 
 # TODO: fix this function Tests
 def test_register_operator():

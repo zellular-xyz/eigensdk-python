@@ -9,9 +9,12 @@ from web3.contract import Contract
 from web3.types import TxReceipt
 
 from eigensdk._types import Operator
-from eigensdk.chainio.utils import abi_encode_normal_registration_params, get_pubkey_registration_params
+from eigensdk.chainio.utils import (
+    abi_encode_normal_registration_params,
+    get_pubkey_registration_params,
+)
 from ...utils import send_transaction
-
+from eigensdk.chainio import utils
 
 class RegistrationType(IntEnum):
     NORMAL = 0
@@ -119,20 +122,16 @@ class ELWriter:
         _, token_contract, token_addr = (
             self.el_chain_reader.get_strategy_and_underlying_erc20_token(strategy_addr)
         )
-
         func = token_contract.functions.approve(
             self.strategy_manager.address,
             amount,
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         func = self.strategy_manager.functions.depositIntoStrategy(
             Web3.to_checksum_address(strategy_addr),
             Web3.to_checksum_address(token_addr),
             amount,
         )
-
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
 
         return receipt
@@ -254,27 +253,31 @@ class ELWriter:
     def register_for_operator_sets(
         self, registry_coordinator_addr: str, request: dict
     ) -> TxReceipt:
+        pubkey_reg_params = get_pubkey_registration_params(
+            self.eth_http_client,
+            cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
+            cast(Address, Web3.to_checksum_address(request["operator_address"])),
+            request["bls_key_pair"],
+        )
+
+        encoded_data = abi_encode_normal_registration_params(
+            RegistrationType.NORMAL,
+            request["socket"],
+            pubkey_reg_params,
+        )
+
+        register_params = {
+            "avs": cast(Address, Web3.to_checksum_address(request["avs_address"])),
+            "operatorSetIds": request["operator_set_ids"],
+            "data": encoded_data,
+        }
 
         func = self.allocation_manager.functions.registerForOperatorSets(
             Web3.to_checksum_address(request["operator_address"]),
-            {
-                "avs": Web3.to_checksum_address(request["avs_address"]),
-                "operatorSetIds": request["operator_set_ids"],
-                "data": abi_encode_normal_registration_params(
-                    RegistrationType.NORMAL,
-                    request["socket"],
-                    get_pubkey_registration_params(
-                        self.eth_http_client,
-                        cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
-                        cast(Address, Web3.to_checksum_address(request["operator_address"])),
-                        request["bls_key_pair"],
-                    ),
-                ),
-            },
+            register_params,
         )
 
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
         return receipt
 
     def remove_permission(self, request: dict) -> TxReceipt:

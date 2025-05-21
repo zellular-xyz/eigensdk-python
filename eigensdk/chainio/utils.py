@@ -92,7 +92,6 @@ def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
     )
 
 
-
 def abi_encode_normal_registration_params(
     registration_type: int,
     socket: str,
@@ -111,15 +110,15 @@ def abi_encode_normal_registration_params(
     # Structure expected by ABI
     pubkey_struct = (
         pubkey_registration_signature,  # (uint256, uint256)
-        pubkey_g1,                      # (uint256, uint256)
-        pubkey_g2                       # ((uint256[2], uint256[2]))
+        pubkey_g1,  # (uint256, uint256)
+        pubkey_g2,  # ((uint256[2], uint256[2]))
     )
 
     # Full data
     registration_struct = (
         registration_type,  # uint8
-        socket,             # string
-        pubkey_struct       # pubkeyRegParams struct
+        socket,  # string
+        pubkey_struct,  # pubkeyRegParams struct
     )
 
     abi_type = "(uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
@@ -127,7 +126,6 @@ def abi_encode_normal_registration_params(
     encoded = encode([abi_type], [registration_struct])
 
     return encoded[32:]
-
 
 
 def abi_encode_operator_avs_registration_params(
@@ -209,12 +207,18 @@ def get_pubkey_registration_params(
     g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
     g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
     pubkeyRegistrationSignature = convert_to_bn254_g1_point(
-            G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))
-        )
+        G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))
+    )
     pubkey_reg_params = {
-        "pubkeyRegistrationSignature": (pubkeyRegistrationSignature.X, pubkeyRegistrationSignature.Y),
+        "pubkeyRegistrationSignature": (
+            pubkeyRegistrationSignature.X,
+            pubkeyRegistrationSignature.Y,
+        ),
         "pubkeyG1": (g1_pubkey_bn254.X, g1_pubkey_bn254.Y),
-        "pubkeyG2": ((g2_pubkey_bn254.X[0], g2_pubkey_bn254.X[1]), (g2_pubkey_bn254.Y[0], g2_pubkey_bn254.Y[1])),
+        "pubkeyG2": (
+            (g2_pubkey_bn254.X[0], g2_pubkey_bn254.X[1]),
+            (g2_pubkey_bn254.Y[0], g2_pubkey_bn254.Y[1]),
+        ),
     }
 
     print(pubkey_reg_params)

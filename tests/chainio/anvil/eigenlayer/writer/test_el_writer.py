@@ -9,8 +9,8 @@ def test_register_as_operator():
     operator = Operator(
         address=Web3.to_checksum_address(config["operator_address"]),
         earnings_receiver_address=Web3.to_checksum_address(config["operator_address"]),
-        delegation_approver_address="0x0000000000000000000000000000000000000000",
-        allocation_delay=100,
+        delegation_approver_address=Web3.to_checksum_address(config["operator_address"]),
+        allocation_delay=50,
         metadata_url="https://example.com/operator-metadata",
         staker_opt_out_window_blocks=100,
     )
@@ -102,6 +102,7 @@ def test_remove_pending_admin():
         "admin_address": config["operator_address"],
     }
     receipt = clients.el_writer.remove_pending_admin(request)
+    print(receipt)
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Removed pending admin with tx hash: {receipt['transactionHash'].hex()}")
@@ -144,33 +145,6 @@ def test_deregister_from_operator_sets():
     assert receipt["status"] == 1
 
 
-def test_register_for_operator_sets():
-    bls_key_pair = KeyPair.generate()
-    receipt = clients.el_writer.register_for_operator_sets(
-        config["avs_registry_coordinator_address"],
-        {
-            "operator_address": config["operator_address"],
-            "avs_address": config["avs_address"],
-            "operator_set_ids": [0],
-            "socket": "127.0.0.1:1234",
-            "bls_key_pair": bls_key_pair,
-        },
-    )
-    assert receipt["status"] == 1
-
-
-def test_remove_permission():
-    receipt = clients.el_writer.remove_permission(
-        {
-            "account_address": config["operator_address"],
-            "appointee_address": config["operator_address"],
-            "target": config["avs_address"],
-            "selector": "0x00000000",
-        }
-    )
-    assert receipt["status"] == 1
-
-
 def test_set_permission():
     receipt = clients.el_writer.set_permission(
         {
@@ -188,52 +162,60 @@ def test_set_permission():
         "account_address": config["operator_address"],
         "appointee_address": config["operator_address"],
         "target": config["avs_address"],
-        "selector": "0x12345678"
+        "selector": "0x12345678",
     }
     receipt = clients.el_writer.set_permission(request)
     assert receipt["status"] == 1
+
 
 def test_remove_permission():
     request = {
         "account_address": config["operator_address"],
         "appointee_address": config["operator_address"],
         "target": config["avs_address"],
-        "selector": "0x12345678"
+        "selector": "0x12345678",
     }
     receipt = clients.el_writer.remove_permission(request)
     assert receipt["status"] == 1
 
-# TODO: fix this function Tests
+
+# TODO: fix this function Tests , Operator is not registered on delegation manager
 def test_register_for_operator_sets():
     bls_key_pair = KeyPair()
     receipt = clients.el_writer.register_for_operator_sets(
-        config["avs_registry_coordinator_address"],
-        {
+        registry_coordinator_addr=config["avs_registry_coordinator_address"],
+        request={
             "operator_address": config["operator_address"],
-            "avs_address": config["avs_address"],
+            "avs_address": config["service_manager_address"],
             "operator_set_ids": [0],
             "socket": "127.0.0.1:1234",
             "bls_key_pair": bls_key_pair,
         },
     )
-    print(receipt)
+
+    tx_hash = receipt["transactionHash"].hex()
+
     if receipt["status"] == 1:
-        print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+        print(f"✅ Successfully registered for operator sets. Tx Hash: {tx_hash}")
     else:
-        print(f"Failed to register for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+        print(f"❌ Failed to register for operator sets. Tx Hash: {tx_hash}")
         return
+
+
 
 # TODO: fix this function Tests
 def test_deregister_from_operator_sets():
     receipt = clients.el_writer.deregister_from_operator_sets(
-        config["operator_address"], 
-        {"avs_address": config["avs_address"], "operator_set_ids": [0]}
+        config["operator_address"], {"avs_address": config["avs_address"], "operator_set_ids": [0]}
     )
     if receipt["status"] == 1:
         print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
     else:
-        print(f"Failed to deregister from operator sets with tx hash: {receipt['transactionHash'].hex()}")
+        print(
+            f"Failed to deregister from operator sets with tx hash: {receipt['transactionHash'].hex()}"
+        )
         return
+
 
 # TODO: fix this function Tests
 def test_modify_allocations():
@@ -245,6 +227,7 @@ def test_modify_allocations():
     else:
         print(f"Failed to modify allocations with tx hash: {receipt['transactionHash'].hex()}")
         return
+
 
 # TODO: fix this function Tests
 def test_process_claim():
@@ -260,9 +243,10 @@ def test_process_claim():
     receipt = clients.el_writer.process_claim(claim, config["operator_address"])
     assert receipt["status"] == 1
 
+
 # TODO: fix this function Tests
 def test_remove_admin():
-    test_accept_admin()
+    test_remove_pending_admin()
     receipt = clients.el_writer.remove_admin(
         {"account_address": config["operator_address"], "admin_address": config["operator_address"]}
     )
@@ -271,4 +255,3 @@ def test_remove_admin():
     else:
         print(f"Failed to remove admin with tx hash: {receipt['transactionHash'].hex()}")
         return
-
