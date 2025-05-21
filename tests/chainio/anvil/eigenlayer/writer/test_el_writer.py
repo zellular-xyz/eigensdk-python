@@ -4,6 +4,9 @@ from eigensdk._types import Operator
 from tests.builder import clients, clients_2, config
 from eigensdk.crypto.bls.attestation import KeyPair
 
+def advance_chain_by_n_blocks(web3_client, n: int):
+    for _ in range(n):
+        web3_client.provider.make_request("evm_mine", [])
 
 def test_register_as_operator():
     operator = Operator(
@@ -149,97 +152,48 @@ def test_remove_permission():
     receipt = clients.el_writer.remove_permission(request)
     assert receipt["status"] == 1
 
+
 def test_remove_admin_flow():
     account_address = Web3.to_checksum_address(config["operator_address"])
     admin2_address = Web3.to_checksum_address(config["admin2_address"])
 
-    receipt = clients.el_writer.add_pending_admin({
-        "account_address": account_address,
-        "admin_address": admin2_address,
-        "wait_for_receipt": True,
-    })
+    receipt = clients.el_writer.add_pending_admin(
+        {
+            "account_address": account_address,
+            "admin_address": admin2_address,
+            "wait_for_receipt": True,
+        }
+    )
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
-    receipt = clients_2.el_writer.accept_admin({
-        "account_address": account_address,
-    })
+    receipt = clients_2.el_writer.accept_admin(
+        {
+            "account_address": account_address,
+        }
+    )
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
-    receipt = clients.el_writer.remove_admin({
-        "account_address": account_address,
-        "admin_address": admin2_address,
-    })
+    receipt = clients.el_writer.remove_admin(
+        {
+            "account_address": account_address,
+            "admin_address": admin2_address,
+        }
+    )
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
 
+# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+def test_register_for_operator_sets():
+    return
 
-# # TODO: fix this function Tests , Operator is not registered on delegation manager
-# def test_register_for_operator_sets():
-#     bls_key_pair = KeyPair()
-#     receipt = clients.el_writer.register_for_operator_sets(
-#         registry_coordinator_addr=config["avs_registry_coordinator_address"],
-#         request={
-#             "operator_address": config["operator_address"],
-#             "avs_address": config["service_manager_address"],
-#             "operator_set_ids": [0],
-#             "socket": "127.0.0.1:1234",
-#             "bls_key_pair": bls_key_pair,
-#         },
-#     )
+# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+def test_deregister_from_operator_sets():
+    return
 
-#     tx_hash = receipt["transactionHash"].hex()
+# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+def test_modify_allocations():
+   return 
 
-#     if receipt["status"] == 1:
-#         print(f"✅ Successfully registered for operator sets. Tx Hash: {tx_hash}")
-#     else:
-#         print(f"❌ Failed to register for operator sets. Tx Hash: {tx_hash}")
-#         return
-
-
-# # TODO: fix this function Tests
-# def test_deregister_from_operator_sets():
-#     receipt = clients.el_writer.deregister_from_operator_sets(
-#         config["operator_address"], {"avs_address": config["avs_address"], "operator_set_ids": [0]}
-#     )
-#     if receipt["status"] == 1:
-#         print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
-#     else:
-#         print(
-#             f"Failed to deregister from operator sets with tx hash: {receipt['transactionHash'].hex()}"
-#         )
-#         return
-
-
-# # TODO: fix this function Tests
-# def test_modify_allocations():
-#     receipt = clients.el_writer.modify_allocations(
-#         config["operator_address"], config["avs_address"], 0, [config["strategy_addr"]], [10000]
-#     )
-#     if receipt["status"] == 1:
-#         print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")
-#     else:
-#         print(f"Failed to modify allocations with tx hash: {receipt['transactionHash'].hex()}")
-#         return
-
-
-# # TODO: fix this function Tests
-# def test_process_claim():
-#     print(f"Failed to process claim with tx hash")
-#     return
-#     # claim = {
-#     #     "rootIndex": 0,
-#     #     "earnerIndex": 0,
-#     #     "earnerTreeProof": b"",
-#     #     "earnerLeaf": {"earner": config["operator_address"], "earnerTokenRoot": b""},
-#     #     "tokenIndices": [0],
-#     #     "tokenTreeProofs": [b""],
-#     #     "tokenLeaves": [{"token": config["strategy_addr"], "cumulativeEarnings": 1000000}],
-#     # }
-#     # receipt = clients.el_writer.process_claim(claim, config["operator_address"])
-#     # if receipt["status"] == 1:
-#     #     print(f"Processed claim with tx hash: {receipt['transactionHash'].hex()}")
-#     # else:
-#     #     print(f"Failed to process claim with tx hash: {receipt['transactionHash'].hex()}")
-#     #     return
-
-
+# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+def test_process_claim():
+    return
