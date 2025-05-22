@@ -17,7 +17,7 @@ from eigensdk.chainio.utils import (
     convert_to_bn254_g1_point,
     convert_bn254_geth_to_gnark,
 )
-from eigensdk.crypto.bls.attestation import KeyPair
+from eigensdk.crypto.bls.attestation import KeyPair, G1Point
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
 
@@ -145,15 +145,13 @@ class AvsRegistryWriter:
         socket: str,
     ) -> TxReceipt:
 
-        operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
         account = Account.from_key(operator_ecdsa_private_key)
+        operator_addr = account.address
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
-        g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
-        signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
-        )
+        g1_hashed_msg_as_point = G1Point(*g1_hashed_msg_to_sign)
+        signed_msg = bls_key_pair.sign_hashed_to_curve_message(g1_hashed_msg_as_point)
         pubkey_reg_params = (
             (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
             (

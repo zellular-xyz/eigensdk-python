@@ -199,25 +199,21 @@ def get_pubkey_registration_params(
     ).call()
 
     # Convert the hashed message to the format expected by KeyPair
-    BN254G1Point_OBJ = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
-    gnark_msg = convert_bn254_geth_to_gnark(BN254G1Point_OBJ)
-    # Sign the message
-    signed_msg = bls_key_pair.sign_hashed_to_curve_message(gnark_msg)
+    g1_hashed_msg_to_sign = registry_coordinator.functions.pubkeyRegistrationMessageHash(
+        operator_address
+    ).call()
+    g1_hashed_msg_as_point = G1Point(*g1_hashed_msg_to_sign)
+    signed_msg = bls_key_pair.sign_hashed_to_curve_message(g1_hashed_msg_as_point)
     # Convert public keys to BN254 format
-    g1_pubkey_bn254 = convert_to_bn254_g1_point(bls_key_pair.get_pub_g1())
-    g2_pubkey_bn254 = convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-    pubkeyRegistrationSignature = convert_to_bn254_g1_point(
-        G1Point(int(signed_msg.x.getStr()), int(signed_msg.y.getStr()))
-    )
     pubkey_reg_params = {
         "pubkeyRegistrationSignature": (
-            pubkeyRegistrationSignature.X,
-            pubkeyRegistrationSignature.Y,
+            int(signed_msg.getX().getStr()),
+            int(signed_msg.getY().getStr()),
         ),
-        "pubkeyG1": (g1_pubkey_bn254.X, g1_pubkey_bn254.Y),
+        "pubkeyG1": (int(bls_key_pair.pub_g1.getX().getStr()), int(bls_key_pair.pub_g1.getY().getStr())),
         "pubkeyG2": (
-            (g2_pubkey_bn254.X[0], g2_pubkey_bn254.X[1]),
-            (g2_pubkey_bn254.Y[0], g2_pubkey_bn254.Y[1]),
+            (int(bls_key_pair.pub_g2.getX().get_a().getStr()), int(bls_key_pair.pub_g2.getX().get_b().getStr())),
+            (int(bls_key_pair.pub_g2.getY().get_a().getStr()), int(bls_key_pair.pub_g2.getY().get_b().getStr())),
         ),
     }
 
