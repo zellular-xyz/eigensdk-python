@@ -121,7 +121,26 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
 
 # TODO: fix this function Tests
 def test_register_operator_in_quorum_with_avs_registry_coordinator():
-    return
+    operator_status = clients.avs_registry_reader.get_operator_status(
+        config["operator_address"]
+    )
+    assert operator_status == 0
+
+    receipt = clients.avs_registry_writer.register_operator_in_quorum_with_avs_registry_coordinator(
+        operator_ecdsa_private_key=config["ecdsa_private_key"],
+        operator_to_avs_registration_sig_salt=os.urandom(32),
+        operator_to_avs_registration_sig_expiry=int(time.time()) + 3600,
+        bls_key_pair=KeyPair(),
+        quorum_numbers=[0],
+        socket="127.0.0.1:8080",
+    )
+    assert receipt is not None
+
+    operator_status = clients.avs_registry_reader.get_operator_status(
+        config["operator_address"]
+    )
+    assert operator_status == 1
+
 
 
 # TODO: fix this function Tests
@@ -145,9 +164,33 @@ def test_set_slashable_stake_lookahead():
 
 
 # TODO: fix this function Tests
-def test_create_slashable_stake_quorum():
-    return
+import pytest
+from hexbytes import HexBytes
 
+def test_create_slashable_stake_quorum():
+    operator_set_params = (
+        3,    # maxOperatorCount
+        100,  # kickBIPsOfOperatorStake
+        1000  # kickBIPsOfTotalStake
+    )
+
+    strategy_params = [(
+        Web3.to_checksum_address(config["strategy_addr"]),  # MUST be checksum
+        1  # multiplier
+    )]
+
+    minimum_stake_required = 0  # Same as Forge script
+    look_ahead_period = 10      # Optional custom value, since it's not in Forge script
+
+    receipt = clients.avs_registry_writer.create_slashable_stake_quorum(
+        operator_set_params,
+        minimum_stake_required,
+        strategy_params,
+        look_ahead_period
+    )
+
+    assert receipt is not None
+    assert receipt["status"] == 1
 
 # TODO: fix this function Tests
 def test_eject_operator():

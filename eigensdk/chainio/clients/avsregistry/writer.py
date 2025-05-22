@@ -360,9 +360,9 @@ class AvsRegistryWriter:
     # TODO: fix this function Tests
     def create_slashable_stake_quorum(
         self,
-        operator_set_params: Dict,
+        operator_set_params: Tuple[int, int, int],
         minimum_stake_required: int,
-        strategy_params: List[Dict],
+        strategy_params: List[Tuple[str, int]],
         look_ahead_period: int,
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.createSlashableStakeQuorum(

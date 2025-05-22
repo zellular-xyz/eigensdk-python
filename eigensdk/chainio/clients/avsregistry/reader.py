@@ -80,6 +80,9 @@ class AvsRegistryReader:
     def get_quorum_count(self) -> int:
         return self.registry_coordinator.functions.quorumCount().call()
 
+    def get_operator_status(self, operator_address: str) -> int:
+        return self.registry_coordinator.functions.getOperatorStatus(operator_address).call()
+
     def get_operators_stake_in_quorums_at_current_block(
         self, quorum_numbers: List[int]
     ) -> List[List[OperatorStateRetrieverOperator]]:
