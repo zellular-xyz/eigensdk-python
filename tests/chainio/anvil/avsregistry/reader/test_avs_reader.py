@@ -382,7 +382,7 @@ def test_get_operator_id():
 
 
 def test_get_operator_from_id():
-    operator_id = 1  # Replace with a valid registered operator ID
+    operator_id = 1  # Use integer format for the operator ID
     address = clients.avs_registry_reader.get_operator_from_id(operator_id)
     assert address is not None, "Returned address should not be None"
     assert Web3.is_checksum_address(address), f"Invalid Ethereum address returned: {address}"

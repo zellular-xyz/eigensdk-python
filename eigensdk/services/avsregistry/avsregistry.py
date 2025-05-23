@@ -85,6 +85,7 @@ class AvsRegistryService:
 
         return quorums_avs_state
 
-    def get_operator_info(self, operator_id: bytes) -> OperatorInfo:
-        operator_addr = self.avs_registry_reader.get_operator_from_id(operator_id)
+    def get_operator_info(self, operator_id: int) -> OperatorInfo:
+        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
+        operator_addr = self.avs_registry_reader.get_operator_from_id(operator_id_bytes32)
         return self.operator_info_service.get_operator_info(operator_addr)

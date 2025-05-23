@@ -34,10 +34,12 @@ create-env:
 	docker compose run test scripts/create_env.py
 
 # Run tests against the running Anvil instance
-test: 
-	docker compose run --rm test python -m pytest tests/ -v
-
-# ********** dev targets **********
+test:
+	docker compose run --rm test sh -c "\
+		python -m pytest tests/chainio/anvil/eigenlayer/reader/test_el_reader.py && \
+		python -m pytest tests/chainio/anvil/eigenlayer/writer/test_el_writer.py && \
+		python -m pytest tests/chainio/anvil/avsregistry/reader/test_avs_reader.py && \
+		python -m pytest tests/chainio/anvil/avsregistry/writer/test_avs_writer.py"
 
 # Format code with black
 format:

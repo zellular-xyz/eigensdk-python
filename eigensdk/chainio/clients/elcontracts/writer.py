@@ -349,8 +349,3 @@ class ELWriter:
             Web3.to_checksum_address(cast(Address, operator_address))
         ).call()
         return operator_id
-
-    def get_operator_from_id(self, operator_id: bytes) -> Address:
-        operator_address = self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
-        return cast(Address, Web3.to_checksum_address(operator_address))
-
