@@ -277,7 +277,7 @@ class ELWriter:
             register_params,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10_000_000)
         return receipt
 
     def remove_permission(self, request: dict) -> TxReceipt:
