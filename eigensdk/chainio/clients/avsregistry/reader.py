@@ -401,15 +401,8 @@ class AvsRegistryReader:
             ]
 
             for log in decoded_logs:
-                operator_id_raw = log["args"]["operatorId"]
+                operator_id = log["args"]["operatorId"]
                 socket = log["args"]["socket"]
-
-                # Normalize operator ID
-                operator_id = (
-                    bytes.fromhex(operator_id_raw[2:])
-                    if operator_id_raw.startswith("0x")
-                    else bytes.fromhex(operator_id_raw)
-                )
 
                 operator_id_to_socket_map[operator_id] = socket
 
