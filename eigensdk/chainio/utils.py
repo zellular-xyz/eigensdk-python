@@ -25,7 +25,7 @@ def send_transaction(
     func: ContractFunction,
     pk_wallet: LocalAccount,
     eth_http_client: Web3,
-    gas_limit: int = 1000000,
+    gas_limit: int = 10_000_000,
     skip_estimation: bool = True,
 ) -> TxReceipt:
     if skip_estimation:

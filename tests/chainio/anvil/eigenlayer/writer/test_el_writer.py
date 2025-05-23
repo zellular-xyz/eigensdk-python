@@ -1,4 +1,5 @@
 from web3 import Web3
+from unittest.mock import patch, MagicMock
 
 from eigensdk._types import Operator
 from tests.builder import clients, clients_2, config
@@ -181,19 +182,58 @@ def test_remove_admin_flow():
     )
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
-
-# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
 def test_register_for_operator_sets():
-    return
+    request = {
+            "operator_address": config["operator_address"],
+            "avs_address": config["service_manager_address"],
+            "operator_set_ids": [0],
+            "socket": "operator-socket",
+            "bls_key_pair": KeyPair(),
+        }
+    receipt = clients.el_writer.register_for_operator_sets(
+        config["avs_registry_coordinator_address"],
+        request
+    )
+    assert receipt["status"] == 1
+    print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
-# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+
 def test_deregister_from_operator_sets():
-    return
 
-# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
+    # Now deregister from the same operator sets
+    operator_address = config["operator_address"]
+    request = {
+        "avs_address": config["service_manager_address"],
+        "operator_set_ids": [0],
+    }
+    
+    receipt = clients.el_writer.deregister_from_operator_sets(
+        operator_address,
+        request
+    )
+    
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
+
 def test_modify_allocations():
-   return 
-
-# TODO: Scenario Problem , first do avs registry and delegation and quorum and .... 
-def test_process_claim():
-    return
+    # Get the operator address from config
+    operator_address = config["operator_address"]
+    
+    # Set up parameters for modify_allocations
+    avs_service_manager = config["service_manager_address"]
+    operator_set_id = 0
+    strategies = [config["strategy_addr"]]
+    new_magnitudes = [1000]
+    
+    receipt = clients.el_writer.modify_allocations(
+        operator_address,
+        avs_service_manager,
+        operator_set_id,
+        strategies,
+        new_magnitudes
+    )
+    
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")

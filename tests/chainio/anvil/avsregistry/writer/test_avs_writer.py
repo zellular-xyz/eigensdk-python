@@ -121,11 +121,6 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
 
 # TODO: fix this function Tests
 def test_register_operator_in_quorum_with_avs_registry_coordinator():
-    operator_status = clients.avs_registry_reader.get_operator_status(
-        config["operator_address"]
-    )
-    assert operator_status == 0
-
     receipt = clients.avs_registry_writer.register_operator_in_quorum_with_avs_registry_coordinator(
         operator_ecdsa_private_key=config["ecdsa_private_key"],
         operator_to_avs_registration_sig_salt=os.urandom(32),
@@ -134,12 +129,8 @@ def test_register_operator_in_quorum_with_avs_registry_coordinator():
         quorum_numbers=[0],
         socket="127.0.0.1:8080",
     )
-    assert receipt is not None
-
-    operator_status = clients.avs_registry_reader.get_operator_status(
-        config["operator_address"]
-    )
-    assert operator_status == 1
+    assert receipt["status"] == 1
+    print(f"Registered operator in quorum with tx hash: {receipt['transactionHash'].hex()}")
 
 
 

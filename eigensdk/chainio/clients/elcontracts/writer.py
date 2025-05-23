@@ -154,7 +154,7 @@ class ELWriter:
             ),
             claim["tokenIndices"],  # list of uint32
             claim["tokenTreeProofs"],  # list of bytes
-            [  # tokenLeaves (list of tuples)
+            [  
                 (Web3.to_checksum_address(tl["token"]), int(tl["cumulativeEarnings"]))
                 for tl in claim["tokenLeaves"]
             ],
@@ -277,7 +277,7 @@ class ELWriter:
             register_params,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10_000_000)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
     def remove_permission(self, request: dict) -> TxReceipt:
