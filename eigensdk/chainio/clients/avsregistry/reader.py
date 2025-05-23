@@ -103,7 +103,7 @@ class AvsRegistryReader:
             [
                 OperatorStateRetrieverOperator(
                     operator=operator[0],
-                    operator_id="0x" + operator[1].hex(),
+                    operator_id=operator[1],
                     stake=operator[2],
                 )
                 for operator in quorum
@@ -315,9 +315,8 @@ class AvsRegistryReader:
         operator_id = self.registry_coordinator.functions.getOperatorId(operator_address).call()
         return operator_id
 
-    def get_operator_from_id(self, operator_id: int) -> Optional[str]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
-        return self.registry_coordinator.functions.getOperatorFromId(operator_id_bytes32).call()
+    def get_operator_from_id(self, operator_id: bytes) -> Optional[str]:
+        return self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
 
     def query_registration_detail(self, operator_address: Address) -> Optional[List[bool]]:
         operator_id = self.get_operator_id(operator_address=operator_address)
