@@ -489,3 +489,14 @@ def test_query_existing_registered_operator_pubkeys():
     print(
         f"Found {len(operator_addresses)} registered operator public keys up to block {stop_block}"
     )
+
+
+def test_registry_coordinator_owner():
+    owner = clients.avs_registry_reader.get_registry_coordinator_owner()
+    assert Web3.is_address(owner), "Owner should be a valid Ethereum address"
+    print(f"RegistryCoordinator owner: {owner}")
+    is_owner = clients.avs_registry_reader.is_registry_coordinator_owner(owner)
+    assert is_owner is True, "Owner should be verified as the owner"    
+    test_address = Web3.to_checksum_address("0x1234567890123456789012345678901234567890")
+    can_satisfy = clients.avs_registry_reader.can_satisfy_only_coordinator_owner_modifier(test_address)
+    print(f"Can address {test_address} satisfy onlyCoordinatorOwner modifier? {can_satisfy}")

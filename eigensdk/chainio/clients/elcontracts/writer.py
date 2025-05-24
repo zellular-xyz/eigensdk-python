@@ -154,7 +154,7 @@ class ELWriter:
             ),
             claim["tokenIndices"],  # list of uint32
             claim["tokenTreeProofs"],  # list of bytes
-            [  
+            [
                 (Web3.to_checksum_address(tl["token"]), int(tl["cumulativeEarnings"]))
                 for tl in claim["tokenLeaves"]
             ],
@@ -349,3 +349,11 @@ class ELWriter:
             Web3.to_checksum_address(cast(Address, operator_address))
         ).call()
         return operator_id
+
+    def set_avs_registrar(self, avs_address: str, registrar_address: str) -> TxReceipt:
+        func = self.allocation_manager.functions.setAVSRegistrar(
+            Web3.to_checksum_address(avs_address),
+            Web3.to_checksum_address(registrar_address),
+        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        return receipt

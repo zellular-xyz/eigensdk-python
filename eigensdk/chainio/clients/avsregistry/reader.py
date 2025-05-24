@@ -466,3 +466,13 @@ class AvsRegistryReader:
                 )
                 operator_addresses.append(operator_addr)
         return operator_addresses, operator_pubkeys, to_block
+
+    def get_registry_coordinator_owner(self) -> str:
+        return self.registry_coordinator.functions.owner().call()
+        
+    def is_registry_coordinator_owner(self, address: str) -> bool:
+        owner = self.get_registry_coordinator_owner()
+        return owner.lower() == address.lower()
+        
+    def can_satisfy_only_coordinator_owner_modifier(self, address: str) -> bool:
+        return self.is_registry_coordinator_owner(address)

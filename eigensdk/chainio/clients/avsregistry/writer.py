@@ -78,13 +78,14 @@ class AvsRegistryWriter:
     # TODO: fix this function Tests
     def register_operator(
         self,
-        operator_ecdsa_private_key: ecdsa.SigningKey,
+        operator_ecdsa_private_key: str,
         bls_key_pair: KeyPair,
         quorum_numbers: List[int],
         socket: str,
     ) -> TxReceipt:
-        operator_addr = self.web3.eth.account.from_key(operator_ecdsa_private_key).address
+
         account = Account.from_key(operator_ecdsa_private_key)
+        operator_addr = account.address
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
@@ -134,73 +135,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
-    def register_operator_in_quorum_with_avs_registry_coordinator(
-        self,
-        operator_ecdsa_private_key: str,
-        operator_to_avs_registration_sig_salt: bytes,
-        operator_to_avs_registration_sig_expiry: int,
-        bls_key_pair: KeyPair,
-        quorum_numbers: List[int],
-        socket: str,
-    ) -> TxReceipt:
-
-        account = Account.from_key(operator_ecdsa_private_key)
-        operator_addr = account.address
-        g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
-            operator_addr
-        ).call()
-        g1_hashed_msg_as_point = G1Point(*g1_hashed_msg_to_sign)
-        signed_msg = bls_key_pair.sign_hashed_to_curve_message(g1_hashed_msg_as_point)
-        pubkey_reg_params = (
-            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
-            (
-                int(bls_key_pair.pub_g1.getX().getStr()),
-                int(bls_key_pair.pub_g1.getY().getStr()),
-            ),
-            (
-                (
-                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
-                ),
-                (
-                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
-                ),
-            ),
-        )
-        signature_salt = operator_to_avs_registration_sig_salt
-        signature_expiry = operator_to_avs_registration_sig_expiry
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
-            operator_addr, self.service_manager_addr, signature_salt, signature_expiry
-        )
-        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-        operator_signature_with_salt_and_expiry = (
-            operator_signature,
-            signature_salt,
-            signature_expiry,
-        )
-        func = self.registry_coordinator.functions.registerOperator(
-            utils.nums_to_bytes(quorum_numbers),
-            socket,
-            pubkey_reg_params,
-            operator_signature_with_salt_and_expiry,
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
-
-    # TODO: fix this function Tests
-    def update_stakes_of_entire_operator_set_for_quorums(
-        self,
-        operators_per_quorum: List[List[str]],
-        quorum_numbers: List[int],
-    ) -> TxReceipt:
-        func = self.registry_coordinator.functions.updateOperatorsForQuorum(
-            operators_per_quorum,
-            utils.nums_to_bytes(quorum_numbers),
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
 
     # TODO: fix this function Tests
     def register_operator_with_churn(
@@ -289,6 +223,20 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
+    
+    # TODO: fix this function Tests
+    def update_stakes_of_entire_operator_set_for_quorums(
+        self,
+        operators_per_quorum: List[List[str]],
+        quorum_numbers: List[int],
+    ) -> TxReceipt:
+        func = self.registry_coordinator.functions.updateOperatorsForQuorum(
+            operators_per_quorum,
+            utils.nums_to_bytes(quorum_numbers),
+        )
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        return receipt
+
 
     def update_stakes_of_operator_subset_for_all_quorums(self, operators: List[str]) -> TxReceipt:
         func = self.registry_coordinator.functions.updateOperators(operators)
@@ -429,6 +377,11 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
+    def set_avs(self, avs_address: str) -> TxReceipt:
+        func = self.registry_coordinator.functions.setAVS(avs_address)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        return receipt
+
     # TODO: fix this function Tests
     def set_account_identifier(
         self,
@@ -502,3 +455,4 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
+

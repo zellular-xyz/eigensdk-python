@@ -210,10 +210,19 @@ def get_pubkey_registration_params(
             int(signed_msg.getX().getStr()),
             int(signed_msg.getY().getStr()),
         ),
-        "pubkeyG1": (int(bls_key_pair.pub_g1.getX().getStr()), int(bls_key_pair.pub_g1.getY().getStr())),
+        "pubkeyG1": (
+            int(bls_key_pair.pub_g1.getX().getStr()),
+            int(bls_key_pair.pub_g1.getY().getStr()),
+        ),
         "pubkeyG2": (
-            (int(bls_key_pair.pub_g2.getX().get_a().getStr()), int(bls_key_pair.pub_g2.getX().get_b().getStr())),
-            (int(bls_key_pair.pub_g2.getY().get_a().getStr()), int(bls_key_pair.pub_g2.getY().get_b().getStr())),
+            (
+                int(bls_key_pair.pub_g2.getX().get_a().getStr()),
+                int(bls_key_pair.pub_g2.getX().get_b().getStr()),
+            ),
+            (
+                int(bls_key_pair.pub_g2.getY().get_a().getStr()),
+                int(bls_key_pair.pub_g2.getY().get_b().getStr()),
+            ),
         ),
     }
 

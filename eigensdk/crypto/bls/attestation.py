@@ -19,15 +19,15 @@ class G1Point(G1):
         self.setStr(f"1 {x} {y}".encode("utf-8"))
         if x == 0 and y == 0:
             self.clear()
-            
+
     def from_G1(g1: G1):
         x = int(g1.getX().getStr())
         y = int(g1.getY().getStr())
         return G1Point(x, y)
-    
+
     def __add__(self, a: "G1Point"):
         return G1Point.from_G1(super().__add__(a).normalize())
-    
+
     def __sub__(self, a: "G1Point"):
         return G1Point.from_G1(super().__sub__(a).normalize())
 
@@ -52,7 +52,7 @@ class G2Point(G2):
         self.setStr(f"1 {xb} {xa} {yb} {ya}".encode("utf-8"))
         if xa == 0 and xb == 0 and ya == 0 and yb == 0:
             self.clear()
-            
+
     def from_G2(g2: G2):
         xa = int(g2.getX().get_a().getStr())
         xb = int(g2.getX().get_b().getStr())
@@ -60,10 +60,9 @@ class G2Point(G2):
         yb = int(g2.getY().get_b().getStr())
         return G2Point(xa, xb, ya, yb)
 
-    
     def __add__(self, a: "G2Point"):
         return G2Point.from_G2(super().__add__(a).normalize())
-    
+
     def __sub__(self, a: "G2Point"):
         return G2Point.from_G2(super().__sub__(a).normalize())
 

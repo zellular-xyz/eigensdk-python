@@ -5,9 +5,11 @@ from eigensdk._types import Operator
 from tests.builder import clients, clients_2, config
 from eigensdk.crypto.bls.attestation import KeyPair
 
+
 def advance_chain_by_n_blocks(web3_client, n: int):
     for _ in range(n):
         web3_client.provider.make_request("evm_mine", [])
+
 
 def test_register_as_operator():
     operator = Operator(
@@ -23,20 +25,21 @@ def test_register_as_operator():
     assert receipt["status"] == 1
     print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
 
+
 def test_register_for_operator_sets():
     request = {
-            "operator_address": config["operator_address"],
-            "avs_address": config["service_manager_address"],
-            "operator_set_ids": [0],
-            "socket": "operator-socket",
-            "bls_key_pair": KeyPair(),
-        }
+        "operator_address": config["operator_address"],
+        "avs_address": config["service_manager_address"],
+        "operator_set_ids": [0],
+        "socket": "operator-socket",
+        "bls_key_pair": KeyPair(),
+    }
     receipt = clients.el_writer.register_for_operator_sets(
-        config["avs_registry_coordinator_address"],
-        request
+        config["avs_registry_coordinator_address"], request
     )
     assert receipt["status"] == 1
     print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+
 
 def test_deregister_from_operator_sets():
 
@@ -46,12 +49,9 @@ def test_deregister_from_operator_sets():
         "avs_address": config["service_manager_address"],
         "operator_set_ids": [0],
     }
-    
-    receipt = clients.el_writer.deregister_from_operator_sets(
-        operator_address,
-        request
-    )
-    
+
+    receipt = clients.el_writer.deregister_from_operator_sets(operator_address, request)
+
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Deregistered from operator sets with tx hash: {receipt['transactionHash'].hex()}")
@@ -216,25 +216,20 @@ def test_remove_admin_flow():
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
 
-
 def test_modify_allocations():
     # Get the operator address from config
     operator_address = config["operator_address"]
-    
+
     # Set up parameters for modify_allocations
     avs_service_manager = config["service_manager_address"]
     operator_set_id = 0
     strategies = [config["strategy_addr"]]
     new_magnitudes = [1000]
-    
+
     receipt = clients.el_writer.modify_allocations(
-        operator_address,
-        avs_service_manager,
-        operator_set_id,
-        strategies,
-        new_magnitudes
+        operator_address, avs_service_manager, operator_set_id, strategies, new_magnitudes
     )
-    
+
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")
