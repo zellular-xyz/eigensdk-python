@@ -75,7 +75,6 @@ class AvsRegistryWriter:
         if service_manager_abi is None:
             self.logger.warning("ServiceManager ABI not provided")
 
-    # TODO: fix this function Tests
     def register_operator(
         self,
         operator_ecdsa_private_key: str,
@@ -132,7 +131,8 @@ class AvsRegistryWriter:
             pubkey_reg_params,
             operator_signature_with_salt_and_expiry,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10000000)
+
         return receipt
 
     # TODO: fix this function Tests
@@ -146,52 +146,57 @@ class AvsRegistryWriter:
         operators_to_kick: List[str],
         socket: str,
     ) -> TxReceipt:
-        operator_addr = self.web3.eth.account.from_key(
-            operator_ecdsa_private_key.to_string()
-        ).address
+        account = Account.from_key(operator_ecdsa_private_key)
+        churn_approval_account = Account.from_key(churn_approval_ecdsa_private_key)
+        operator_addr = account.address
         g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
             operator_addr
         ).call()
         g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
         signed_msg = bls_key_pair.sign_hashed_to_curve_message(
             convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
-        ).g1_point
-        g1_pubkey_bn254, g2_pubkey_bn254 = convert_to_bn254_g1_point(
-            bls_key_pair.get_pub_g1()
-        ), convert_to_bn254_g2_point(bls_key_pair.get_pub_g2())
-        pubkey_reg_params = {
-            "pubkeyRegistrationSignature": signed_msg,
-            "pubkeyG1": g1_pubkey_bn254,
-            "pubkeyG2": g2_pubkey_bn254,
-        }
-        signature_salt, cur_block_num, sig_valid_for_seconds = (
-            os.urandom(32),
-            self.web3.eth.block_number,
-            60 * 60,
         )
-        signature_expiry = (
-            self.web3.eth.get_block(cur_block_num)["timestamp"] + sig_valid_for_seconds
+        pubkey_reg_params = (
+            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
+            (
+                int(bls_key_pair.pub_g1.getX().getStr()),
+                int(bls_key_pair.pub_g1.getY().getStr()),
+            ),
+            (
+                (
+                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
+                ),
+                (
+                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
+                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
+                ),
+            ),
         )
+        signature_salt = os.urandom(32)
+        sig_valid_for_seconds = 60 * 60
+        signature_expiry = self.web3.eth.get_block("latest")["timestamp"] + sig_valid_for_seconds
         msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
             operator_addr, self.service_manager_addr, signature_salt, signature_expiry
         )
-        operator_signature_bytes = self.web3.eth.account.sign_message(
-            msg_to_sign, operator_ecdsa_private_key
-        ).signature
-        operator_signature_bytes = operator_signature_bytes[:-1] + bytes(
-            [operator_signature_bytes[-1] + 27]
+        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
+
+        # Convert dict to tuple format that the contract expects: (bytes, bytes32, uint256)
+        operator_signature_with_salt_and_expiry = (
+            operator_signature,
+            signature_salt,
+            signature_expiry,
         )
-        operator_signature_with_salt_and_expiry = {
-            "signature": operator_signature_bytes,
-            "salt": signature_salt,
-            "expiry": signature_expiry,
-        }
+
+        # Convert operator_kick_params to the expected format: (uint8, address)[]
         operator_kick_params = [
-            {"operator": op, "quorumNumber": quorum_numbers_to_kick[i]}
-            for i, op in enumerate(operators_to_kick)
+            (quorum_numbers_to_kick[i], op) for i, op in enumerate(operators_to_kick)
         ]
         churn_signature_salt = os.urandom(32)
-        operator_id_bytes = bytes.fromhex(bls_key_pair.get_pub_g1().get_operator_id()[2:])
+
+        operator_id_bytes = self.bls_apk_registry.functions.operatorToPubkeyHash(
+            operator_addr
+        ).call()
         churn_msg_to_sign = (
             self.registry_coordinator.functions.calculateOperatorChurnApprovalDigestHash(
                 operator_addr,
@@ -201,26 +206,26 @@ class AvsRegistryWriter:
                 signature_expiry,
             ).call()
         )
-        churn_approval_signature_bytes = self.web3.eth.account.sign_message(
-            churn_msg_to_sign, churn_approval_ecdsa_private_key
-        ).signature
-        churn_approval_signature_bytes = churn_approval_signature_bytes[:-1] + bytes(
-            [churn_approval_signature_bytes[-1] + 27]
+        churn_approval_signature_bytes = churn_approval_account.unsafe_sign_hash(churn_msg_to_sign)[
+            "signature"
+        ]
+
+        # Convert dict to tuple format that the contract expects: (bytes, bytes32, uint256)
+        churn_approver_signature_with_salt_and_expiry = (
+            churn_approval_signature_bytes,
+            churn_signature_salt,
+            signature_expiry,
         )
-        churn_approver_signature_with_salt_and_expiry = {
-            "signature": churn_approval_signature_bytes,
-            "salt": churn_signature_salt,
-            "expiry": signature_expiry,
-        }
+
         func = self.registry_coordinator.functions.registerOperatorWithChurn(
-            quorum_numbers,
+            utils.nums_to_bytes(quorum_numbers),
             socket,
             pubkey_reg_params,
             operator_kick_params,
             churn_approver_signature_with_salt_and_expiry,
             operator_signature_with_salt_and_expiry,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10000000)
         return receipt
 
     # TODO: fix this function Tests
