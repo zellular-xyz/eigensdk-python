@@ -17,7 +17,7 @@ from eigensdk.chainio.utils import (
     convert_to_bn254_g1_point,
     convert_bn254_geth_to_gnark,
 )
-from eigensdk.crypto.bls.attestation import KeyPair, G1Point
+from eigensdk.crypto.bls.attestation import KeyPair
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
 
@@ -135,7 +135,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-
     # TODO: fix this function Tests
     def register_operator_with_churn(
         self,
@@ -223,7 +222,7 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-    
+
     # TODO: fix this function Tests
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
@@ -236,7 +235,6 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
 
     def update_stakes_of_operator_subset_for_all_quorums(self, operators: List[str]) -> TxReceipt:
         func = self.registry_coordinator.functions.updateOperators(operators)
@@ -455,4 +453,3 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
