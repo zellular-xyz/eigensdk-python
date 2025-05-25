@@ -13,8 +13,6 @@ from web3.types import TxReceipt
 from eigensdk.chainio import utils
 from eigensdk.chainio.utils import (
     BN254G1Point,
-    convert_to_bn254_g2_point,
-    convert_to_bn254_g1_point,
     convert_bn254_geth_to_gnark,
 )
 from eigensdk.crypto.bls.attestation import KeyPair
@@ -75,160 +73,7 @@ class AvsRegistryWriter:
         if service_manager_abi is None:
             self.logger.warning("ServiceManager ABI not provided")
 
-    def register_operator(
-        self,
-        operator_ecdsa_private_key: str,
-        bls_key_pair: KeyPair,
-        quorum_numbers: List[int],
-        socket: str,
-    ) -> TxReceipt:
 
-        account = Account.from_key(operator_ecdsa_private_key)
-        operator_addr = account.address
-        g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
-            operator_addr
-        ).call()
-        g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
-        signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
-        )
-        pubkey_reg_params = (
-            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
-            (
-                int(bls_key_pair.pub_g1.getX().getStr()),
-                int(bls_key_pair.pub_g1.getY().getStr()),
-            ),
-            (
-                (
-                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
-                ),
-                (
-                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
-                ),
-            ),
-        )
-        signature_salt, sig_valid_for_seconds = (
-            os.urandom(32),
-            60 * 60,
-        )
-        current_timestamp = self.web3.eth.get_block("latest")["timestamp"]
-        signature_expiry = current_timestamp + sig_valid_for_seconds
-
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
-            operator_addr, self.service_manager_addr, signature_salt, signature_expiry
-        )
-        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-        operator_signature_with_salt_and_expiry = (
-            operator_signature,
-            signature_salt,
-            signature_expiry,
-        )
-        func = self.registry_coordinator.functions.registerOperator(
-            utils.nums_to_bytes(quorum_numbers),
-            socket,
-            pubkey_reg_params,
-            operator_signature_with_salt_and_expiry,
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10000000)
-
-        return receipt
-
-    # TODO: fix this function Tests
-    def register_operator_with_churn(
-        self,
-        operator_ecdsa_private_key: ecdsa.SigningKey,
-        churn_approval_ecdsa_private_key: ecdsa.SigningKey,
-        bls_key_pair: KeyPair,
-        quorum_numbers: List[int],
-        quorum_numbers_to_kick: List[int],
-        operators_to_kick: List[str],
-        socket: str,
-    ) -> TxReceipt:
-        account = Account.from_key(operator_ecdsa_private_key)
-        churn_approval_account = Account.from_key(churn_approval_ecdsa_private_key)
-        operator_addr = account.address
-        g1_hashed_msg_to_sign = self.registry_coordinator.functions.pubkeyRegistrationMessageHash(
-            operator_addr
-        ).call()
-        g1_hashed_msg_as_point = BN254G1Point(g1_hashed_msg_to_sign[0], g1_hashed_msg_to_sign[1])
-        signed_msg = bls_key_pair.sign_hashed_to_curve_message(
-            convert_bn254_geth_to_gnark(g1_hashed_msg_as_point)
-        )
-        pubkey_reg_params = (
-            (int(signed_msg.getX().getStr()), int(signed_msg.getY().getStr())),
-            (
-                int(bls_key_pair.pub_g1.getX().getStr()),
-                int(bls_key_pair.pub_g1.getY().getStr()),
-            ),
-            (
-                (
-                    int(bls_key_pair.pub_g2.getX().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getX().get_b().getStr()),
-                ),
-                (
-                    int(bls_key_pair.pub_g2.getY().get_a().getStr()),
-                    int(bls_key_pair.pub_g2.getY().get_b().getStr()),
-                ),
-            ),
-        )
-        signature_salt = os.urandom(32)
-        sig_valid_for_seconds = 60 * 60
-        signature_expiry = self.web3.eth.get_block("latest")["timestamp"] + sig_valid_for_seconds
-        msg_to_sign = self.el_reader.calculate_operator_avs_registration_digest_hash(
-            operator_addr, self.service_manager_addr, signature_salt, signature_expiry
-        )
-        operator_signature = account.unsafe_sign_hash(msg_to_sign)["signature"]
-
-        # Convert dict to tuple format that the contract expects: (bytes, bytes32, uint256)
-        operator_signature_with_salt_and_expiry = (
-            operator_signature,
-            signature_salt,
-            signature_expiry,
-        )
-
-        # Convert operator_kick_params to the expected format: (uint8, address)[]
-        operator_kick_params = [
-            (quorum_numbers_to_kick[i], op) for i, op in enumerate(operators_to_kick)
-        ]
-        churn_signature_salt = os.urandom(32)
-
-        operator_id_bytes = self.bls_apk_registry.functions.operatorToPubkeyHash(
-            operator_addr
-        ).call()
-        churn_msg_to_sign = (
-            self.registry_coordinator.functions.calculateOperatorChurnApprovalDigestHash(
-                operator_addr,
-                operator_id_bytes,
-                operator_kick_params,
-                churn_signature_salt,
-                signature_expiry,
-            ).call()
-        )
-        churn_approval_signature_bytes = churn_approval_account.unsafe_sign_hash(churn_msg_to_sign)[
-            "signature"
-        ]
-
-        # Convert dict to tuple format that the contract expects: (bytes, bytes32, uint256)
-        churn_approver_signature_with_salt_and_expiry = (
-            churn_approval_signature_bytes,
-            churn_signature_salt,
-            signature_expiry,
-        )
-
-        func = self.registry_coordinator.functions.registerOperatorWithChurn(
-            utils.nums_to_bytes(quorum_numbers),
-            socket,
-            pubkey_reg_params,
-            operator_kick_params,
-            churn_approver_signature_with_salt_and_expiry,
-            operator_signature_with_salt_and_expiry,
-        )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=10000000)
-        return receipt
-
-    # TODO: fix this function Tests
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
         operators_per_quorum: List[List[str]],
@@ -246,16 +91,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
-    def deregister_operator(
-        self,
-        quorum_numbers: List[int],
-    ) -> TxReceipt:
-        func = self.registry_coordinator.functions.deregisterOperator(quorum_numbers)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
-
-    # TODO: fix this function Tests
     def update_socket(
         self,
         socket: str,
@@ -385,14 +220,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
-    def set_account_identifier(
-        self,
-        account_identifier_address: str,
-    ) -> TxReceipt:
-        func = self.registry_coordinator.functions.setAccountIdentifier(account_identifier_address)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
 
     def set_ejection_cooldown(
         self,

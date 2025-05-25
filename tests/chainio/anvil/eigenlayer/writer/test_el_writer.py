@@ -217,19 +217,14 @@ def test_remove_admin_flow():
 
 
 def test_modify_allocations():
-    # Get the operator address from config
     operator_address = config["operator_address"]
-
-    # Set up parameters for modify_allocations
     avs_service_manager = config["service_manager_address"]
     operator_set_id = 0
     strategies = [config["strategy_addr"]]
     new_magnitudes = [1000]
-
     receipt = clients.el_writer.modify_allocations(
         operator_address, avs_service_manager, operator_set_id, strategies, new_magnitudes
     )
-
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Modified allocations with tx hash: {receipt['transactionHash'].hex()}")

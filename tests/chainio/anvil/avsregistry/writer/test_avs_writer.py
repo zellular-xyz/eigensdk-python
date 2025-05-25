@@ -7,6 +7,7 @@ from web3 import Web3
 import os
 import time
 from tests.builder import clients, config
+from tests.chainio.anvil.eigenlayer.writer.test_el_writer import *
 from eigensdk.crypto.bls.attestation import KeyPair
 from eigensdk.chainio.utils import BN254G1Point, convert_bn254_geth_to_gnark
 from eigensdk.contracts import ABIs
@@ -123,66 +124,53 @@ def test_set_avs():
     assert receipt["status"] == 1
     print(f"Set AVS with tx hash: {receipt['transactionHash'].hex()}")
 
+def test_register_on_startup():
+    test_register_as_operator()
+    test_deposit_erc20_into_strategy()
+    test_register_for_operator_sets()
 
-# TODO: fix this function Tests
-def test_register_operator():
-    return
-
-
-# TODO: fix this function Tests
-def test_register_operator_with_churn():
-    return
-
-
-# TODO: fix this function Tests
 def test_update_stakes_of_entire_operator_set_for_quorums():
-    return
+    test_register_on_startup()
+    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operators_per_quorum = [[operator_addr]]
+    quorum_numbers = [0]  # Just updating quorum 0
+    receipt = clients.avs_registry_writer.update_stakes_of_entire_operator_set_for_quorums(
+        operators_per_quorum, quorum_numbers
+    )
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Updated stakes for entire operator set with tx hash: {receipt['transactionHash'].hex()}")
 
-
-# TODO: fix this function Tests
-def test_deregister_operator():
-    return
-
-
-# TODO: fix this function Tests
 def test_update_socket():
-    return
-
+    test_register_on_startup()
+    new_socket = "192.168.1.100:9000"
+    receipt = clients.avs_registry_writer.update_socket(new_socket)
+    assert receipt is not None
+    assert receipt["status"] == 1
+    print(f"Updated socket with tx hash: {receipt['transactionHash'].hex()}")
 
 # TODO: fix this function Tests
 def test_set_slashable_stake_lookahead():
     return
 
-
 # TODO: fix this function Tests
 def test_create_slashable_stake_quorum():
     return
 
-
 # TODO: fix this function Tests
 def test_eject_operator():
     return
-
-
 # TODO: fix this function Tests
-def test_set_account_identifier():
+def test_remove_strategies():
     return
-
 
 # TODO: fix this function Tests
 def test_add_strategies():
     return
 
-
-# TODO: fix this function Tests
-def test_remove_strategies():
-    return
-
-
 # TODO: fix this function Tests
 def test_create_avs_rewards_submission():
     return
-
 
 # TODO: fix this function Tests
 def test_create_operator_directed_avs_rewards_submission():
