@@ -1,24 +1,13 @@
 import logging
-import os
 from typing import List, Optional, Dict, Any, Tuple
-
-import ecdsa
-from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from web3 import Web3
 from web3.contract.contract import Contract
 from web3.types import TxReceipt
-
 from eigensdk.chainio import utils
-from eigensdk.chainio.utils import (
-    BN254G1Point,
-    convert_bn254_geth_to_gnark,
-)
-from eigensdk.crypto.bls.attestation import KeyPair
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
-
 
 class AvsRegistryWriter:
     def __init__(
@@ -73,7 +62,6 @@ class AvsRegistryWriter:
         if service_manager_abi is None:
             self.logger.warning("ServiceManager ABI not provided")
 
-
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
         operators_per_quorum: List[List[str]],
@@ -110,7 +98,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
     def set_slashable_stake_lookahead(
         self,
         quorum_number: int,
@@ -143,7 +130,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
     def create_slashable_stake_quorum(
         self,
         operator_set_params: Tuple[int, int, int],
@@ -160,7 +146,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
     def eject_operator(
         self,
         operator_address: str,
@@ -220,7 +205,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-
     def set_ejection_cooldown(
         self,
         ejection_cooldown: int,
@@ -229,14 +213,13 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
     def add_strategies(
         self,
         quorum_number: int,
         strategy_params: List[Dict],
     ) -> TxReceipt:
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client,gas_limit=20000000)
         return receipt
 
     def update_avs_metadata_uri(
@@ -250,7 +233,7 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
+
     def remove_strategies(
         self,
         quorum_number: int,
@@ -260,7 +243,7 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
+
     def create_avs_rewards_submission(
         self,
         rewards_submission: List[Dict],
@@ -272,7 +255,7 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    # TODO: fix this function Tests
+
     def create_operator_directed_avs_rewards_submission(
         self,
         operator_directed_rewards_submissions: List[Dict],
@@ -285,3 +268,8 @@ class AvsRegistryWriter:
         )
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
+
+    def is_registry_coordinator_owner(self, address: str = None) -> bool:
+        owner_address = self.registry_coordinator.functions.owner().call()
+        return owner_address.lower() == address.lower()
+
