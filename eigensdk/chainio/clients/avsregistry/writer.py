@@ -9,6 +9,7 @@ from eigensdk.chainio import utils
 from ..elcontracts.reader import ELReader
 from ...utils import send_transaction
 
+
 class AvsRegistryWriter:
     def __init__(
         self,
@@ -219,7 +220,7 @@ class AvsRegistryWriter:
         strategy_params: List[Dict],
     ) -> TxReceipt:
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client,gas_limit=20000000)
+        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=20000000)
         return receipt
 
     def update_avs_metadata_uri(
@@ -233,7 +234,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-
     def remove_strategies(
         self,
         quorum_number: int,
@@ -242,7 +242,6 @@ class AvsRegistryWriter:
         func = self.stake_registry.functions.removeStrategies(quorum_number, indices_to_remove)
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
 
     def create_avs_rewards_submission(
         self,
@@ -254,7 +253,6 @@ class AvsRegistryWriter:
         func = service_manager_contract.functions.createAVSRewardsSubmission(rewards_submission)
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
-
 
     def create_operator_directed_avs_rewards_submission(
         self,
@@ -269,7 +267,6 @@ class AvsRegistryWriter:
         receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
         return receipt
 
-    def is_registry_coordinator_owner(self, address: str = None) -> bool:
+    def is_registry_coordinator_owner(self, address: str) -> bool:
         owner_address = self.registry_coordinator.functions.owner().call()
         return owner_address.lower() == address.lower()
-

@@ -329,7 +329,7 @@ class AvsRegistryReader:
 
     def is_operator_set_quorum(self, quorum_number: int) -> Optional[bool]:
         return self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call()
-    
+
     def get_operator_id_from_operator_address(self, operator_address: str) -> Optional[bytes]:
         return self.bls_apk_registry.functions.operatorToPubkeyHash(operator_address).call()
 
