@@ -7,11 +7,13 @@ from tests.chainio.anvil.avsregistry.writer.utils import (
     register_for_operator_sets,
 )
 
+
 @pytest.mark.order(1)
 def test_register_on_startup():
     register_as_operator()
     deposit_erc20_into_strategy()
     register_for_operator_sets()
+
 
 @pytest.mark.order(2)
 def test_update_stakes_of_entire_operator_set_for_quorums():
@@ -33,6 +35,7 @@ def test_update_socket():
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Updated socket with tx hash: {receipt['transactionHash'].hex()}")
+
 
 @pytest.mark.order(4)
 def test_set_avs():
