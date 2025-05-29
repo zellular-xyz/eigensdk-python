@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-import pytest
 from eth_account import Account
 from web3 import Web3
 from web3.contract.contract import ContractFunction

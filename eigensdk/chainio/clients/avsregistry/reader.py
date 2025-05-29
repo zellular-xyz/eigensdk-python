@@ -1,12 +1,14 @@
 import logging
 import math
 from typing import Dict, List, Optional, Tuple
+
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from eth_utils import event_abi_to_log_topic
 from web3 import Web3
 from web3._utils.events import get_event_data
 from web3.contract.contract import Contract
+
 from eigensdk._types import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,

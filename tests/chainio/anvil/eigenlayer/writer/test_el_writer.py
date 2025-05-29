@@ -1,9 +1,8 @@
 from web3 import Web3
-from unittest.mock import patch, MagicMock
 
 from eigensdk._types import Operator
-from tests.builder import clients, clients_2, config
 from eigensdk.crypto.bls.attestation import KeyPair
+from tests.builder import clients, clients_2, config
 
 
 def advance_chain_by_n_blocks(web3_client, n: int):

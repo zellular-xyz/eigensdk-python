@@ -1,5 +1,6 @@
 import pytest
 from web3 import Web3
+
 from tests.builder import clients, config
 from tests.chainio.anvil.avsregistry.writer.utils import (
     register_as_operator,
