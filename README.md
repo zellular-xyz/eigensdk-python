@@ -3,7 +3,7 @@
 A Python implementation of the EigenLayer SDK, based on the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go) repository. This SDK equips developers with tools to interact with **EigenLayer Core contracts** and to build **AVS (Actively Validated Services)** using Python.
 
 > ⚠️ **Note**
-> This library is a proof-of-concept (PoC) implementation. It is intended for testing and experimentation purposes only. **Do not use in production.**
+> This library is currently in active development. While it can be used for testing and development purposes, please exercise caution when using in production environments.
 
 This SDK was originally developed by **Abram Symons** and is now actively maintained and extended by [**iF3 Labs**](https://github.com/if3-xyz), under his supervision. The project originated as part of [Zellular](https://github.com/zellular-xyz).
 
@@ -33,7 +33,15 @@ sudo make install
 
 ### Python Installation
 
+**From Git Repository (Recommended):**
 ```bash
+pip install git+https://github.com/zellular-xyz/eigensdk-python
+```
+
+**Local Development:**
+```bash
+git clone https://github.com/zellular-xyz/eigensdk-python
+cd eigensdk-python
 pip install -e .
 ```
 
@@ -56,6 +64,15 @@ This setup ensures a clean, reproducible environment for development and testing
 
 * [Docker](https://docs.docker.com/get-docker/)
 * [Docker Compose V2](https://docs.docker.com/compose/install/)
+
+### Quick Start
+
+```bash
+git clone https://github.com/zellular-xyz/eigensdk-python
+cd eigensdk-python
+make build
+make test
+```
 
 ---
 
@@ -88,6 +105,8 @@ Full documentation is available:
 
 * Online: [https://eigensdk-python.readthedocs.io/en/latest](https://eigensdk-python.readthedocs.io/en/latest)
 * Locally: See the `docs/` directory
+
+For detailed API documentation, installation guides, and examples, please refer to the documentation.
 
 ---
 
