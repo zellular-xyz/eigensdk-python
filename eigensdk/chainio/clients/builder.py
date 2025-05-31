@@ -31,13 +31,9 @@ class BuildAllConfig:
 
         self.eth_http_url: str = eth_http_url
         self.registry_coordinator_addr = Web3.to_checksum_address(registry_coordinator_addr)
-        self.operator_state_retriever_addr = Web3.to_checksum_address(
-            operator_state_retriever_addr
-        )
+        self.operator_state_retriever_addr = Web3.to_checksum_address(operator_state_retriever_addr)
         self.rewards_coordinator_addr = Web3.to_checksum_address(rewards_coordinator_addr)
-        self.permission_controller_addr = Web3.to_checksum_address(
-            permission_controller_addr
-        )
+        self.permission_controller_addr = Web3.to_checksum_address(permission_controller_addr)
         self.service_manager_addr = Web3.to_checksum_address(service_manager_addr)
         self.allocation_manager_addr = Web3.to_checksum_address(allocation_manager_addr)
         self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr)

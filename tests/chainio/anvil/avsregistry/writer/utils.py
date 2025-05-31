@@ -9,9 +9,5 @@ def register_as_operator():
     test_register_as_operator()
 
 
-def deposit_erc20_into_strategy():
-    test_deposit_erc20_into_strategy()
-
-
 def register_for_operator_sets():
     test_register_for_operator_sets()
