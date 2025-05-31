@@ -1,17 +1,24 @@
 # eigensdk-python
 
-A Python SDK for EigenLayer, derived from the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go/tree/master/) implementation.
+A Python implementation of the EigenLayer SDK, based on the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go) repository. This SDK equips developers with tools to interact with **EigenLayer Core contracts** and to build **AVS (Actively Validated Services)** using Python.
 
-> [!CAUTION]
-> This library is a PoC implemented for the EigenLayer hackathon. Do not use it in Production, testnet only.
+> ⚠️ **Note**
+> This library is a proof-of-concept (PoC) implementation. It is intended for testing and experimentation purposes only. **Do not use in production.**
 
-## Manual Installation
+This SDK was originally developed by **Abram Symons** and is now actively maintained and extended by [**iF3 Labs**](https://github.com/if3-xyz), under his supervision. The project originated as part of [Zellular](https://github.com/zellular-xyz).
 
-If you prefer not to use Docker, you can install the dependencies manually.
+📬 **Contact**: [mail@if3.xyz](mailto:mail@if3.xyz)
 
-### Dependencies
+---
 
-MCL native package is required:
+## 🛠 Manual Installation
+
+If you prefer not to use Docker, you can install the SDK and its dependencies manually.
+
+### System Requirements
+
+You must first install the MCL native library:
+
 ```bash
 sudo apt install libgmp3-dev
 wget https://github.com/herumi/mcl/archive/refs/tags/v1.93.zip
@@ -21,117 +28,73 @@ mkdir build
 cd build
 cmake ..
 make
-make install
+sudo make install
 ```
 
-### Installation
+### Python Installation
 
 ```bash
 pip install -e .
 ```
 
-## Docker Setup (Recommended)
+---
 
-We provide a comprehensive Docker setup for testing with Python 3.12. This setup includes:
+## 🐳 Docker Setup (Recommended)
 
-- Python 3.12
-- MCL library pre-installed
-- Foundry (with Anvil for local Ethereum development)
-- EigenLayer contracts (pre-cloned and built)
-- Development tools (Black, Flake8, MyPy)
+A complete Docker-based environment is provided, featuring:
 
-### Prerequisites
+* Python 3.12
+* Pre-installed MCL library
+* [Foundry](https://book.getfoundry.sh/) (for local Ethereum development)
+* EigenLayer contracts (cloned and built)
+* Incredible-Squaring AVS example contracts
+* Pre-configured development tools: Black, Flake8, MyPy
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose V2](https://docs.docker.com/compose/install/) (using `docker compose` command)
+This setup ensures a clean, reproducible environment for development and testing.
 
-## Testing
+### Requirements
+
+* [Docker](https://docs.docker.com/get-docker/)
+* [Docker Compose V2](https://docs.docker.com/compose/install/)
+
+---
+
+## ✅ Testing
 
 ### Quick Start
 
-For a quick test setup and run:
-
 ```bash
-# Build and run tests
-
 make build
-
 make test
-
 ```
 
-### Test Commands
+---
 
-1. **Run Basic Tests** (No blockchain dependency):
-   ```bash
-   make simple-setup
-   ```
-   Runs tests that don't require Anvil connection, useful for quick verification.
+## 🧪 Development Workflow
 
+```bash
+make build      # Build Docker image
+make test       # Run tests
+make format     # Format code using Black
+make lint       # Lint code with Flake8
+make mypy       # Run type checking
+```
 
-2. **Full Test Setup with Contract Deployment**:
-   ```bash
-   # Build, deploy contracts, and run all tests
-   make setup-all
-   ```
+---
 
+## 📚 Documentation
 
-### Test Environment Setup
+Full documentation is available:
 
-1. **Start Test Environment**:
-   ```bash
-   # Start Anvil and deploy contracts
-   make anvil-up
-   
-   # Update environment with contract addresses
-   make update-env
-   ```
+* Online: [https://eigensdk-python.readthedocs.io/en/latest](https://eigensdk-python.readthedocs.io/en/latest)
+* Locally: See the `docs/` directory
 
-2. **Clean Test Environment**:
-   ```bash
-   # Clean up containers and artifacts
-   make clean
-   make down
-   ```
+---
 
-## Development Setup
+## 🔗 Related Projects
 
-1. **Build the Docker image**:
-   ```bash
-   make build
-   ```
-
-2. **Run tests**:
-   ```bash
-   make test
-   ```
-
-3. **Format and Lint**:
-   ```bash
-   make format  # Run Black formatter
-   make lint    # Run Flake8
-   make mypy    # Run type checking
-   ```
-
-4. **Development Shells**:
-   ```bash
-   make shell        # Open bash shell
-   make anvil-shell  # Open Anvil container shell
-   ```
-
-### Contract Address Management
-
-1. **View deployed addresses**:
-   ```bash
-   make get-addresses
-   ```
-
-2. **Update environment**:
-   ```bash
-   make update-env
-   ```
-
-
-## Documentation
-
-Documentation is available [here](https://eigensdk-python.readthedocs.io/en/latest) and in the docs directory.
+* [Zellular GitHub](https://github.com/zellular-xyz/) - Original developers of this SDK
+* [iF3 Labs GitHub](https://github.com/if3-xyz) - Current maintainers of this SDK
+* [Incredible Squaring AVS (Python)](https://github.com/zellular-xyz/incredible-squaring-avs-python) - Example AVS implementation in Python
+* [EigenLayer Middleware](https://github.com/Layr-Labs/eigenlayer-middleware) - Official EigenLayer middleware contracts
+* [EigenLayer Contracts](https://github.com/Layr-Labs/eigenlayer-contracts) - Core EigenLayer protocol contracts

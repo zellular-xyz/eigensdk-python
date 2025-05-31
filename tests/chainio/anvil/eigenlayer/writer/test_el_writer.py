@@ -188,7 +188,7 @@ def test_remove_permission():
 
 def test_remove_admin_flow():
     account_address = Web3.to_checksum_address(config["operator_address"])
-    admin2_address = Web3.to_checksum_address(config["admin2_address"])
+    admin2_address = Web3.to_checksum_address(config["operator_address_2"])
 
     receipt = clients.el_writer.add_pending_admin(
         {
