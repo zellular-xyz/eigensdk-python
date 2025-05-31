@@ -92,9 +92,6 @@ class Signature(G1Point):
             "Y": int(self.getY().getStr()),
         }
 
-    def from_json(_json: dict) -> "Signature":
-        pass
-
     def add(self, a: "Signature"):
         return self + a
 
