@@ -46,7 +46,7 @@ format:
 	$(DOCKER_DEV) black .
 
 mypy:
-	$(DOCKER_DEV) mypy --ignore-missing-imports eigensdk/chainio/
+	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional eigensdk/chainio/
 
 lint:
 	$(DOCKER_DEV) flake8 eigensdk/chainio/
