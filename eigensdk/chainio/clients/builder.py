@@ -30,18 +30,18 @@ class BuildAllConfig:
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
-        self.registry_coordinator_addr = Web3.to_checksum_address(registry_coordinator_addr.lower())
+        self.registry_coordinator_addr = Web3.to_checksum_address(registry_coordinator_addr)
         self.operator_state_retriever_addr = Web3.to_checksum_address(
-            operator_state_retriever_addr.lower()
+            operator_state_retriever_addr
         )
-        self.rewards_coordinator_addr = Web3.to_checksum_address(rewards_coordinator_addr.lower())
+        self.rewards_coordinator_addr = Web3.to_checksum_address(rewards_coordinator_addr)
         self.permission_controller_addr = Web3.to_checksum_address(
-            permission_controller_addr.lower()
+            permission_controller_addr
         )
-        self.service_manager_addr = Web3.to_checksum_address(service_manager_addr.lower())
-        self.allocation_manager_addr = Web3.to_checksum_address(allocation_manager_addr.lower())
-        self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr.lower())
-        self.delegation_manager_addr = Web3.to_checksum_address(delegation_manager_addr.lower())
+        self.service_manager_addr = Web3.to_checksum_address(service_manager_addr)
+        self.allocation_manager_addr = Web3.to_checksum_address(allocation_manager_addr)
+        self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr)
+        self.delegation_manager_addr = Web3.to_checksum_address(delegation_manager_addr)
         self.avs_name: str = avs_name
         self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)

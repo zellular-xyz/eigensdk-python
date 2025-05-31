@@ -3,7 +3,7 @@
 # -- Project information
 
 project = "EigenSDK Python"
-copyright = "2024, Abram Symons"
+copyright = "2025, Abram Symons"
 author = "Abram Symons"
 
 release = "0.1.0"
