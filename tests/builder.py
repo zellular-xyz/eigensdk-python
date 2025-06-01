@@ -24,7 +24,6 @@ cfg = BuildAllConfig(
     allocation_manager_addr=config["allocation_manager_address"],
     instant_slasher_addr=config["instant_slasher_address"],
     delegation_manager_addr=config["delegation_manager_address"],
-    prom_metrics_ip_port_address="",
 )
 clients = build_all(cfg, config["ecdsa_private_key"])
 

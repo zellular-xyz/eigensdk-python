@@ -6,9 +6,9 @@ eigensdk.chainio
 eigensdk.chainio.clients.builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, rewards_coordinator_addr: Address, permission_controller_addr: Address, service_manager_addr: Address, allocation_manager_addr: Address, instant_slasher_addr: Address, delegation_manager_addr: Address, avs_name: str, prom_metrics_ip_port_address: str)
+.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, rewards_coordinator_addr: Address, permission_controller_addr: Address, service_manager_addr: Address, allocation_manager_addr: Address, instant_slasher_addr: Address, delegation_manager_addr: Address, avs_name: str)
 
-    This class creates a configuration object used to initialize and configure clients for interacting with the EigenLayer and integrated AVS blockchain infrastructure. It includes parameters to connect to the Ethereum network, AVS services, and metrics endpoints.
+    This class creates a configuration object used to initialize and configure clients for interacting with the EigenLayer and integrated AVS blockchain infrastructure. It includes parameters to connect to the Ethereum network, AVS services.
 
     :param eth_http_url: URL for the Ethereum HTTP RPC endpoint.
     :param registry_coordinator_addr: The blockchain address of the registry coordinator contract.
@@ -20,7 +20,6 @@ eigensdk.chainio.clients.builder
     :param instant_slasher_addr: The blockchain address of the instant slasher contract.
     :param delegation_manager_addr: The blockchain address of the delegation manager contract.
     :param avs_name: The name of the AVS for which the clients are being built.
-    :param prom_metrics_ip_port_address: The IP and port for Prometheus metrics.
 
 .. py:function:: build_all(config: BuildAllConfig, config_ecdsa_private_key: str) -> Clients
 
@@ -49,7 +48,6 @@ Below is an example of how to use the `BuildAllConfig` and `build_all` functions
     ...     allocation_manager_addr='0x3A93c17D806bf74066d7e2c962b7a0F49b97e1Cf',
     ...     instant_slasher_addr='0x0000000000000000000000000000000000000000',
     ...     delegation_manager_addr='0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A',
-    ...     prom_metrics_ip_port_address='localhost:9090',
     ... )
     >>> clients = build_all(config, "your_private_key_here")
     >>> from pprint import pprint
@@ -60,7 +58,6 @@ Below is an example of how to use the `BuildAllConfig` and `build_all` functions
         'el_reader': <eigensdk.chainio.clients.elcontracts.reader.ELReader object at 0x715d7f89a450>,
         'el_writer': <eigensdk.chainio.clients.elcontracts.writer.ELWriter object at 0x715d7f89a490>,
         'eth_http_client': <web3.main.Web3 object at 0x715d83c009d0>,
-        'metrics': None,
         'wallet': <eth_account.signers.local.LocalAccount object at 0x715d83c123d0>
     }
 

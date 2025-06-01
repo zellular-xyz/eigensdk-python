@@ -67,7 +67,6 @@ To demonstrate using `eigensdk`, here's how you can find the list of operators r
     ...     instant_slasher_addr='0x0000000000000000000000000000000000000000',
     ...     delegation_manager_addr='0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A',
     ...     avs_name="eigenda",
-    ...     prom_metrics_ip_port_address='localhost:9090',
     ... )
     >>> 
     >>> # You'll need a private key for transaction operations

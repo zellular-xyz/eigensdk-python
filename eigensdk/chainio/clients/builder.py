@@ -26,7 +26,6 @@ class BuildAllConfig:
         instant_slasher_addr: Address,
         delegation_manager_addr: Address,
         avs_name: str,
-        prom_metrics_ip_port_address: str,
     ) -> None:
 
         self.eth_http_url: str = eth_http_url
@@ -39,7 +38,6 @@ class BuildAllConfig:
         self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr)
         self.delegation_manager_addr = Web3.to_checksum_address(delegation_manager_addr)
         self.avs_name: str = avs_name
-        self.prom_metrics_ip_port_address: str = prom_metrics_ip_port_address
         self.logger: logging.Logger = logging.getLogger(__name__)
 
     def build_el_clients(
@@ -187,7 +185,6 @@ class Clients:
         el_writer: el_writer.ELWriter,
         eth_http_client: Web3,
         wallet: LocalAccount,
-        metrics: Optional[Any],
     ):
         self.avs_registry_reader = avs_registry_reader
         self.avs_registry_writer = avs_registry_writer
@@ -195,7 +192,6 @@ class Clients:
         self.el_writer = el_writer
         self.eth_http_client = eth_http_client
         self.wallet = wallet
-        self.metrics = metrics
 
 
 def build_all(
@@ -218,5 +214,4 @@ def build_all(
         el_writer=el_writer,
         eth_http_client=eth_http_client,
         wallet=pk_wallet,
-        metrics=None,
     )
