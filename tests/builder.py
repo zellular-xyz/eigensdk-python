@@ -22,7 +22,6 @@ cfg = BuildAllConfig(
     permission_controller_addr=config["permission_controller_address"],
     service_manager_addr=config["service_manager_address"],
     allocation_manager_addr=config["allocation_manager_address"],
-    instant_slasher_addr=config["instant_slasher_address"],
     delegation_manager_addr=config["delegation_manager_address"],
 )
 clients = build_all(cfg, config["ecdsa_private_key"])

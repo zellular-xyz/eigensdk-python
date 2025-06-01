@@ -23,7 +23,6 @@ class BuildAllConfig:
         permission_controller_addr: Address,
         service_manager_addr: Address,
         allocation_manager_addr: Address,
-        instant_slasher_addr: Address,
         delegation_manager_addr: Address,
         avs_name: str,
     ) -> None:
@@ -35,7 +34,6 @@ class BuildAllConfig:
         self.permission_controller_addr = Web3.to_checksum_address(permission_controller_addr)
         self.service_manager_addr = Web3.to_checksum_address(service_manager_addr)
         self.allocation_manager_addr = Web3.to_checksum_address(allocation_manager_addr)
-        self.instant_slasher_addr = Web3.to_checksum_address(instant_slasher_addr)
         self.delegation_manager_addr = Web3.to_checksum_address(delegation_manager_addr)
         self.avs_name: str = avs_name
         self.logger: logging.Logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ eigensdk.chainio
 eigensdk.chainio.clients.builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, rewards_coordinator_addr: Address, permission_controller_addr: Address, service_manager_addr: Address, allocation_manager_addr: Address, instant_slasher_addr: Address, delegation_manager_addr: Address, avs_name: str)
+.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, rewards_coordinator_addr: Address, permission_controller_addr: Address, service_manager_addr: Address, allocation_manager_addr: Address, delegation_manager_addr: Address, avs_name: str)
 
     This class creates a configuration object used to initialize and configure clients for interacting with the EigenLayer and integrated AVS blockchain infrastructure. It includes parameters to connect to the Ethereum network, AVS services.
 
@@ -17,7 +17,6 @@ eigensdk.chainio.clients.builder
     :param permission_controller_addr: The blockchain address of the permission controller contract.
     :param service_manager_addr: The blockchain address of the service manager contract.
     :param allocation_manager_addr: The blockchain address of the allocation manager contract.
-    :param instant_slasher_addr: The blockchain address of the instant slasher contract.
     :param delegation_manager_addr: The blockchain address of the delegation manager contract.
     :param avs_name: The name of the AVS for which the clients are being built.
 
@@ -46,7 +45,6 @@ Below is an example of how to use the `BuildAllConfig` and `build_all` functions
     ...     permission_controller_addr='0x0000000000000000000000000000000000000000',
     ...     service_manager_addr='0x870679E138bCdf293b7ff14dD44b70FC97e12fc0',
     ...     allocation_manager_addr='0x3A93c17D806bf74066d7e2c962b7a0F49b97e1Cf',
-    ...     instant_slasher_addr='0x0000000000000000000000000000000000000000',
     ...     delegation_manager_addr='0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A',
     ... )
     >>> clients = build_all(config, "your_private_key_here")
@@ -194,11 +192,10 @@ clients.elcontracts.reader
 clients.elcontracts.writer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.elcontracts.writer.ELWriter(slasher: Contract, delegation_manager: Contract, strategy_manager: Contract, strategy_manager_addr: Address, avs_directory: Contract, el_reader: ELReader, logger: logging.Logger, eth_http_client: Web3, pk_wallet: LocalAccount)
+.. py:class:: eigensdk.chainio.clients.elcontracts.writer.ELWriter(delegation_manager: Contract, strategy_manager: Contract, strategy_manager_addr: Address, avs_directory: Contract, el_reader: ELReader, logger: logging.Logger, eth_http_client: Web3, pk_wallet: LocalAccount)
 
-    The ``ELWriter`` class is designed for writing data to various smart contracts related to EigenLayer's core functionalities. It facilitates interaction with contracts such as the slasher, delegation manager, strategy manager, and AVS directory through transactional methods.
+    The ``ELWriter`` class is designed for writing data to various smart contracts related to EigenLayer's core functionalities. It facilitates interaction with contracts such as the delegation manager, strategy manager, and AVS directory through transactional methods.
 
-    :param slasher: A Web3 contract instance of the slasher contract.
     :param delegation_manager: A Web3 contract instance of the delegation manager contract.
     :param strategy_manager: A Web3 contract instance of the strategy manager contract.
     :param strategy_manager_addr: The blockchain address of the strategy manager contract.
