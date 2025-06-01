@@ -12,7 +12,7 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
     try:
         register_as_operator()
         register_for_operator_sets()
-    except:
+    except Exception:
         pass
 
     operator_addr = Web3.to_checksum_address(config["operator_address_2"])
@@ -30,7 +30,7 @@ def test_update_socket():
     try:
         register_as_operator()
         register_for_operator_sets()
-    except:
+    except Exception:
         pass
     new_socket = "192.168.1.100:9000"
     receipt = clients.avs_registry_writer.update_socket(new_socket)
@@ -227,7 +227,7 @@ def test_set_slashable_stake_lookahead():
     if receipt["status"] == 1:
         print(f"Set slashable stake lookahead with tx hash: {receipt['transactionHash'].hex()}")
     else:
-        print(f"Quorum is not Slashable Stake Quorum")
+        print("Quorum is not Slashable Stake Quorum")
 
 
 @pytest.mark.order(19)

@@ -164,17 +164,6 @@ def test_set_permission():
     assert receipt["status"] == 1
 
 
-def test_set_permission():
-    request = {
-        "account_address": config["operator_address"],
-        "appointee_address": config["operator_address"],
-        "target": config["avs_address"],
-        "selector": "0x12345678",
-    }
-    receipt = clients.el_writer.set_permission(request)
-    assert receipt["status"] == 1
-
-
 def test_remove_permission():
     request = {
         "account_address": config["operator_address"],

@@ -1,5 +1,4 @@
 import pytest
-from eth_typing import Address
 from web3 import Web3
 from web3.exceptions import ContractLogicError
 
@@ -397,31 +396,6 @@ def test_query_registration_detail():
     assert all(isinstance(x, bool) for x in result)
 
     print(f"Quorum participation bitmap for operator {operator}: {result}")
-
-
-# def test_is_operator_registered():
-#     operator_addr = Web3.to_checksum_address(config["operator_address"])
-#     result = clients.avs_registry_reader.is_operator_registered(None, operator_addr)
-#     assert isinstance(result, bool)
-
-#     print(f"Is operator {operator_addr} registered: {result}")
-
-
-# def test_is_operator_set_quorum():
-#     quorum_number = 0
-#     result = clients.avs_registry_reader.is_operator_set_quorum(None, quorum_number)
-#     assert result is None or isinstance(result, bool)
-#     print(f"Is quorum {quorum_number} an operator set quorum: {result}")
-
-
-# def test_get_operator_id_from_operator_address():
-#     operator_addr = Web3.to_checksum_address(config["operator_address"])
-#     result = clients.avs_registry_reader.get_operator_id_from_operator_address(None, operator_addr)
-#     assert result is None or isinstance(result, bytes)
-#     if result:
-#         print(f"Operator ID from BLS APK registry for {operator_addr}: {result.hex()}")
-#     else:
-#         print(f"Operator ID from BLS APK registry for {operator_addr}: {result}")
 
 
 def test_get_operator_address_from_operator_id():

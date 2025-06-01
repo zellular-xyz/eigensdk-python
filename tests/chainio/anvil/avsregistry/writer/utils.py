@@ -1,6 +1,5 @@
 from tests.chainio.anvil.eigenlayer.writer.test_el_writer import (
     test_register_as_operator,
-    test_deposit_erc20_into_strategy,
     test_register_for_operator_sets,
 )
 
