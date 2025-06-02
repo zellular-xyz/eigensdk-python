@@ -31,6 +31,11 @@ test:
 		python -m pytest tests/chainio/anvil/avsregistry/reader/test_avs_reader.py && \
 		python -m pytest tests/chainio/anvil/avsregistry/writer/test_avs_writer.py"
 
+fresh-test: down
+	docker compose up -d anvil
+	sleep 3
+	$(MAKE) test
+
 format:
 	$(DOCKER_DEV) black .
 
