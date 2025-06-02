@@ -2,8 +2,7 @@
 
 A Python implementation of the EigenLayer SDK, based on the official [eigensdk-go](https://github.com/layr-Labs/eigensdk-go) repository. This SDK equips developers with tools to interact with **EigenLayer Core contracts** and to build **AVS (Autonomous Verifiable Services)** using Python.
 
-> ⚠️ **Note**
-> This library is currently in active development. While it can be used for testing and development purposes, please exercise caution when using in production environments.
+**⚠️ Warning:** This library is currently in active development. While it can be used for testing and development purposes, please exercise caution when using in production environments.
 
 ## Installation
 
