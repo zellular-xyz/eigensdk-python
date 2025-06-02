@@ -43,7 +43,7 @@ mypy:
 	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional eigensdk/chainio/ tests/chainio/
 
 lint:
-	$(DOCKER_DEV) flake8 eigensdk/chainio/ tests/chainio/
+	$(DOCKER_DEV) flake8 .
 
 precommit: format mypy lint
 commit-all-no-verify:

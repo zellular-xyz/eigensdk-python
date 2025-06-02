@@ -19,7 +19,8 @@ setup(
     author_email="abramsymons@gmail.com",
     maintainer="iF3Labs",
     maintainer_email="mail@if3.xyz",
-    description="A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons and maintained by iF3Labs under his supervision.",
+    description="A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons\
+and maintained by iF3Labs under his supervision.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/abramsymons/eigensdk-python",
