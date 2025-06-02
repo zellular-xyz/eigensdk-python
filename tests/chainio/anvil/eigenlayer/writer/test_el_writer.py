@@ -153,14 +153,13 @@ def test_accept_admin():
 
 
 def test_set_permission():
-    receipt = clients.el_writer.set_permission(
-        {
-            "account_address": config["operator_address"],
-            "appointee_address": config["operator_address"],
-            "target": config["avs_address"],
-            "selector": "0x00000000",
-        }
-    )
+    request = {
+        "account_address": config["operator_address"],
+        "appointee_address": config["operator_address"],
+        "target": config["avs_address"],
+        "selector": "0x12345678",
+    }
+    receipt = clients.el_writer.set_permission(request)
     assert receipt["status"] == 1
 
 
