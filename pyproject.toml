@@ -1,3 +1,43 @@
+[build-system]
+requires = ["setuptools>=77.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eigensdk"
+version = "0.0.3"
+description = "A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons and maintained by iF3Labs under his supervision."
+requires-python = ">=3.11"
+authors = [
+    {name = "Abram Symons", email = "abramsymons@gmail.com"},
+    {name = "iF3Labs", email = "mail@if3.xyz"}
+]
+maintainers = [
+    {name = "iF3Labs", email = "mail@if3.xyz"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+dependencies = [
+    "mcl @ git+https://github.com/sadeghte/mcl-python.git",
+    "web3",
+    "python-dotenv==1.0.1",
+    "fastapi",
+    "pydantic",
+    "uvicorn"
+]
+
+[project.urls]
+Homepage = "https://github.com/abramsymons/eigensdk-python"
+
+[tool.setuptools]
+packages = {find = {}}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]
+
 [tool.black]
 line-length = 100
 target-version = ['py312']
@@ -25,4 +65,4 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
-disallow_incomplete_defs = false 
+disallow_incomplete_defs = false

@@ -39,12 +39,12 @@ RUN git clone https://github.com/Layr-Labs/incredible-squaring-avs.git \
     && forge build 
 
 # Copy application requirements first for better caching
-COPY setup.py requirements-dev.txt README.md /app/
+COPY pyproject.toml requirements-dev.txt .
 RUN pip install --no-cache-dir -e . && \
     pip install --no-cache-dir -r requirements-dev.txt
 
 # Copy the rest of the application code
-COPY . /app/
+COPY . .
 
 # Install the application
 RUN pip install --no-cache-dir -e .
