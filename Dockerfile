@@ -6,9 +6,6 @@ WORKDIR /app
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
-    dnsutils \
-    libgmp3-dev \
-    build-essential \
     cmake \
     clang \
     && rm -rf /var/lib/apt/lists/*
