@@ -74,21 +74,18 @@ class AvsRegistryWriter:
             operators_per_quorum,
             utils.nums_to_bytes(quorum_numbers),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_stakes_of_operator_subset_for_all_quorums(self, operators: List[str]) -> TxReceipt:
         func = self.registry_coordinator.functions.updateOperators(operators)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_socket(
         self,
         socket: str,
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.updateSocket(socket)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_rewards_initiator(
         self,
@@ -98,8 +95,7 @@ class AvsRegistryWriter:
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
         func = service_manager_contract.functions.setRewardsInitiator(rewards_initiator_addr)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_slashable_stake_lookahead(
         self,
@@ -109,8 +105,7 @@ class AvsRegistryWriter:
         func = self.stake_registry.functions.setSlashableStakeLookahead(
             quorum_number, look_ahead_period
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_minimum_stake_for_quorum(
         self,
@@ -118,8 +113,7 @@ class AvsRegistryWriter:
         minimum_stake: int,
     ) -> TxReceipt:
         func = self.stake_registry.functions.setMinimumStakeForQuorum(quorum_number, minimum_stake)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def create_total_delegated_stake_quorum(
         self,
@@ -130,8 +124,7 @@ class AvsRegistryWriter:
         func = self.registry_coordinator.functions.createTotalDelegatedStakeQuorum(
             operator_set_params, minimum_stake_required, strategy_params
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def create_slashable_stake_quorum(
         self,
@@ -146,8 +139,7 @@ class AvsRegistryWriter:
             strategy_params,
             look_ahead_period,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def eject_operator(
         self,
@@ -158,8 +150,7 @@ class AvsRegistryWriter:
             operator_address,
             utils.nums_to_bytes(quorum_numbers),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_operator_set_params(
         self,
@@ -170,24 +161,21 @@ class AvsRegistryWriter:
             quorum_number,
             operator_set_params,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_churn_approver(
         self,
         churn_approver_address: str,
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.setChurnApprover(churn_approver_address)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_ejector(
         self,
         ejector_address: str,
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.setEjector(ejector_address)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def modify_strategy_params(
         self,
@@ -200,21 +188,18 @@ class AvsRegistryWriter:
             strategy_indices,
             multipliers,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_avs(self, avs_address: str) -> TxReceipt:
         func = self.registry_coordinator.functions.setAVS(avs_address)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_ejection_cooldown(
         self,
         ejection_cooldown: int,
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.setEjectionCooldown(ejection_cooldown)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def add_strategies(
         self,
@@ -222,8 +207,7 @@ class AvsRegistryWriter:
         strategy_params: List[Dict],
     ) -> TxReceipt:
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=20000000)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client, gas_limit=20000000)
 
     def update_avs_metadata_uri(
         self,
@@ -233,8 +217,7 @@ class AvsRegistryWriter:
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
         func = service_manager_contract.functions.updateAVSMetadataURI(metadata_uri)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def remove_strategies(
         self,
@@ -242,8 +225,7 @@ class AvsRegistryWriter:
         indices_to_remove: List[int],
     ) -> TxReceipt:
         func = self.stake_registry.functions.removeStrategies(quorum_number, indices_to_remove)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def create_avs_rewards_submission(
         self,
@@ -253,8 +235,7 @@ class AvsRegistryWriter:
             address=self.service_manager_addr, abi=self.service_manager_abi
         )
         func = service_manager_contract.functions.createAVSRewardsSubmission(rewards_submission)
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def create_operator_directed_avs_rewards_submission(
         self,
@@ -266,8 +247,7 @@ class AvsRegistryWriter:
         func = service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission(
             operator_directed_rewards_submissions
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def is_registry_coordinator_owner(self, address: str) -> bool:
         owner_address = self.registry_coordinator.functions.owner().call()

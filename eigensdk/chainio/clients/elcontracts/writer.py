@@ -99,24 +99,21 @@ class ELWriter:
             operator.allocation_delay,
             operator.metadata_url,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_operator_details(self, operator: Operator) -> TxReceipt:
         func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator.address),
             Web3.to_checksum_address(operator.delegation_approver_address),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_metadata_uri(self, operator_address: str, uri: str) -> TxReceipt:
         func = self.delegation_manager.functions.updateOperatorMetadataURI(
             Web3.to_checksum_address(operator_address),
             uri,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def deposit_erc20_into_strategy(self, strategy_addr: str, amount: int) -> TxReceipt:
         _, token_contract, token_addr = (
@@ -126,22 +123,19 @@ class ELWriter:
             self.strategy_manager.address,
             amount,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
+        send_transaction(func, self.pk_wallet, self.eth_http_client)
         func = self.strategy_manager.functions.depositIntoStrategy(
             Web3.to_checksum_address(strategy_addr),
             Web3.to_checksum_address(token_addr),
             amount,
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_claimer_for(self, claimer: str) -> TxReceipt:
         func = self.rewards_coordinator.functions.setClaimerFor(
             Web3.to_checksum_address(claimer),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def process_claim(self, claim: dict, recipient_address: str) -> TxReceipt:
         claim_tuple = (
@@ -164,8 +158,7 @@ class ELWriter:
             claim_tuple, Web3.to_checksum_address(recipient_address)
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_operator_avs_split(self, operator: str, avs: str, split: int) -> TxReceipt:
 
@@ -175,9 +168,7 @@ class ELWriter:
             split,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_operator_pi_split(self, operator: str, split: int) -> TxReceipt:
 
@@ -186,9 +177,7 @@ class ELWriter:
             split,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def modify_allocations(
         self,
@@ -208,8 +197,7 @@ class ELWriter:
             Web3.to_checksum_address(operator_address), [allocation]
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def clear_deallocation_queue(
         self, operator_address: str, strategies: list, nums_to_clear: list
@@ -221,9 +209,7 @@ class ELWriter:
             nums_to_clear,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_allocation_delay(self, operator_address: str, delay: int) -> TxReceipt:
 
@@ -232,9 +218,7 @@ class ELWriter:
             delay,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def deregister_from_operator_sets(self, operator: str, request: dict) -> TxReceipt:
 
@@ -246,9 +230,7 @@ class ELWriter:
             }
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def register_for_operator_sets(
         self, registry_coordinator_addr: str, request: dict
@@ -277,8 +259,7 @@ class ELWriter:
             register_params,
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def remove_permission(self, request: dict) -> TxReceipt:
 
@@ -289,9 +270,7 @@ class ELWriter:
             request["selector"],
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def set_permission(self, request: dict) -> TxReceipt:
 
@@ -301,8 +280,7 @@ class ELWriter:
             Web3.to_checksum_address(request["target"].lower()),
             request["selector"],
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def accept_admin(self, request: dict) -> TxReceipt:
 
@@ -310,9 +288,7 @@ class ELWriter:
             Web3.to_checksum_address(request["account_address"]),
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def add_pending_admin(self, request: dict) -> TxReceipt:
 
@@ -321,17 +297,14 @@ class ELWriter:
             Web3.to_checksum_address(request["admin_address"]),
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def remove_admin(self, request: dict) -> TxReceipt:
         func = self.permission_controller.functions.removeAdmin(
             Web3.to_checksum_address(request["account_address"]),
             Web3.to_checksum_address(request["admin_address"]),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def remove_pending_admin(self, request: dict) -> TxReceipt:
 
@@ -340,9 +313,7 @@ class ELWriter:
             Web3.to_checksum_address(request["admin_address"]),
         )
 
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def get_operator_id(self, operator_address: Address) -> bytes:
         operator_id = self.registry_coordinator.functions.getOperatorId(
@@ -355,5 +326,4 @@ class ELWriter:
             Web3.to_checksum_address(avs_address),
             Web3.to_checksum_address(registrar_address),
         )
-        receipt = send_transaction(func, self.pk_wallet, self.eth_http_client)
-        return receipt
+        return send_transaction(func, self.pk_wallet, self.eth_http_client)

@@ -54,8 +54,7 @@ def send_transaction(
     )
     signed_tx = eth_http_client.eth.account.sign_transaction(tx, private_key=pk_wallet.key)
     tx_hash = eth_http_client.eth.send_raw_transaction(signed_tx.raw_transaction)
-    receipt = eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
-    return receipt
+    return eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
 
 
 class BN254G1Point:
