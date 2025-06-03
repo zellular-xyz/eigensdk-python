@@ -5,7 +5,6 @@ from tests.chainio.anvil.avsregistry.writer.utils import (
     register_as_operator,
     register_for_operator_sets,
 )
-from eigensdk.types_ import StakeRegistryTypesStrategyParams
 
 
 @pytest.mark.order(3)

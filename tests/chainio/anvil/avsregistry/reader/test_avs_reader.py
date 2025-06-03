@@ -100,8 +100,8 @@ def test_strategy_params_by_index():
     index = 0
     result = clients.avs_registry_reader.strategy_params_by_index(quorum_number, index)
     assert result is not None, "Strategy params should not be None"
-    assert hasattr(result, 'strategy'), "Result should have strategy attribute"
-    assert hasattr(result, 'multiplier'), "Result should have multiplier attribute"
+    assert hasattr(result, "strategy"), "Result should have strategy attribute"
+    assert hasattr(result, "multiplier"), "Result should have multiplier attribute"
     assert isinstance(result.strategy, str), "Strategy should be a string"
     assert isinstance(result.multiplier, int), "Multiplier should be an integer"
     print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
@@ -146,7 +146,6 @@ def test_get_latest_stake_update():
     latest_update = clients.avs_registry_reader.get_latest_stake_update(operator_id, quorum_number)
     print(latest_update)
     assert latest_update is not None, "Expected a stake update, got None"
-
 
 
 def test_get_stake_update_at_index():
@@ -278,7 +277,9 @@ def test_get_current_total_stake():
 def test_get_total_stake_update_at_index():
     quorum_number = 0
     total_length = clients.avs_registry_reader.get_total_stake_history_length(quorum_number)
-    assert total_length is not None and total_length > 0, "No total stake updates found for the given quorum"
+    assert (
+        total_length is not None and total_length > 0
+    ), "No total stake updates found for the given quorum"
     index = total_length - 1  # Use latest available index
     update = clients.avs_registry_reader.get_total_stake_update_at_index(quorum_number, index)
     assert update is not None

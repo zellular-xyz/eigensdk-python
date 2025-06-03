@@ -208,7 +208,9 @@ def test_get_delegated_operator():
         Web3.is_address(result_with_block)
         or result_with_block == "0x0000000000000000000000000000000000000000"
     )
-    print(f"Delegated operator at block {current_block}: {result_with_block.hex() if isinstance(result_with_block, bytes) else result_with_block}")
+    print(
+        f"Delegated operator at block {current_block}: {result_with_block.hex() if isinstance(result_with_block, bytes) else result_with_block}"
+    )
 
 
 def test_get_operator_details():

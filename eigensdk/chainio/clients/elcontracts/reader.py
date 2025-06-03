@@ -56,14 +56,20 @@ class ELReader:
         if erc20_abi is None:
             self.logger.warning("ERC20 ABI not provided")
 
-    def get_allocatable_magnitude(self, operator_addr: Optional[Union[Address, ChecksumAddress, str]], strategy_addr: Optional[Union[Address, ChecksumAddress, str]]) -> int:
+    def get_allocatable_magnitude(
+        self,
+        operator_addr: Optional[Union[Address, ChecksumAddress, str]],
+        strategy_addr: Optional[Union[Address, ChecksumAddress, str]],
+    ) -> int:
 
         return self.allocation_manager.functions.getAllocatableMagnitude(
             operator_addr, strategy_addr
         ).call()
 
     def get_max_magnitudes(
-        self, operator_addr: Optional[Union[Address, ChecksumAddress, str]], strategy_addrs: Sequence[Optional[Union[Address, ChecksumAddress, str]]]
+        self,
+        operator_addr: Optional[Union[Address, ChecksumAddress, str]],
+        strategy_addrs: Sequence[Optional[Union[Address, ChecksumAddress, str]]],
     ) -> List[int]:
 
         return self.allocation_manager.functions.getMaxMagnitudes(
@@ -71,7 +77,9 @@ class ELReader:
         ).call()
 
     def get_allocation_info(
-        self, operator_addr: Optional[Union[Address, ChecksumAddress, str]], strategy_addr: Optional[Union[Address, ChecksumAddress, str]]
+        self,
+        operator_addr: Optional[Union[Address, ChecksumAddress, str]],
+        strategy_addr: Optional[Union[Address, ChecksumAddress, str]],
     ) -> List[Dict[str, Any]]:
         return [
             {
@@ -89,13 +97,17 @@ class ELReader:
         ]
 
     def get_operator_shares(
-        self, operator_address: Optional[Union[Address, ChecksumAddress, str]], strategy_addresses: Sequence[Union[Address, ChecksumAddress]]
+        self,
+        operator_address: Optional[Union[Address, ChecksumAddress, str]],
+        strategy_addresses: Sequence[Union[Address, ChecksumAddress]],
     ) -> List[int]:
         return self.delegation_manager.functions.getOperatorShares(
             operator_address, strategy_addresses
         ).call()
 
-    def get_operator_sets_for_operator(self, operator_addr: Optional[Union[Address, str]]) -> List[Dict[str, Any]]:
+    def get_operator_sets_for_operator(
+        self, operator_addr: Optional[Union[Address, str]]
+    ) -> List[Dict[str, Any]]:
         return [
             {"Id": s[0], "AvsAddress": s[1]}
             for s in self.allocation_manager.functions.getAllocatedSets(operator_addr).call()
@@ -105,14 +117,18 @@ class ELReader:
         is_set, delay = self.allocation_manager.functions.getAllocationDelay(operator_addr).call()
         return delay if is_set else 0
 
-    def get_registered_sets(self, operator_addr: Optional[Union[Address, str]]) -> List[Dict[str, Any]]:
+    def get_registered_sets(
+        self, operator_addr: Optional[Union[Address, str]]
+    ) -> List[Dict[str, Any]]:
         return [
             {"Id": s[0], "Avs": s[1]}
             for s in self.allocation_manager.functions.getRegisteredSets(operator_addr).call()
         ]
 
     def is_operator_registered_with_avs(
-        self, operator_address: Optional[Union[Address, str]], avs_address: Optional[Union[Address, str]]
+        self,
+        operator_address: Optional[Union[Address, str]],
+        avs_address: Optional[Union[Address, str]],
     ) -> bool:
         return (
             self.avs_directory.functions.avsOperatorStatus(avs_address, operator_address).call()
@@ -194,7 +210,9 @@ class ELReader:
     def is_operator_registered(self, operator_address: Optional[Union[Address, str]]) -> bool:
         return self.delegation_manager.functions.isOperator(operator_address).call()
 
-    def get_staker_shares(self, staker_address: Optional[Union[Address, str]]) -> Tuple[List[Address], List[int]]:
+    def get_staker_shares(
+        self, staker_address: Optional[Union[Address, str]]
+    ) -> Tuple[List[Address], List[int]]:
         return self.delegation_manager.functions.getDepositedShares(staker_address).call()
 
     def get_avs_registrar(self, avs_address: Optional[Union[Address, str]]) -> Address:
@@ -225,7 +243,9 @@ class ELReader:
         )
 
     def get_operator_shares_in_strategy(
-        self, operator_addr: Optional[Union[Address, str]], strategy_addr: Optional[Union[Address, str]]
+        self,
+        operator_addr: Optional[Union[Address, str]],
+        strategy_addr: Optional[Union[Address, str]],
     ) -> int:
         return self.delegation_manager.functions.operatorShares(operator_addr, strategy_addr).call()
 
@@ -242,7 +262,9 @@ class ELReader:
         ).call()
 
     def get_operators_shares(
-        self, operator_addresses: Sequence[Union[Address, ChecksumAddress]], strategy_addresses: Sequence[Union[Address, ChecksumAddress]]
+        self,
+        operator_addresses: Sequence[Union[Address, ChecksumAddress]],
+        strategy_addresses: Sequence[Union[Address, ChecksumAddress]],
     ) -> List[List[int]]:
         return self.delegation_manager.functions.getOperatorsShares(
             operator_addresses, strategy_addresses
@@ -262,21 +284,30 @@ class ELReader:
         return self.delegation_manager.functions.cumulativeWithdrawalsQueued(staker).call()
 
     def can_call(
-        self, account_address: Optional[Union[Address, str]], appointee_address: Optional[Union[Address, str]], target: Optional[Union[Address, str]], selector: bytes
+        self,
+        account_address: Optional[Union[Address, str]],
+        appointee_address: Optional[Union[Address, str]],
+        target: Optional[Union[Address, str]],
+        selector: bytes,
     ) -> bool:
         return self.permission_controller.functions.canCall(
             account_address, appointee_address, target, selector
         ).call()
 
     def list_appointees(
-        self, account_address: Optional[Union[Address, str]], target: Optional[Union[Address, str]], selector: bytes
+        self,
+        account_address: Optional[Union[Address, str]],
+        target: Optional[Union[Address, str]],
+        selector: bytes,
     ) -> List[Address]:
         return self.permission_controller.functions.getAppointees(
             account_address, target, selector
         ).call()
 
     def list_appointee_permissions(
-        self, account_address: Optional[Union[Address, str]], appointee_address: Optional[Union[Address, str]]
+        self,
+        account_address: Optional[Union[Address, str]],
+        appointee_address: Optional[Union[Address, str]],
     ) -> Tuple[List[Address], List[bytes]]:
         return self.permission_controller.functions.getAppointeePermissions(
             account_address, appointee_address
@@ -288,12 +319,20 @@ class ELReader:
     def list_admins(self, account_address: Optional[Union[Address, str]]) -> List[Address]:
         return self.permission_controller.functions.getAdmins(account_address).call()
 
-    def is_pending_admin(self, account_address: Optional[Union[Address, str]], pending_admin_address: Optional[Union[Address, str]]) -> bool:
+    def is_pending_admin(
+        self,
+        account_address: Optional[Union[Address, str]],
+        pending_admin_address: Optional[Union[Address, str]],
+    ) -> bool:
         return self.permission_controller.functions.isPendingAdmin(
             account_address, pending_admin_address
         ).call()
 
-    def is_admin(self, account_address: Optional[Union[Address, str]], admin_address: Optional[Union[Address, str]]) -> bool:
+    def is_admin(
+        self,
+        account_address: Optional[Union[Address, str]],
+        admin_address: Optional[Union[Address, str]],
+    ) -> bool:
         return self.permission_controller.functions.isAdmin(account_address, admin_address).call()
 
     def get_distribution_roots_length(self) -> int:
@@ -313,7 +352,9 @@ class ELReader:
     def get_root_index_from_hash(self, root_hash: bytes) -> int:
         return self.reward_coordinator.functions.getRootIndexFromHash(root_hash).call()
 
-    def get_cumulative_claimed(self, earner: Optional[Union[Address, str]], token: Optional[Union[Address, str]]) -> int:
+    def get_cumulative_claimed(
+        self, earner: Optional[Union[Address, str]], token: Optional[Union[Address, str]]
+    ) -> int:
         return self.reward_coordinator.functions.cumulativeClaimed(earner, token).call()
 
     def check_claim(self, claim: Dict[str, Any]) -> bool:
@@ -366,13 +407,17 @@ class ELReader:
         )
         return self.reward_coordinator.functions.checkClaim(claim_tuple).call()
 
-    def get_operator_avs_split(self, operator: Optional[Union[Address, str]], avs: Optional[Union[Address, str]]) -> int:
+    def get_operator_avs_split(
+        self, operator: Optional[Union[Address, str]], avs: Optional[Union[Address, str]]
+    ) -> int:
         return self.reward_coordinator.functions.getOperatorAVSSplit(operator, avs).call()
 
     def get_operator_pi_split(self, operator: Optional[Union[Address, str]]) -> int:
         return self.reward_coordinator.functions.getOperatorPISplit(operator).call()
 
-    def get_operator_set_split(self, operator: Optional[Union[Address, str]], operator_set: dict) -> int:
+    def get_operator_set_split(
+        self, operator: Optional[Union[Address, str]], operator_set: dict
+    ) -> int:
         return self.reward_coordinator.functions.getOperatorSetSplit(
             operator, (operator_set["Avs"], operator_set["Id"])
         ).call()
@@ -392,16 +437,22 @@ class ELReader:
     def get_submission_nonce(self, avs: Optional[Union[Address, str]]) -> int:
         return self.reward_coordinator.functions.submissionNonce(avs).call()
 
-    def get_is_avs_rewards_submission_hash(self, avs: Optional[Union[Address, str]], hash: bytes) -> bool:
+    def get_is_avs_rewards_submission_hash(
+        self, avs: Optional[Union[Address, str]], hash: bytes
+    ) -> bool:
         return self.reward_coordinator.functions.isAVSRewardsSubmissionHash(avs, hash).call()
 
-    def get_is_rewards_submission_for_all_hash(self, avs: Optional[Union[Address, str]], hash: bytes) -> bool:
+    def get_is_rewards_submission_for_all_hash(
+        self, avs: Optional[Union[Address, str]], hash: bytes
+    ) -> bool:
         return self.reward_coordinator.functions.isRewardsSubmissionForAllHash(avs, hash).call()
 
     def get_is_rewards_for_all_submitter(self, submitter: Optional[Union[Address, str]]) -> bool:
         return self.reward_coordinator.functions.isRewardsForAllSubmitter(submitter).call()
 
-    def get_is_rewards_submission_for_all_earners_hash(self, avs: Optional[Union[Address, str]], hash: bytes) -> bool:
+    def get_is_rewards_submission_for_all_earners_hash(
+        self, avs: Optional[Union[Address, str]], hash: bytes
+    ) -> bool:
         return self.reward_coordinator.functions.isRewardsSubmissionForAllEarnersHash(
             avs, hash
         ).call()
@@ -441,13 +492,21 @@ class ELReader:
         )
 
     def calculate_operator_avs_registration_digest_hash(
-        self, operator: Optional[Union[Address, str]], avs: Optional[Union[Address, str]], salt: bytes, expiry: int
+        self,
+        operator: Optional[Union[Address, str]],
+        avs: Optional[Union[Address, str]],
+        salt: bytes,
+        expiry: int,
     ) -> bytes:
         return self.avs_directory.functions.calculateOperatorAVSRegistrationDigestHash(
             operator, avs, salt, expiry
         ).call()
 
-    def get_encumbered_magnitude(self, operator_address: Optional[Union[Address, str]], strategy_address: Optional[Union[Address, str]]) -> int:
+    def get_encumbered_magnitude(
+        self,
+        operator_address: Optional[Union[Address, str]],
+        strategy_address: Optional[Union[Address, str]],
+    ) -> int:
         return self.allocation_manager.functions.getEncumberedMagnitude(
             operator_address, strategy_address
         ).call()
@@ -476,11 +535,16 @@ class ELReader:
     def get_allocation_configuration_delay(self) -> int:
         return self.allocation_manager.functions.ALLOCATION_CONFIGURATION_DELAY().call()
 
-    def get_num_operator_sets_for_operator(self, operator_address: Optional[Union[Address, str]]) -> int:
+    def get_num_operator_sets_for_operator(
+        self, operator_address: Optional[Union[Address, str]]
+    ) -> int:
         return self.allocation_manager.functions.getAllocatedSets(operator_address).call()
 
     def get_slashable_shares(
-        self, operator_address: Optional[Union[Address, ChecksumAddress, str]], operator_set: Dict[str, Any], strategies: Sequence[Union[Address, ChecksumAddress]]
+        self,
+        operator_address: Optional[Union[Address, ChecksumAddress, str]],
+        operator_set: Dict[str, Any],
+        strategies: Sequence[Union[Address, ChecksumAddress]],
     ) -> Optional[Dict[str, int]]:
         if operator_address is None:
             return None
