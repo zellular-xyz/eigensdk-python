@@ -234,7 +234,7 @@ The following example demonstrates how to use the `ELWriter` class to register a
 
 .. code-block:: python
 
-    >>> from eigensdk._types import Operator
+    >>> from eigensdk.types_ import Operator
     >>> operator = Operator(
     ...     address='0x123...',
     ...     earnings_receiver_address='0x456...',

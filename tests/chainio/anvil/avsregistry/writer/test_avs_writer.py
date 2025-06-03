@@ -13,7 +13,7 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
     try:
         register_as_operator()
         register_for_operator_sets()
-    except Exception:
+    except AssertionError:  # FIXME simplify flow
         pass
 
     operator_addr = Web3.to_checksum_address(config["operator_address_2"])
@@ -31,7 +31,7 @@ def test_update_socket():
     try:
         register_as_operator()
         register_for_operator_sets()
-    except Exception:
+    except AssertionError:  # FIXME simplify code flow
         pass
     new_socket = "192.168.1.100:9000"
     receipt = clients.avs_registry_writer.update_socket(new_socket)
@@ -175,13 +175,12 @@ def test_create_avs_rewards_submission():
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
     assert strategies is not None, "Strategy params should not be None"
     strategy_addr = Web3.to_checksum_address(strategies.strategy)
-    calculationInterval = clients.el_reader.get_calculation_interval_seconds()
+    duration = clients.el_reader.get_calculation_interval_seconds()
     token = clients.el_reader.get_strategy_and_underlying_token(strategy_addr)[1]
     assert token is not None, "Token should not be None"
     strategy_and_multiplier = {"strategy": Web3.to_checksum_address(strategy_addr), "multiplier": 1}
     latest_block = clients.eth_http_client.eth.get_block("latest")
     block_time = latest_block["timestamp"]
-    duration = calculationInterval
     start_timestamp = ((block_time // duration) + 1) * duration
     rewards_submission = {
         "strategiesAndMultipliers": [strategy_and_multiplier],
@@ -272,12 +271,11 @@ def test_create_operator_directed_avs_rewards_submission():
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
     assert strategies is not None, "Strategy params should not be None"
     strategy_addr = Web3.to_checksum_address(strategies.strategy)
-    calculationInterval = clients.el_reader.get_calculation_interval_seconds()
+    duration = clients.el_reader.get_calculation_interval_seconds()
     token = clients.el_reader.get_strategy_and_underlying_token(strategy_addr)[1]
     assert token is not None, "Token should not be None"
     latest_block = clients.eth_http_client.eth.get_block("latest")
     block_time = latest_block["timestamp"]
-    duration = calculationInterval
     start_timestamp = ((block_time // duration) + 1) * duration
     strategy_and_multiplier = {"strategy": Web3.to_checksum_address(strategy_addr), "multiplier": 1}
     operator_rewards = [(str(Web3.to_checksum_address(config["operator_address"])), 1000)]

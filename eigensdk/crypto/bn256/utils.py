@@ -57,8 +57,6 @@ def verify_sig(
 
 
 def map_to_curve(_x: bytes) -> G1:
-    beta = 0
-    y = 0
     x = int.from_bytes(_x, "big") % _FP_MODULUS
     while True:
         (beta, y) = __find_y_from_x(x)
@@ -66,7 +64,6 @@ def map_to_curve(_x: bytes) -> G1:
         if beta == ((y * y) % _FP_MODULUS):
             return __g1_point(x, y)
         x = (x + 1) % _FP_MODULUS
-    return __g1_point(0, 0)
 
 
 def __find_y_from_x(x: int) -> "tuple[int, int]":
@@ -79,7 +76,7 @@ def __find_y_from_x(x: int) -> "tuple[int, int]":
         0xC19139CB84C680A6E14116DA060561765E05AA45A1C72A34F082305B61F3F52,
         _FP_MODULUS,
     )
-    return (beta, y)
+    return beta, y
 
 
 def check_g1_and_g2_discrete_log_equality(p1: G1, p2: G2) -> bool:

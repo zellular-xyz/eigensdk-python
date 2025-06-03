@@ -8,7 +8,7 @@ This module defines the core data structures and types used throughout the Eigen
 Core Data Types
 ~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk._types.Operator
+.. py:class:: eigensdk.types_.Operator
 
     Represents an EigenLayer operator with their configuration and metadata.
 
@@ -21,7 +21,7 @@ Core Data Types
 
     .. code-block:: python
 
-        >>> from eigensdk._types import Operator
+        >>> from eigensdk.types_ import Operator
         >>> operator = Operator(
         ...     address='0x123...',
         ...     earnings_receiver_address='0x456...',
@@ -31,21 +31,21 @@ Core Data Types
         ...     metadata_url='https://example.com/metadata.json'
         ... )
 
-.. py:class:: eigensdk._types.OperatorPubkeys
+.. py:class:: eigensdk.types_.OperatorPubkeys
 
     Contains the BLS public keys for an operator.
 
     :param g1_pub_key: The G1 public key point.
     :param g2_pub_key: The G2 public key point.
 
-.. py:class:: eigensdk._types.OperatorInfo
+.. py:class:: eigensdk.types_.OperatorInfo
 
     Contains operator information including socket and public keys.
 
     :param socket: Network socket information for the operator.
     :param pub_keys: OperatorPubkeys object containing the operator's BLS public keys.
 
-.. py:class:: eigensdk._types.OperatorStateRetrieverOperator
+.. py:class:: eigensdk.types_.OperatorStateRetrieverOperator
 
     Represents operator data retrieved from the OperatorStateRetriever contract.
 
@@ -60,7 +60,7 @@ Core Data Types
         >>> operator = quorums[0][0]  # First operator in first quorum
         >>> print(f"Operator {operator.operator} has stake: {operator.stake}")
 
-.. py:class:: eigensdk._types.OperatorAvsState
+.. py:class:: eigensdk.types_.OperatorAvsState
 
     Represents the state of an operator within an AVS.
 
@@ -69,7 +69,7 @@ Core Data Types
     :param stake_per_quorum: Dictionary mapping quorum numbers to stake amounts.
     :param block_number: Block number at which this state was captured.
 
-.. py:class:: eigensdk._types.QuorumAvsState
+.. py:class:: eigensdk.types_.QuorumAvsState
 
     Represents the state of a quorum within an AVS.
 
@@ -81,7 +81,7 @@ Core Data Types
 Registry Types
 ~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk._types.OperatorStateRetrieverCheckSignaturesIndices
+.. py:class:: eigensdk.types_.OperatorStateRetrieverCheckSignaturesIndices
 
     Contains indices required for signature verification operations.
 
@@ -90,14 +90,14 @@ Registry Types
     :param total_stake_indices: Indices for total stake calculations.
     :param non_signer_stake_indices: Nested list of indices for non-signer stakes.
 
-.. py:class:: eigensdk._types.StakeRegistryTypesStrategyParams
+.. py:class:: eigensdk.types_.StakeRegistryTypesStrategyParams
 
     Parameters for strategies in the stake registry.
 
     :param strategy: The strategy contract address.
     :param multiplier: Multiplier applied to this strategy.
 
-.. py:class:: eigensdk._types.StakeRegistryTypesStakeUpdate
+.. py:class:: eigensdk.types_.StakeRegistryTypesStakeUpdate
 
     Represents a stake update event in the registry.
 
@@ -105,7 +105,7 @@ Registry Types
     :param next_update_block_number: Block number of the next update.
     :param stake: The stake amount after the update.
 
-.. py:class:: eigensdk._types.BLSApkRegistryTypesApkUpdate
+.. py:class:: eigensdk.types_.BLSApkRegistryTypesApkUpdate
 
     Represents an aggregate public key update in the BLS registry.
 
@@ -116,7 +116,7 @@ Registry Types
 Task Processing Types
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk._types.SignedTaskResponseDigest
+.. py:class:: eigensdk.types_.SignedTaskResponseDigest
 
     Represents a signed response to a task.
 
@@ -131,7 +131,7 @@ These types are commonly used when interacting with EigenLayer contracts:
 
 .. code-block:: python
 
-    >>> from eigensdk._types import Operator, OperatorStateRetrieverOperator
+    >>> from eigensdk.types_ import Operator, OperatorStateRetrieverOperator
     >>> from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
     >>> 
     >>> # Create and register a new operator

@@ -9,12 +9,12 @@ from web3 import Web3
 from web3._utils.events import get_event_data
 from web3.contract.contract import Contract
 
-from eigensdk._types import (
+from eigensdk.types_ import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
 )
-from eigensdk._types import (
+from eigensdk.types_ import (
     StakeRegistryTypesStrategyParams,
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
