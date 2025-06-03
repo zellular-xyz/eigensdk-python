@@ -8,7 +8,7 @@ from web3 import Web3
 from web3.contract import Contract
 from web3.types import TxReceipt
 
-from eigensdk._types import Operator
+from eigensdk.types_ import Operator
 from eigensdk.chainio.utils import (
     abi_encode_normal_registration_params,
     get_pubkey_registration_params,

@@ -19,7 +19,7 @@ This tutorial walks through setting up a complete AVS operator from scratch:
     import time
     from dotenv import load_dotenv
     from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
-    from eigensdk._types import Operator
+    from eigensdk.types_ import Operator
     from eigensdk.crypto.bls.attestation import KeyPair
 
     # Load environment variables

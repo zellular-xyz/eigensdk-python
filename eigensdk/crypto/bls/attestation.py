@@ -182,7 +182,7 @@ def gen_random_bls_keys() -> KeyPair:
 
 
 def g1_to_tupple(g1):
-    return (int(g1.getX().getStr()), int(g1.getY().getStr()))
+    return int(g1.getX().getStr()), int(g1.getY().getStr())
 
 
 def g2_to_tupple(g2):

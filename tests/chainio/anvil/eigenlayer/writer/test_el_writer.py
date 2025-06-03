@@ -1,6 +1,6 @@
 from web3 import Web3
 
-from eigensdk._types import Operator
+from eigensdk.types_ import Operator
 from eigensdk.crypto.bls.attestation import KeyPair
 from tests.builder import clients, clients_2, config
 
