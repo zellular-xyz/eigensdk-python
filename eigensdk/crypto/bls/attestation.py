@@ -1,5 +1,6 @@
 import json
 import os
+import hashlib
 
 from eth_account import Account
 from mcl import G1, G2, GT, Fr, Fp
@@ -132,9 +133,15 @@ class KeyPair:
 
     @staticmethod
     def from_string(sk: str, base=16) -> "KeyPair":
-        pk = PrivateKey()
-        pk.setStr(sk.encode("utf-8"), base)
-        return KeyPair(pk)
+        try:
+            sk_int = int(sk, base)
+            # If number is too large for 32 bytes, hash it instead
+            sk_bytes = sk_int.to_bytes(32, 'big') if sk_int.bit_length() <= 256 else hashlib.sha256(sk.encode('utf-8')).digest()
+        except (ValueError, OverflowError):
+            # If not a valid number, hash the string for deterministic bytes
+            sk_bytes = hashlib.sha256(sk.encode('utf-8')).digest()
+        
+        return KeyPair(PrivateKey(sk_bytes))
 
     def save_to_file(self, _path: str, password: str):
         priv_key = "0x" + self.priv_key.getStr(16).decode("utf-8").rjust(64, "0")

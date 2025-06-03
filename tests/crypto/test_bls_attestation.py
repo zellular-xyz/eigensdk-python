@@ -19,9 +19,8 @@ class TestBLSAttestation:
         key_pair2 = new_key_pair_from_string(seed)
         
         # Both key pairs should generate the same public key
-        pub_g2_1 = key_pair1.get_pub_g2()
-        pub_g2_2 = key_pair2.get_pub_g2()
-        
+        pub_g2_1 = key_pair1.get_pub_g2().getStr()
+        pub_g2_2 = key_pair2.get_pub_g2().getStr()
         assert pub_g2_1 == pub_g2_2
 
     def test_message_signing_and_verification(self):
