@@ -1,19 +1,22 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from eth_typing import Address
+from web3 import Web3
+from web3.types import ChecksumAddress
 
 from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 
 
 @dataclass
 class Operator:
-    address: Address
-    earnings_receiver_address: Address
+    address: ChecksumAddress
+    earnings_receiver_address: ChecksumAddress
     staker_opt_out_window_blocks: int
     metadata_url: str
     allocation_delay: int = 50
-    delegation_approver_address: Optional[Address] = None
+    delegation_approver_address: ChecksumAddress = Web3.to_checksum_address(
+        "0x0000000000000000000000000000000000000000"
+    )
 
 
 @dataclass
@@ -61,7 +64,7 @@ class SignedTaskResponseDigest:
 
 @dataclass
 class OperatorStateRetrieverOperator:
-    operator: Address
+    operator: ChecksumAddress
     operator_id: bytes
     stake: int
 

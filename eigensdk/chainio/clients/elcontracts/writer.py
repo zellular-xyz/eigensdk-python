@@ -89,23 +89,17 @@ class ELWriter:
             self.logger.warning("ERC20ABI not provided")
 
     def register_as_operator(self, operator: Operator) -> TxReceipt:
-        delegation_approver = (
-            Web3.to_checksum_address(operator.delegation_approver_address)
-            if operator.delegation_approver_address is not None
-            else "0x0000000000000000000000000000000000000000"
-        )
         func = self.delegation_manager.functions.registerAsOperator(
-            delegation_approver,
+            operator.delegation_approver_address,
             operator.allocation_delay,
             operator.metadata_url,
         )
         return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_operator_details(self, operator: Operator) -> TxReceipt:
-        assert operator.delegation_approver_address is not None  # FIXME check this logic
         func = self.delegation_manager.functions.modifyOperatorDetails(
-            Web3.to_checksum_address(operator.address),
-            Web3.to_checksum_address(operator.delegation_approver_address),
+            operator.address,
+            operator.delegation_approver_address,
         )
         return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
