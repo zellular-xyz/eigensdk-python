@@ -190,7 +190,8 @@ class AvsRegistryReader:
     def strategy_params_by_index(
         self, quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStrategyParams]:
-        return self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call()
+        result = self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call()
+        return StakeRegistryTypesStrategyParams(strategy=result[0], multiplier=result[1])
 
     def get_stake_history_length(self, operator_id: int, quorum_number: int) -> Optional[int]:
         operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")

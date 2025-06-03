@@ -1,7 +1,5 @@
 import os
-
-import yaml
-
+import yaml  # type: ignore
 from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
 
 # Get the directory where builder.py is located

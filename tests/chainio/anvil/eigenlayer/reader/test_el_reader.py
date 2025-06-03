@@ -194,21 +194,21 @@ def test_get_avs_registrar():
     avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.get_avs_registrar(avs_addr)
     assert Web3.is_address(result)
-    print(f"AVS registrar: {result}")
+    print(f"AVS registrar: {result.hex() if isinstance(result, bytes) else result}")
 
 
 def test_get_delegated_operator():
     staker_addr = Web3.to_checksum_address(config["operator_address"])
     result = clients.el_reader.get_delegated_operator(staker_addr)
     assert Web3.is_address(result) or result == "0x0000000000000000000000000000000000000000"
-    print(f"Delegated operator: {result}")
+    print(f"Delegated operator: {result.hex() if isinstance(result, bytes) else result}")
     current_block = clients.eth_http_client.eth.block_number
     result_with_block = clients.el_reader.get_delegated_operator(staker_addr, current_block)
     assert (
         Web3.is_address(result_with_block)
         or result_with_block == "0x0000000000000000000000000000000000000000"
     )
-    print(f"Delegated operator at block {current_block}: {result_with_block}")
+    print(f"Delegated operator at block {current_block}: {result_with_block.hex() if isinstance(result_with_block, bytes) else result_with_block}")
 
 
 def test_get_operator_details():
@@ -413,7 +413,7 @@ def test_get_operator_set_split():
 def test_get_rewards_updater():
     result = clients.el_reader.get_rewards_updater()
     assert Web3.is_address(result)
-    print(f"Rewards updater: {result}")
+    print(f"Rewards updater: {result.hex() if isinstance(result, bytes) else result}")
 
 
 def test_get_default_operator_split_bips():
@@ -426,7 +426,7 @@ def test_get_claimer_for():
     earner_addr = Web3.to_checksum_address(config["operator_address"])
     result = clients.el_reader.get_claimer_for(earner_addr)
     assert Web3.is_address(result)
-    print(f"Claimer for {earner_addr}: {result}")
+    print(f"Claimer for {earner_addr}: {result.hex() if isinstance(result, bytes) else result}")
 
 
 def test_get_submission_nonce():

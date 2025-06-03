@@ -1,11 +1,9 @@
 import logging
 from typing import Tuple
-
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from web3 import Web3
-
 from eigensdk.chainio.clients.avsregistry import reader as avs_reader
 from eigensdk.chainio.clients.avsregistry import writer as avs_writer
 from eigensdk.chainio.clients.elcontracts import reader as el_reader

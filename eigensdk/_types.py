@@ -82,6 +82,8 @@ class StakeRegistryTypesStakeUpdate:
     update_block_number: int
     next_update_block_number: int
     stake: int
+    block_number: int
+    is_registered: bool
 
 
 @dataclass

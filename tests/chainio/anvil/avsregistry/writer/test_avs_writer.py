@@ -5,6 +5,7 @@ from tests.chainio.anvil.avsregistry.writer.utils import (
     register_as_operator,
     register_for_operator_sets,
 )
+from eigensdk._types import StakeRegistryTypesStrategyParams
 
 
 @pytest.mark.order(3)
@@ -16,7 +17,7 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
         pass
 
     operator_addr = Web3.to_checksum_address(config["operator_address_2"])
-    operators_per_quorum = [[operator_addr]]
+    operators_per_quorum = [[str(operator_addr)]]
     quorum_numbers = [0]
     receipt = clients.avs_registry_writer.update_stakes_of_entire_operator_set_for_quorums(
         operators_per_quorum, quorum_numbers
@@ -41,7 +42,7 @@ def test_update_socket():
 @pytest.mark.order(5)
 def test_set_avs():
     avs_address = Web3.to_checksum_address(config["service_manager_address"])
-    receipt = clients.avs_registry_writer.set_avs(avs_address)
+    receipt = clients.avs_registry_writer.set_avs(str(avs_address))
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set AVS with tx hash: {receipt['transactionHash'].hex()}")
@@ -50,7 +51,7 @@ def test_set_avs():
 @pytest.mark.order(6)
 def test_update_stakes_of_operator_subset_for_all_quorums():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    operators = [operator_addr]
+    operators = [str(operator_addr)]
     receipt = clients.avs_registry_writer.update_stakes_of_operator_subset_for_all_quorums(
         operators
     )
@@ -62,7 +63,7 @@ def test_update_stakes_of_operator_subset_for_all_quorums():
 @pytest.mark.order(7)
 def test_set_rewards_initiator():
     rewards_initiator_addr = Web3.to_checksum_address(config["operator_address"])
-    receipt = clients.avs_registry_writer.set_rewards_initiator(rewards_initiator_addr)
+    receipt = clients.avs_registry_writer.set_rewards_initiator(str(rewards_initiator_addr))
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set rewards initiator with tx hash: {receipt['transactionHash'].hex()}")
@@ -95,7 +96,7 @@ def test_create_total_delegated_stake_quorum():
 
     minimum_stake_required = 1000000
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
-    strategy_params = [(strategy_addr, 10000)]
+    strategy_params = [(str(strategy_addr), 10000)]
     receipt = clients.avs_registry_writer.create_total_delegated_stake_quorum(
         operator_set_params, minimum_stake_required, strategy_params
     )
@@ -123,7 +124,7 @@ def test_set_operator_set_params():
 @pytest.mark.order(11)
 def test_set_churn_approver():
     churn_approver_address = Web3.to_checksum_address(config["operator_address"])
-    receipt = clients.avs_registry_writer.set_churn_approver(churn_approver_address)
+    receipt = clients.avs_registry_writer.set_churn_approver(str(churn_approver_address))
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set churn approver with tx hash: {receipt['transactionHash'].hex()}")
@@ -132,7 +133,7 @@ def test_set_churn_approver():
 @pytest.mark.order(12)
 def test_set_ejector():
     ejector_address = Web3.to_checksum_address(config["operator_address"])
-    receipt = clients.avs_registry_writer.set_ejector(ejector_address)
+    receipt = clients.avs_registry_writer.set_ejector(str(ejector_address))
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Set ejector with tx hash: {receipt['transactionHash'].hex()}")
@@ -172,12 +173,12 @@ def test_update_avs_metadata_uri():
 @pytest.mark.order(16)
 def test_create_avs_rewards_submission():
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
-    strategy_addr = strategies[0]
+    assert strategies is not None, "Strategy params should not be None"
+    strategy_addr = Web3.to_checksum_address(strategies.strategy)
     calculationInterval = clients.el_reader.get_calculation_interval_seconds()
     token = clients.el_reader.get_strategy_and_underlying_token(strategy_addr)[1]
-
+    assert token is not None, "Token should not be None"
     strategy_and_multiplier = {"strategy": Web3.to_checksum_address(strategy_addr), "multiplier": 1}
-
     latest_block = clients.eth_http_client.eth.get_block("latest")
     block_time = latest_block["timestamp"]
     duration = calculationInterval
@@ -189,7 +190,6 @@ def test_create_avs_rewards_submission():
         "startTimestamp": start_timestamp,
         "duration": duration,
     }
-
     receipt = clients.avs_registry_writer.create_avs_rewards_submission([rewards_submission])
     assert receipt is not None
     assert receipt["status"] == 1
@@ -205,8 +205,9 @@ def test_create_slashable_stake_quorum():
     )
     minimum_stake_required = 0
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
-    strategy_addr = strategies[0]
-    strategy_param = {"strategy": strategy_addr, "multiplier": 10000}
+    assert strategies is not None, "Strategy params should not be None"
+    strategy_addr = Web3.to_checksum_address(strategies.strategy)
+    strategy_param = (str(strategy_addr), 10000)
     look_ahead_period = 50400  # ~1 week in blocks (assuming ~12s block time)
     receipt = clients.avs_registry_writer.create_slashable_stake_quorum(
         operator_set_params, minimum_stake_required, [strategy_param], look_ahead_period
@@ -233,7 +234,8 @@ def test_set_slashable_stake_lookahead():
 @pytest.mark.order(19)
 def test_add_strategies():
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
-    strategy_addr = strategies[0]
+    assert strategies is not None, "Strategy params should not be None"
+    strategy_addr = Web3.to_checksum_address(strategies.strategy)
     strategy_params = {"strategy": strategy_addr, "multiplier": 10000}
     receipt = clients.avs_registry_writer.add_strategies(
         quorum_number=0, strategy_params=[strategy_params]
@@ -248,7 +250,7 @@ def test_eject_operator():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     quorum_numbers = [0]  # Eject from quorum 0
     receipt = clients.avs_registry_writer.eject_operator(
-        operator_address=operator_addr, quorum_numbers=quorum_numbers
+        operator_address=str(operator_addr), quorum_numbers=quorum_numbers
     )
     assert receipt is not None
     # assert receipt["status"] == 1
@@ -268,15 +270,17 @@ def test_remove_strategies():
 @pytest.mark.order(22)
 def test_create_operator_directed_avs_rewards_submission():
     strategies = clients.avs_registry_reader.strategy_params_by_index(quorum_number=0, index=0)
-    strategy_addr = strategies[0]
+    assert strategies is not None, "Strategy params should not be None"
+    strategy_addr = Web3.to_checksum_address(strategies.strategy)
     calculationInterval = clients.el_reader.get_calculation_interval_seconds()
     token = clients.el_reader.get_strategy_and_underlying_token(strategy_addr)[1]
+    assert token is not None, "Token should not be None"
     latest_block = clients.eth_http_client.eth.get_block("latest")
     block_time = latest_block["timestamp"]
     duration = calculationInterval
     start_timestamp = ((block_time // duration) + 1) * duration
     strategy_and_multiplier = {"strategy": Web3.to_checksum_address(strategy_addr), "multiplier": 1}
-    operator_rewards = [(Web3.to_checksum_address(config["operator_address"]), 1000)]
+    operator_rewards = [(str(Web3.to_checksum_address(config["operator_address"])), 1000)]
 
     rewards_submission = {
         "strategiesAndMultipliers": [strategy_and_multiplier],

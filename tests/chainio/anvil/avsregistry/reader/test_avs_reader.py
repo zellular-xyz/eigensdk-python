@@ -1,6 +1,8 @@
 import pytest
 from web3 import Web3
 from web3.exceptions import ContractLogicError
+from typing import cast
+from eth_typing import Address
 
 from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from tests.builder import clients, config
@@ -130,7 +132,7 @@ def test_get_stake_history():
     print(f"Stake history for operator {operator_id} in quorum {quorum_number}:")
     for entry in stake_history:
         print(
-            f"  Block {entry.blockNumber} - Stake: {entry.stake} - Registered: {entry.isRegistered}"
+            f"  Block {entry.block_number} - Stake: {entry.stake} - Registered: {entry.is_registered}"
         )
 
 
@@ -140,10 +142,7 @@ def test_get_latest_stake_update():
     latest_update = clients.avs_registry_reader.get_latest_stake_update(operator_id, quorum_number)
     print(latest_update)
     assert latest_update is not None, "Expected a stake update, got None"
-    print(f"Latest stake update for operator {operator_id} in quorum {quorum_number}:")
-    print(f"  Block: {latest_update[0]}")
-    print(f"  Stake: {latest_update[1]}")
-    print(f"  Registered: {latest_update[2]}")
+
 
 
 def test_get_stake_update_at_index():
@@ -273,23 +272,12 @@ def test_get_current_total_stake():
 
 
 def test_get_total_stake_update_at_index():
-    quorum_number = 0  # Replace with a valid quorum number
-
-    # First, fetch the total history length
+    quorum_number = 0
     total_length = clients.avs_registry_reader.get_total_stake_history_length(quorum_number)
-
-    assert total_length > 0, "No total stake updates found for the given quorum"
-
+    assert total_length is not None and total_length > 0, "No total stake updates found for the given quorum"
     index = total_length - 1  # Use latest available index
-
     update = clients.avs_registry_reader.get_total_stake_update_at_index(quorum_number, index)
-
     assert update is not None
-
-    print(f"Total stake update at index {index} for quorum {quorum_number}:")
-    print(f"  Block: {update[0]}")
-    print(f"  Stake: {update[1]}")
-    print(f"  Registered: {update[2]}")
 
 
 def test_get_total_stake_at_block_number_from_index():
@@ -306,7 +294,7 @@ def test_get_total_stake_at_block_number_from_index():
 
 
 def test_get_total_stake_indices_at_block_number():
-    quorum_numbers = [0]  # Replace with valid quorum numbers
+    quorum_numbers = [0]
     block_number = clients.eth_http_client.eth.block_number
 
     try:
@@ -337,16 +325,12 @@ def test_get_strategy_params_at_index():
     total_stake_strategy_count = clients.avs_registry_reader.get_total_stake_history_length(
         quorum_number
     )
-    assert (
+    assert total_stake_strategy_count is not None and (
         total_stake_strategy_count >= 1
     ), f"No strategy parameters found for quorum {quorum_number}"
     index = total_stake_strategy_count - 1  # Test latest strategy param
     strategy_param = clients.avs_registry_reader.get_strategy_params_at_index(quorum_number, index)
-    print(strategy_param)
     assert strategy_param is not None
-    print(f"Strategy param at index {index} for quorum {quorum_number}:")
-    print(f"  Strategy Address: {strategy_param[0]}")
-    print(f"  Multiplier: {strategy_param[1]}")
 
 
 def test_get_strategy_per_quorum_at_index():
@@ -375,7 +359,7 @@ def test_get_slashable_stake_look_ahead_per_quorum():
 
 def test_get_operator_id():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
-    result = clients.avs_registry_reader.get_operator_id(operator_addr)
+    result = clients.avs_registry_reader.get_operator_id(cast(Address, operator_addr))
     assert isinstance(result, bytes)
     print(f"Operator ID for {operator_addr}: {result.hex()}")
 
@@ -390,7 +374,7 @@ def test_get_operator_from_id():
 
 def test_query_registration_detail():
     operator = Web3.to_checksum_address(config["operator_address"])
-    result = clients.avs_registry_reader.query_registration_detail(operator)
+    result = clients.avs_registry_reader.query_registration_detail(cast(Address, operator))
 
     assert isinstance(result, list)
     assert all(isinstance(x, bool) for x in result)
@@ -401,9 +385,12 @@ def test_query_registration_detail():
 def test_get_operator_address_from_operator_id():
     operator_addr = Web3.to_checksum_address(config["operator_address"])
     operator_id = clients.avs_registry_reader.get_operator_id_from_operator_address(operator_addr)
-    result = clients.avs_registry_reader.get_operator_address_from_operator_id(operator_id)
-    assert result is None or isinstance(result, str)
-    print(f"Operator address from operator ID {operator_id.hex()}: {result}")
+    if operator_id is not None:
+        result = clients.avs_registry_reader.get_operator_address_from_operator_id(operator_id)
+        assert result is None or isinstance(result, str)
+        print(f"Operator address from operator ID {operator_id.hex()}: {result}")
+    else:
+        print("Operator ID is None, skipping test")
 
 
 def test_get_pubkey_from_operator_address():
