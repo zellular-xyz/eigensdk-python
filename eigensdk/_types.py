@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from eth_typing import Address
 
@@ -9,17 +9,16 @@ from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 @dataclass
 class Operator:
     address: Address
-    earnings_receiver_address: Address = field(default="")
-    delegation_approver_address: Address = field(default="")
-    staker_opt_out_window_blocks: Optional[int] = field(default=None)
+    earnings_receiver_address: Address = field(default=None)
+    delegation_approver_address: Address = field(default=None)
+    staker_opt_out_window_blocks: int = field(default=None)
+    allocation_delay: int = field(default=None)
     metadata_url: str = field(default="")
 
 
 @dataclass
 class OperatorPubkeys:
-    # G1 signatures are used to verify signatures onchain (since G1 is cheaper to verify onchain via precompiles)
     g1_pub_key: G1Point
-    # G2 is used to verify signatures offchain (signatures are on G1)
     g2_pub_key: G2Point
 
 
@@ -65,3 +64,25 @@ class OperatorStateRetrieverOperator:
     operator: Address
     operator_id: bytes
     stake: int
+
+
+@dataclass
+class StakeRegistryTypesStrategyParams:
+    strategy: str
+    multiplier: int
+
+
+@dataclass
+class StakeRegistryTypesStakeUpdate:
+    """Python equivalent of IStakeRegistryTypesStakeUpdate struct for testing"""
+
+    update_block_number: int
+    next_update_block_number: int
+    stake: int
+
+
+@dataclass
+class BLSApkRegistryTypesApkUpdate:
+    apk_hash: bytes
+    update_block_number: int
+    next_update_block_number: int

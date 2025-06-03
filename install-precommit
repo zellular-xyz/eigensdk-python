@@ -1,0 +1,4 @@
+#!/bin/bash
+# using script to avoid this error: "the input device is not a TTY"
+echo "script -e -q -c 'make precommit' /dev/null" > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit

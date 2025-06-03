@@ -6,23 +6,27 @@ eigensdk.chainio
 eigensdk.chainio.clients.builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, avs_name: str = '', prom_metrics_ip_port_address: str = '')
+.. py:class:: eigensdk.chainio.clients.builder.BuildAllConfig(eth_http_url: str, registry_coordinator_addr: Address, operator_state_retriever_addr: Address, rewards_coordinator_addr: Address, permission_controller_addr: Address, service_manager_addr: Address, allocation_manager_addr: Address, delegation_manager_addr: Address, avs_name: str)
 
-    This class creates a configuration object used to initialize and configure clients for interacting with the EigenLayer and integrated AVS blockchain infrastructure. It includes parameters to connect to the Ethereum network, AVS services, and metrics endpoints.
+    This class creates a configuration object used to initialize and configure clients for interacting with the EigenLayer and integrated AVS blockchain infrastructure. It includes parameters to connect to the Ethereum network, AVS services.
 
     :param eth_http_url: URL for the Ethereum HTTP RPC endpoint.
     :param registry_coordinator_addr: The blockchain address of the registry coordinator contract.
     :param operator_state_retriever_addr: The blockchain address of the operator state retriever contract.
-    :param avs_name: (Optional) The name of the AVS for which the clients are being built.
-    :param prom_metrics_ip_port_address: (Optional) The IP and port for Prometheus metrics.
+    :param rewards_coordinator_addr: The blockchain address of the rewards coordinator contract.
+    :param permission_controller_addr: The blockchain address of the permission controller contract.
+    :param service_manager_addr: The blockchain address of the service manager contract.
+    :param allocation_manager_addr: The blockchain address of the allocation manager contract.
+    :param delegation_manager_addr: The blockchain address of the delegation manager contract.
+    :param avs_name: The name of the AVS for which the clients are being built.
 
-.. py:method:: build_all(config: BuildAllConfig, ecdsa_private_key: str = '', logger: logging.Logger = logging.getLogger(__name__)) -> Clients
+.. py:function:: build_all(config: BuildAllConfig, config_ecdsa_private_key: str) -> Clients
 
     Instantiates and returns a collection of client objects that facilitate interaction with the EigenLayer core contracts and the AVS registry contracts. This method leverages the provided configuration to connect and authenticate interactions across the blockchain network.
 
     :param config: A `BuildAllConfig` object containing all necessary configuration details.
-    :param ecdsa_private_key: (Optional) A private key used for blockchain transactions and operations.
-    :param logger: (Optional) A logging object to capture the operational log of the client interactions.
+    :param config_ecdsa_private_key: A private key used for blockchain transactions and operations.
+    :return: A `Clients` object containing all the initialized client instances.
 
 Example Usage
 -------------
@@ -37,9 +41,13 @@ Below is an example of how to use the `BuildAllConfig` and `build_all` functions
     ...     avs_name="eigenda",
     ...     registry_coordinator_addr='0x0BAAc79acD45A023E19345c352d8a7a83C4e5656',
     ...     operator_state_retriever_addr='0xD5D7fB4647cE79740E6e83819EFDf43fa74F8C31',
-    ...     prom_metrics_ip_port_address='localhost:9090',
+    ...     rewards_coordinator_addr='0x7750d328b314EfFa365A0402CcfD489B80B0adda',
+    ...     permission_controller_addr='0x0000000000000000000000000000000000000000',
+    ...     service_manager_addr='0x870679E138bCdf293b7ff14dD44b70FC97e12fc0',
+    ...     allocation_manager_addr='0x3A93c17D806bf74066d7e2c962b7a0F49b97e1Cf',
+    ...     delegation_manager_addr='0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A',
     ... )
-    >>> clients = build_all(config)
+    >>> clients = build_all(config, "your_private_key_here")
     >>> from pprint import pprint
     >>> pprint(clients.__dict__)
     {
@@ -48,23 +56,26 @@ Below is an example of how to use the `BuildAllConfig` and `build_all` functions
         'el_reader': <eigensdk.chainio.clients.elcontracts.reader.ELReader object at 0x715d7f89a450>,
         'el_writer': <eigensdk.chainio.clients.elcontracts.writer.ELWriter object at 0x715d7f89a490>,
         'eth_http_client': <web3.main.Web3 object at 0x715d83c009d0>,
-        'metrics': None,
-        'wallet': None
+        'wallet': <eth_account.signers.local.LocalAccount object at 0x715d83c123d0>
     }
 
 clients.elcontracts.reader
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.elcontracts.reader.ELReader(slasher: Contract, delegation_manager: Contract, strategy_manager: Contract, avs_directory: Contract, logger: logging.Logger, eth_http_client: Web3)
+.. py:class:: eigensdk.chainio.clients.elcontracts.reader.ELReader(allocation_manager: Contract, avs_directory: Contract, delegation_manager: Contract, permission_controller: Contract, reward_coordinator: Contract, strategy_manager: Contract, logger: logging.Logger, eth_http_client: Web3, strategy_abi: List[Dict[str, Any]], erc20_abi: List[Dict[str, Any]])
 
-    The ``ELReader`` class is responsible for reading data from various smart contracts related to EigenLayer's core functionalities. It allows for interaction with smart contracts such as the slasher, delegation manager, strategy manager, and AVS directory.
+    The ``ELReader`` class is responsible for reading data from various smart contracts related to EigenLayer's core functionalities. It allows for interaction with smart contracts such as the allocation manager, AVS directory, delegation manager, permission controller, reward coordinator, and strategy manager.
 
-    :param slasher: A Web3 contract instance for the slasher contract.
-    :param delegation_manager: A Web3 contract instance for the delegation manager contract.
-    :param strategy_manager: A Web3 contract instance for the strategy manager contract.
+    :param allocation_manager: A Web3 contract instance for the allocation manager contract.
     :param avs_directory: A Web3 contract instance for the AVS directory contract.
+    :param delegation_manager: A Web3 contract instance for the delegation manager contract.
+    :param permission_controller: A Web3 contract instance for the permission controller contract.
+    :param reward_coordinator: A Web3 contract instance for the reward coordinator contract.
+    :param strategy_manager: A Web3 contract instance for the strategy manager contract.
     :param logger: A logging.Logger instance for logging.
     :param eth_http_client: A Web3 instance connected to an Ethereum node.
+    :param strategy_abi: ABI list for strategy contracts.
+    :param erc20_abi: ABI list for ERC20 token contracts.
 
 .. py:method:: is_operator_registered(operator_addr: Address) -> bool
 
@@ -79,18 +90,44 @@ clients.elcontracts.reader
         >>> clients.el_reader.is_operator_registered(address)
         True
 
-.. py:method:: get_operator_details(operator_addr: Address) -> Operator
+.. py:method:: get_operator_details(operator: Dict[str, Any]) -> Dict[str, Any]
 
     Retrieves detailed information about a registered operator.
 
+    :param operator: A dictionary containing operator information including the address.
+    :return: A dictionary containing details about the operator.
+
+.. py:method:: get_allocatable_magnitude(operator_addr: Address, strategy_addr: Address) -> int
+
+    Retrieves the allocatable magnitude for an operator in a specific strategy.
+
     :param operator_addr: The blockchain address of the operator.
-    :return: An ``Operator`` object containing details about the operator.
+    :param strategy_addr: The blockchain address of the strategy.
+    :return: The allocatable magnitude as an integer.
 
-    .. code-block:: python
+.. py:method:: get_allocation_info(operator_addr: Address, strategy_addr: Address) -> List[Dict[str, Any]]
 
-        >>> address = "0x4Cd2086E1d708E65Db5d4f5712a9CA46Ed4BBd0a"
-        >>> clients.el_reader.get_operator_details(address)
-        Operator(address='0x4Cd2086E1d708E65Db5d4f5712a9CA46Ed4BBd0a', earnings_receiver_address='0xA5c1e8839Cf829607588B876D98a0e38F0D4C998', delegation_approver_address='0x0000000000000000000000000000000000000000', staker_opt_out_window_blocks=0, metadata_url='')
+    Fetches allocation information for an operator in a specific strategy.
+
+    :param operator_addr: The blockchain address of the operator.
+    :param strategy_addr: The blockchain address of the strategy.
+    :return: A list of dictionaries containing allocation details.
+
+.. py:method:: is_operator_registered_with_avs(operator_address: Address, avs_address: Address) -> bool
+
+    Checks if an operator is registered with a specific AVS.
+
+    :param operator_address: The blockchain address of the operator.
+    :param avs_address: The blockchain address of the AVS.
+    :return: True if the operator is registered with the AVS, otherwise False.
+
+.. py:method:: get_operator_shares(operator_address: Address, strategy_addresses: List[Address]) -> List[int]
+
+    Retrieves the shares an operator has across multiple strategies.
+
+    :param operator_address: The blockchain address of the operator.
+    :param strategy_addresses: A list of strategy addresses to query.
+    :return: A list of share amounts corresponding to each strategy.
 
 .. py:method:: get_strategy_and_underlying_token(strategy_addr: Address) -> Tuple[Contract, str]
 
@@ -131,61 +168,34 @@ clients.elcontracts.reader
         >>> token_address
         '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84'
 
-
-
-.. py:method:: service_manager_can_slash_operator_until_block(operator_addr: Address, service_manager_addr: Address) -> int
-
-    Determines until which block a service manager can slash an operator.
-
-    :param operator_addr: The blockchain address of the operator.
-    :param service_manager_addr: The blockchain address of the service manager.
-    :return: Block number until which the operator can be slashed.
-
-.. py:method:: operator_is_frozen(operator_addr: Address) -> bool
-
-    Checks if an operator is frozen.
-
-    :param operator_addr: The blockchain address of the operator.
-    :return: True if the operator is frozen, otherwise False.
-
-.. py:method:: get_operator_shares_in_strategy(operator_addr: Address, strategy_addr: Address) -> int
-
-    Retrieves the number of shares an operator has in a given strategy.
-
-    :param operator_addr: The blockchain address of the operator.
-    :param strategy_addr: The blockchain address of the strategy.
-    :return: The number of shares.
-
-.. py:method:: calculate_delegation_approval_digest_hash(staker: Address, operator_addr: Address, delegation_approver: Address, approver_salt: bytes, expiry: int) -> bytes
+.. py:method:: calculate_delegation_approval_digest_hash(staker: Address, operator: Address, delegation_approver: Address, approver_salt: bytes, expiry: int) -> bytes
 
     Calculates the hash of a delegation approval digest.
 
     :param staker: The blockchain address of the staker.
-    :param operator_addr: The blockchain address of the operator.
+    :param operator: The blockchain address of the operator.
     :param delegation_approver: The blockchain address of the delegation approver.
     :param approver_salt: Salt bytes for the hash calculation.
     :param expiry: Expiry time for the approval.
     :return: The calculated hash as bytes.
 
-.. py:method:: calculate_operator_avs_registration_digest_hash(operator_addr: Address, avs: Address, salt: bytes, expiry: int) -> bytes
+.. py:method:: calculate_operator_avs_registration_digest_hash(operator: Address, avs: Address, salt: bytes, expiry: int) -> bytes
 
     Calculates the hash of an operator AVS registration digest.
 
-    :param operator_addr: The blockchain address of the operator.
+    :param operator: The blockchain address of the operator.
     :param avs: The blockchain address of the AVS.
     :param salt: Salt bytes for the hash calculation.
     :param expiry: Expiry time for the registration.
     :return: The calculated hash as bytes.
 
-
 clients.elcontracts.writer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. py:class:: eigensdk.chainio.clients.elcontracts.writer.ELWriter(slasher: Contract, delegation_manager: Contract, strategy_manager: Contract, strategy_manager_addr: Address, avs_directory: Contract, el_reader: ELReader, logger: logging.Logger, eth_http_client: Web3, pk_wallet: LocalAccount)
+.. py:class:: eigensdk.chainio.clients.elcontracts.writer.ELWriter(delegation_manager: Contract, strategy_manager: Contract, strategy_manager_addr: Address, avs_directory: Contract, el_reader: ELReader, logger: logging.Logger, eth_http_client: Web3, pk_wallet: LocalAccount)
 
-    The ``ELWriter`` class is designed for writing data to various smart contracts related to EigenLayer's core functionalities. It facilitates interaction with contracts such as the slasher, delegation manager, strategy manager, and AVS directory through transactional methods.
+    The ``ELWriter`` class is designed for writing data to various smart contracts related to EigenLayer's core functionalities. It facilitates interaction with contracts such as the delegation manager, strategy manager, and AVS directory through transactional methods.
 
-    :param slasher: A Web3 contract instance of the slasher contract.
     :param delegation_manager: A Web3 contract instance of the delegation manager contract.
     :param strategy_manager: A Web3 contract instance of the strategy manager contract.
     :param strategy_manager_addr: The blockchain address of the strategy manager contract.

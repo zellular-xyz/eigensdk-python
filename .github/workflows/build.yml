@@ -1,0 +1,26 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ if3-dev ]
+  pull_request:
+    branches: [ if3-dev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker images
+        run: make rebuild
+
+      - name: Start Anvil and Run Tests
+        run: make test
+
+      - name: Cleanup
+        if: always()
+        run: make down

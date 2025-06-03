@@ -1,0 +1,41 @@
+services:
+  anvil:
+    build: .
+    ports:
+      - "8546:8545"
+    command: >
+      bash -c "
+        # Start Anvil
+        anvil --host 0.0.0.0 --port 8545 &
+        anvil_pid=\$\!
+        sleep 1
+        scripts/deploy.sh
+        wait \${anvil_pid}
+        "
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8545'"]
+      interval: 2s
+      timeout: 1s
+      retries: 10
+  test:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+      - ETH_HTTP_URL=http://anvil:8545
+    depends_on:
+      anvil:
+        condition: service_healthy
+    command: python -m pytest tests/ -v
+  dev:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    command: bash
+    profiles:
+      - dev
+    stdin_open: true
+    tty: true

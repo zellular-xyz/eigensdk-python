@@ -3,4 +3,7 @@ __pycache__
 *venv
 build
 *.egg-info
-
+*.log
+.readthedocs.yaml
+tests/.env
+.idea/
