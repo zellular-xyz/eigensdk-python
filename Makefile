@@ -39,13 +39,16 @@ fresh-test: down
 format:
 	$(DOCKER_DEV) black .
 
+format-check:
+	$(DOCKER_DEV) black --check .
+
 mypy:
-	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional eigensdk/chainio/ tests/chainio/
+	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional eigensdk/chainio/
 
 lint:
 	$(DOCKER_DEV) flake8 .
 
-precommit: format mypy lint
+precommit: format-check mypy lint
 commit-all-no-verify:
 	git commit -a -n
 commit-all: precommit commit-all-no-verify

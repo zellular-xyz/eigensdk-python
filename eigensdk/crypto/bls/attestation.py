@@ -19,6 +19,7 @@ class G1Point(G1):
         self.setStr(f"1 {x} {y}".encode("utf-8"))
         if x == 0 and y == 0:
             self.clear()
+
     def from_G1(g1: G1):
         x = int(g1.getX().getStr())
         y = int(g1.getY().getStr())
@@ -51,13 +52,6 @@ class G2Point(G2):
         self.setStr(f"1 {xb} {xa} {yb} {ya}".encode("utf-8"))
         if xa == 0 and xb == 0 and ya == 0 and yb == 0:
             self.clear()
-            
-    def from_G2(g2: G2):
-        xa = int(g2.getX().get_a().getStr())
-        xb = int(g2.getX().get_b().getStr())
-        ya = int(g2.getY().get_a().getStr())
-        yb = int(g2.getY().get_b().getStr())
-        return G2Point(xa, xb, ya, yb)
 
     def from_G2(g2: G2):
         xa = int(g2.getX().get_a().getStr())
