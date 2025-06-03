@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from eth_typing import Address
 
@@ -9,11 +9,11 @@ from eigensdk.crypto.bls.attestation import G1Point, G2Point, Signature
 @dataclass
 class Operator:
     address: Address
-    earnings_receiver_address: Address = field(default=None)
-    delegation_approver_address: Address = field(default=None)
-    staker_opt_out_window_blocks: int = field(default=None)
-    allocation_delay: int = field(default=None)
-    metadata_url: str = field(default="")
+    earnings_receiver_address: Address
+    staker_opt_out_window_blocks: int
+    metadata_url: str
+    allocation_delay: int = 50
+    delegation_approver_address: Optional[Address] = None
 
 
 @dataclass

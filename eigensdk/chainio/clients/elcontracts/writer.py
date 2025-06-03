@@ -102,6 +102,7 @@ class ELWriter:
         return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
     def update_operator_details(self, operator: Operator) -> TxReceipt:
+        assert operator.delegation_approver_address is not None  # FIXME check this logic
         func = self.delegation_manager.functions.modifyOperatorDetails(
             Web3.to_checksum_address(operator.address),
             Web3.to_checksum_address(operator.delegation_approver_address),
