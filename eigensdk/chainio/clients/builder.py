@@ -49,21 +49,25 @@ class BuildAllConfig:
             address=self.registry_coordinator_addr,
             abi=ABIs.REGISTRY_COORDINATOR_ABI,
         )
+        self.logger.info(f"registry_coordinator_instance: {registry_coordinator_instance}")
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
         stake_registry_instance = eth_http_client.eth.contract(
             address=stake_registry_addr,
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
+        self.logger.info(f"stake_registry_instance: {stake_registry_instance}")
         delegation_manager_addr = stake_registry_instance.functions.delegation().call()
         delegation_manager_instance = eth_http_client.eth.contract(
             address=delegation_manager_addr,
             abi=ABIs.DELEGATION_MANAGER_ABI,
         )
+        self.logger.info(f"delegation_manager_instance: {delegation_manager_instance}")
         strategy_manager_addr = delegation_manager_instance.functions.strategyManager().call()
         strategy_manager_instance = eth_http_client.eth.contract(
             address=strategy_manager_addr,
             abi=ABIs.STRATEGY_MANAGER_ABI,
         )
+        self.logger.info(f"strategy_manager_instance: {strategy_manager_instance}")
         service_manager = eth_http_client.eth.contract(
             address=self.service_manager_addr,
             abi=ABIs.SERVICE_MANAGER_BASE_ABI,
@@ -73,20 +77,22 @@ class BuildAllConfig:
             address=self.allocation_manager_addr,
             abi=ABIs.ALLOCATION_MANAGER_ABI,
         )
+        self.logger.info(f"allocation_manager_instance: {allocation_manager_instance}")
         permission_controller_instance = eth_http_client.eth.contract(
             address=self.permission_controller_addr,
             abi=ABIs.PERMISSION_CONTROLLER_ABI,
         )
-
+        self.logger.info(f"permission_controller_instance: {permission_controller_instance}")
         avs_directory_addr = service_manager.functions.avsDirectory().call()
         avs_directory_instance = eth_http_client.eth.contract(
             address=avs_directory_addr,
             abi=ABIs.AVS_DIRECTORY_ABI,
         )
+        self.logger.info(f"avs_directory_instance: {avs_directory_instance}")
         rewards_coordinator_instance = eth_http_client.eth.contract(
             address=self.rewards_coordinator_addr, abi=ABIs.REWARDS_COORDINATOR_ABI
         )
-
+        self.logger.info(f"rewards_coordinator_instance: {rewards_coordinator_instance}")
         el_reader_instance = el_reader.ELReader(
             allocation_manager=allocation_manager_instance,
             avs_directory=avs_directory_instance,
@@ -128,24 +134,28 @@ class BuildAllConfig:
             address=self.registry_coordinator_addr,
             abi=ABIs.REGISTRY_COORDINATOR_ABI,
         )
+        self.logger.info(f"registry_coordinator_instance: {registry_coordinator_instance}")
         operator_state_retriever_instance = eth_http_client.eth.contract(
             address=self.operator_state_retriever_addr, abi=ABIs.OPERATOR_STATE_RETRIEVER_ABI
         )
+        self.logger.info(f"operator_state_retriever_instance: {operator_state_retriever_instance}")
         bls_apk_registry_addr = registry_coordinator_instance.functions.blsApkRegistry().call()
         bls_apk_registry_instance = eth_http_client.eth.contract(
             address=bls_apk_registry_addr,
             abi=ABIs.BLS_APK_REGISTRY_ABI,
         )
+        self.logger.info(f"bls_apk_registry_instance: {bls_apk_registry_instance}")
         service_manager_instance = eth_http_client.eth.contract(
             address=self.service_manager_addr,
             abi=ABIs.STRATEGY_MANAGER_ABI,
         )
+        self.logger.info(f"service_manager_instance: {service_manager_instance}")
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()
         stake_registry_instance = eth_http_client.eth.contract(
             address=stake_registry_addr,
             abi=ABIs.STAKE_REGISTRY_ABI,
         )
-
+        self.logger.info(f"stake_registry_instance: {stake_registry_instance}")
         avs_reader_instance = avs_reader.AvsRegistryReader(
             registry_coordinator=registry_coordinator_instance,
             registry_coordinator_addr=Address(bytes.fromhex(self.registry_coordinator_addr[2:])),
