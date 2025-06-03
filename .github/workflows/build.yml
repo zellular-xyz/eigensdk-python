@@ -21,14 +21,14 @@ jobs:
       - name: Start Anvil and Run Tests
         run: make test
 
-      - name: Check formatting
-        run: docker compose run format --check .
-
       - name: Run linting
         run: make lint
         
       - name: Run type checking
         run: make mypy 
+
+      - name: Check formatting
+        run: make format-check
 
       - name: Cleanup
         if: always()
