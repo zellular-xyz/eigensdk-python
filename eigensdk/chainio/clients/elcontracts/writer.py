@@ -1,18 +1,18 @@
 import logging
 from enum import IntEnum
-from typing import List, Any, Dict, cast
+from typing import List, Any, Dict
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import Address
 from web3 import Web3
 from web3.contract import Contract
+from web3.types import ChecksumAddress
 from web3.types import TxReceipt
 
-from eigensdk.types_ import Operator
 from eigensdk.chainio.utils import (
     abi_encode_normal_registration_params,
     get_pubkey_registration_params,
 )
+from eigensdk.types_ import Operator
 from ...utils import send_transaction
 
 
@@ -232,8 +232,8 @@ class ELWriter:
     ) -> TxReceipt:
         pubkey_reg_params = get_pubkey_registration_params(
             self.eth_http_client,
-            cast(Address, Web3.to_checksum_address(registry_coordinator_addr)),
-            cast(Address, Web3.to_checksum_address(request["operator_address"])),
+            Web3.to_checksum_address(registry_coordinator_addr),
+            Web3.to_checksum_address(request["operator_address"]),
             request["bls_key_pair"],
         )
 
@@ -244,7 +244,7 @@ class ELWriter:
         )
 
         register_params = {
-            "avs": cast(Address, Web3.to_checksum_address(request["avs_address"])),
+            "avs": Web3.to_checksum_address(request["avs_address"]),
             "operatorSetIds": request["operator_set_ids"],
             "data": encoded_data,
         }
@@ -310,11 +310,8 @@ class ELWriter:
 
         return send_transaction(func, self.pk_wallet, self.eth_http_client)
 
-    def get_operator_id(self, operator_address: Address) -> bytes:
-        operator_id = self.registry_coordinator.functions.getOperatorId(
-            Web3.to_checksum_address(cast(Address, operator_address))
-        ).call()
-        return operator_id
+    def get_operator_id(self, operator_address: ChecksumAddress) -> bytes:
+        return self.registry_coordinator.functions.getOperatorId(operator_address).call()
 
     def set_avs_registrar(self, avs_address: str, registrar_address: str) -> TxReceipt:
         func = self.allocation_manager.functions.setAVSRegistrar(

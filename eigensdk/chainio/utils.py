@@ -4,7 +4,7 @@ from eth_abi import encode
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.contract.contract import ContractFunction
-from web3.types import Address
+from web3.types import ChecksumAddress
 from web3.types import TxReceipt
 
 from eigensdk.contracts import ABIs
@@ -183,8 +183,8 @@ def remove_duplicate_strategies(strategies):
 
 def get_pubkey_registration_params(
     eth_client: Web3,
-    registry_coordinator_addr: Address,
-    operator_address: Address,
+    registry_coordinator_addr: ChecksumAddress,
+    operator_address: ChecksumAddress,
     bls_key_pair: KeyPair,
 ) -> Dict[str, Any]:
 
