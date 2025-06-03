@@ -43,7 +43,7 @@ format-check:
 	$(DOCKER_DEV) black --check .
 
 mypy:
-	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional eigensdk/ tests/
+	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional .
 
 lint:
 	$(DOCKER_DEV) flake8 .
