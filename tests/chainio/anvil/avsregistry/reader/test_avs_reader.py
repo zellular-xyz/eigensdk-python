@@ -99,7 +99,11 @@ def test_strategy_params_by_index():
     quorum_number = 0
     index = 0
     result = clients.avs_registry_reader.strategy_params_by_index(quorum_number, index)
-    assert result is None or isinstance(result, tuple)
+    assert result is not None, "Strategy params should not be None"
+    assert hasattr(result, 'strategy'), "Result should have strategy attribute"
+    assert hasattr(result, 'multiplier'), "Result should have multiplier attribute"
+    assert isinstance(result.strategy, str), "Strategy should be a string"
+    assert isinstance(result.multiplier, int), "Multiplier should be an integer"
     print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
 
 
