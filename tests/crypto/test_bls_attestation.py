@@ -1,4 +1,3 @@
-import pytest
 from eigensdk.crypto.bls.attestation import new_key_pair_from_string
 
 
@@ -7,17 +6,17 @@ class TestBLSAttestation:
         """Test that key pairs can be generated from string seeds."""
         seed = "a1b2c3d4"
         key_pair = new_key_pair_from_string(seed)
-        
+
         assert key_pair is not None
-        assert hasattr(key_pair, 'sign_message')
-        assert hasattr(key_pair, 'get_pub_g2')
+        assert hasattr(key_pair, "sign_message")
+        assert hasattr(key_pair, "get_pub_g2")
 
     def test_deterministic_key_generation(self):
         """Test that the same seed produces the same key pair."""
         seed = "test_seed_123"
         key_pair1 = new_key_pair_from_string(seed)
         key_pair2 = new_key_pair_from_string(seed)
-        
+
         # Both key pairs should generate the same public key
         pub_g2_1 = key_pair1.get_pub_g2().getStr()
         pub_g2_2 = key_pair2.get_pub_g2().getStr()
@@ -27,17 +26,17 @@ class TestBLSAttestation:
         """Test basic message signing and verification workflow."""
         key_pair = new_key_pair_from_string("a1b2c3d4")
         message = b"Hello, world!"
-        
+
         # Sign the message
         signature = key_pair.sign_message(message)
-        
+
         assert signature is not None
-        assert hasattr(signature, 'to_json')
-        assert hasattr(signature, 'verify')
-        
+        assert hasattr(signature, "to_json")
+        assert hasattr(signature, "verify")
+
         # Get public key for verification
         pub_g2 = key_pair.get_pub_g2()
-        
+
         # Verify the signature
         is_valid = signature.verify(pub_g2, message)
         assert is_valid is True
@@ -47,25 +46,25 @@ class TestBLSAttestation:
         key_pair = new_key_pair_from_string("a1b2c3d4")
         message = b"Hello, world!"
         signature = key_pair.sign_message(message)
-        
+
         signature_json = signature.to_json()
-        
+
         assert isinstance(signature_json, dict)
-        assert 'X' in signature_json
-        assert 'Y' in signature_json
-        assert isinstance(signature_json['X'], int)
-        assert isinstance(signature_json['Y'], int)
+        assert "X" in signature_json
+        assert "Y" in signature_json
+        assert isinstance(signature_json["X"], int)
+        assert isinstance(signature_json["Y"], int)
 
     def test_signature_verification_with_wrong_message(self):
         """Test that signature verification fails with wrong message."""
         key_pair = new_key_pair_from_string("a1b2c3d4")
         original_message = b"Hello, world!"
         wrong_message = b"Hello, universe!"
-        
+
         # Sign original message
         signature = key_pair.sign_message(original_message)
         pub_g2 = key_pair.get_pub_g2()
-        
+
         # Verify with wrong message should fail
         is_valid = signature.verify(pub_g2, wrong_message)
         assert is_valid is False
@@ -75,10 +74,10 @@ class TestBLSAttestation:
         key_pair1 = new_key_pair_from_string("seed1")
         key_pair2 = new_key_pair_from_string("seed2")
         message = b"Hello, world!"
-        
+
         # Sign with first key pair
         signature = key_pair1.sign_message(message)
-        
+
         # Try to verify with second key pair's public key
         wrong_pub_g2 = key_pair2.get_pub_g2()
         is_valid = signature.verify(wrong_pub_g2, message)
@@ -87,13 +86,13 @@ class TestBLSAttestation:
     def test_different_seeds_produce_different_signatures(self):
         """Test that different seeds produce different signatures for same message."""
         message = b"Hello, world!"
-        
+
         key_pair1 = new_key_pair_from_string("seed1")
         key_pair2 = new_key_pair_from_string("seed2")
-        
+
         signature1 = key_pair1.sign_message(message)
         signature2 = key_pair2.sign_message(message)
-        
+
         # Signatures should be different
         assert signature1.to_json() != signature2.to_json()
 
@@ -101,11 +100,11 @@ class TestBLSAttestation:
         """Test key pair generation with empty string seed."""
         key_pair = new_key_pair_from_string("")
         message = b"test message"
-        
+
         signature = key_pair.sign_message(message)
         pub_g2 = key_pair.get_pub_g2()
         is_valid = signature.verify(pub_g2, message)
-        
+
         assert is_valid is True
 
     def test_unicode_seed(self):
@@ -113,11 +112,11 @@ class TestBLSAttestation:
         unicode_seed = "测试种子🔑"
         key_pair = new_key_pair_from_string(unicode_seed)
         message = b"test message"
-        
+
         signature = key_pair.sign_message(message)
         pub_g2 = key_pair.get_pub_g2()
         is_valid = signature.verify(pub_g2, message)
-        
+
         assert is_valid is True
 
     def test_long_seed(self):
@@ -125,9 +124,9 @@ class TestBLSAttestation:
         long_seed = "a" * 1000
         key_pair = new_key_pair_from_string(long_seed)
         message = b"test message"
-        
+
         signature = key_pair.sign_message(message)
         pub_g2 = key_pair.get_pub_g2()
         is_valid = signature.verify(pub_g2, message)
-        
-        assert is_valid is True 
+
+        assert is_valid is True

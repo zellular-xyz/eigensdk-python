@@ -136,11 +136,15 @@ class KeyPair:
         try:
             sk_int = int(sk, base)
             # If number is too large for 32 bytes, hash it instead
-            sk_bytes = sk_int.to_bytes(32, 'big') if sk_int.bit_length() <= 256 else hashlib.sha256(sk.encode('utf-8')).digest()
+            sk_bytes = (
+                sk_int.to_bytes(32, "big")
+                if sk_int.bit_length() <= 256
+                else hashlib.sha256(sk.encode("utf-8")).digest()
+            )
         except (ValueError, OverflowError):
             # If not a valid number, hash the string for deterministic bytes
-            sk_bytes = hashlib.sha256(sk.encode('utf-8')).digest()
-        
+            sk_bytes = hashlib.sha256(sk.encode("utf-8")).digest()
+
         return KeyPair(PrivateKey(sk_bytes))
 
     def save_to_file(self, _path: str, password: str):
