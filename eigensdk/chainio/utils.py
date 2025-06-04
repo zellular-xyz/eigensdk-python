@@ -217,7 +217,7 @@ def get_pubkey_registration_params(
 
     g1_hashed_msg_as_point = G1Point(*g1_hashed_msg_to_sign)
     signed_msg = bls_key_pair.sign_hashed_to_curve_message(g1_hashed_msg_as_point)
-    
+
     # Convert public keys to BN254 format
     pubkey_reg_params = {
         "pubkeyRegistrationSignature": (
