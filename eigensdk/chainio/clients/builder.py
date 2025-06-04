@@ -164,7 +164,6 @@ class BuildAllConfig:
             stake_registry=stake_registry_instance,
             logger=self.logger,
             eth_http_client=eth_http_client,
-            pk_wallet=pk_wallet,
         )
         avs_writer_instance = avs_writer.AvsRegistryWriter(
             registry_coordinator=registry_coordinator_instance,
