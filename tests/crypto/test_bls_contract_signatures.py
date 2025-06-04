@@ -23,7 +23,7 @@ class G1Point:
 
     def to_tuple(self) -> Tuple[int, int]:
         """Convert to tuple format for contract calls."""
-        return (self.X, self.Y)
+        return self.X, self.Y
 
 
 @dataclass
@@ -35,7 +35,7 @@ class G2Point:
 
     def to_tuple(self) -> Tuple[List[int], List[int]]:
         """Convert to tuple format for contract calls."""
-        return ([self.X[0], self.X[1]], [self.Y[0], self.Y[1]])
+        return [self.X[0], self.X[1]], [self.Y[0], self.Y[1]]
 
 
 @dataclass

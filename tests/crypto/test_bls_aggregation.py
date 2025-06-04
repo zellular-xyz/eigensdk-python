@@ -144,7 +144,7 @@ class TestBLSAggregation:
 
         # Convert to comparable format
         def point_to_tuple(point):
-            return (int(point.getX().getStr()), int(point.getY().getStr()))
+            return int(point.getX().getStr()), int(point.getY().getStr())
 
         assert point_to_tuple(agg_123) == point_to_tuple(agg_321)
         assert point_to_tuple(agg_123) == point_to_tuple(agg_213)
