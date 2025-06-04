@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eigensdk"
-version = "0.0.3"
+version = "0.1.0"
 description = "A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons and maintained by iF3Labs under his supervision."
 requires-python = ">=3.11"
 authors = [
@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/abramsymons/eigensdk-python"
+Homepage = "https://github.com/zellular-xyz/eigensdk-python"
 
 [tool.setuptools]
 packages = {find = {}}
