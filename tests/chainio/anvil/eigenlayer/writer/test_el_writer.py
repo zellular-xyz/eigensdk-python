@@ -11,10 +11,11 @@ def advance_chain_by_n_blocks(web3_client, n: int):
 
 
 def test_register_as_operator():
+    operator_address = config["operator_address"]
     operator = Operator(
-        address=Web3.to_checksum_address(config["operator_address"]),
-        earnings_receiver_address=Web3.to_checksum_address(config["operator_address"]),
-        delegation_approver_address=Web3.to_checksum_address(config["operator_address"]),
+        address=Web3.to_checksum_address(operator_address),
+        earnings_receiver_address=Web3.to_checksum_address(operator_address),
+        delegation_approver_address=Web3.to_checksum_address(operator_address),
         allocation_delay=50,
         metadata_url="https://example.com/operator-metadata",
         staker_opt_out_window_blocks=100,
