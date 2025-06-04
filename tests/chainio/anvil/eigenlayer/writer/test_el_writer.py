@@ -1,8 +1,12 @@
 from web3 import Web3
 
-from eigensdk.types_ import Operator
-from eigensdk.crypto.bls.attestation import KeyPair
 from tests.builder import clients, clients_2, config
+from tests.chainio.anvil.avsregistry.writer.utils import (
+    register_as_operator,
+    register_for_operator_sets,
+    register_random_operator,
+)
+from tests.test_utils import repeat_in_threads
 
 
 def advance_chain_by_n_blocks(web3_client, n: int):
@@ -11,38 +15,20 @@ def advance_chain_by_n_blocks(web3_client, n: int):
 
 
 def test_register_as_operator():
-    operator_address = config["operator_address"]
-    operator = Operator(
-        address=Web3.to_checksum_address(operator_address),
-        earnings_receiver_address=Web3.to_checksum_address(operator_address),
-        delegation_approver_address=Web3.to_checksum_address(operator_address),
-        allocation_delay=50,
-        metadata_url="https://example.com/operator-metadata",
-        staker_opt_out_window_blocks=100,
-    )
-    receipt = clients.el_writer.register_as_operator(operator)
-    assert receipt is not None
-    assert receipt["status"] == 1
-    print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
+    register_as_operator()
+
+
+def test_register_random_operators():
+    return
+    # import time; time.sleep(1)
+    repeat_in_threads(1, 1, register_random_operator())
 
 
 def test_register_for_operator_sets():
-    request = {
-        "operator_address": config["operator_address"],
-        "avs_address": config["service_manager_address"],
-        "operator_set_ids": [0],
-        "socket": "operator-socket",
-        "bls_key_pair": KeyPair(),
-    }
-    receipt = clients.el_writer.register_for_operator_sets(
-        config["avs_registry_coordinator_address"], request
-    )
-    assert receipt["status"] == 1
-    print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
+    register_for_operator_sets()
 
 
 def test_deregister_from_operator_sets():
-
     # Now deregister from the same operator sets
     operator_address = config["operator_address"]
     request = {
