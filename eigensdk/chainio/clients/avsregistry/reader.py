@@ -2,13 +2,15 @@ import logging
 import math
 from typing import Dict, List, Optional, Tuple
 
-from eth_account.signers.local import LocalAccount
 from eth_typing import Address
 from eth_utils import event_abi_to_log_topic
 from web3 import Web3
 from web3._utils.events import get_event_data
 from web3.contract.contract import Contract
 
+from eigensdk.chainio import utils
+from eigensdk.chainio.utils import bitmap_to_quorum_ids
+from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from eigensdk.types_ import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
@@ -19,9 +21,6 @@ from eigensdk.types_ import (
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
 )
-from eigensdk.chainio import utils
-from eigensdk.chainio.utils import bitmap_to_quorum_ids
-from eigensdk.crypto.bls.attestation import G1Point, G2Point
 
 DEFAULT_QUERY_BLOCK_RANGE = 10_000
 
@@ -38,7 +37,6 @@ class AvsRegistryReader:
         stake_registry: Contract,
         logger: logging.Logger,
         eth_http_client: Web3,
-        pk_wallet: LocalAccount,
     ):
 
         self.logger: logging.Logger = logger
@@ -50,7 +48,6 @@ class AvsRegistryReader:
         self.service_manager = service_manager
         self.stake_registry: Contract = stake_registry
         self.eth_http_client: Web3 = eth_http_client
-        self.pk_wallet: LocalAccount = pk_wallet
 
         if registry_coordinator is None:
             self.logger.warning("RegistryCoordinator contract not provided")
@@ -75,9 +72,6 @@ class AvsRegistryReader:
 
         if eth_http_client is None:
             self.logger.warning("EthHTTPClient not provided")
-
-        if pk_wallet is None:
-            self.logger.warning("PKWallet not provided")
 
     def get_quorum_count(self) -> int:
         return self.registry_coordinator.functions.quorumCount().call()
