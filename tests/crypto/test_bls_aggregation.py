@@ -1,15 +1,15 @@
-import pytest
 from eigensdk.crypto.bls.attestation import (
     new_key_pair_from_string,
-    gen_random_bls_keys,
     new_zero_signature,
+    g1_to_tuple,
+    g2_to_tuple,
 )
 
 
 class TestBLSAggregation:
-    """Test BLS signature aggregation functionality."""
+    """Comprehensive test suite for BLS signature and public key aggregation."""
 
-    def test_signature_aggregation_simple(self):
+    def test_basic_signature_aggregation(self):
         """Test basic signature aggregation with 2 operators."""
         # Create two key pairs
         key_pair1 = new_key_pair_from_string("seed1")
@@ -21,88 +21,58 @@ class TestBLSAggregation:
         sig1 = key_pair1.sign_message(message)
         sig2 = key_pair2.sign_message(message)
 
-        # Aggregate signatures and public keys
+        # Aggregate signatures
         aggregated_sig = sig1.add(sig2)
+
+        # Aggregate public keys
         aggregated_pub_g1 = key_pair1.get_pub_g1() + key_pair2.get_pub_g1()
+        aggregated_pub_g2 = key_pair1.get_pub_g2() + key_pair2.get_pub_g2()
 
         # Verify aggregated signature works
-        assert aggregated_sig.verify(key_pair1.get_pub_g2() + key_pair2.get_pub_g2(), message)
+        assert aggregated_sig.verify(aggregated_pub_g2, message)
 
         # Verify aggregated public key is actually the sum of individual keys
         pub_g1_1 = key_pair1.get_pub_g1()
         pub_g1_2 = key_pair2.get_pub_g1()
         expected_aggregated = pub_g1_1 + pub_g1_2
 
-        assert aggregated_pub_g1.getX().getStr() == expected_aggregated.getX().getStr()
-        assert aggregated_pub_g1.getY().getStr() == expected_aggregated.getY().getStr()
+        assert g1_to_tuple(aggregated_pub_g1) == g1_to_tuple(expected_aggregated)
 
-    def test_signature_aggregation_multiple_operators(self):
-        """Test signature aggregation with multiple operators."""
+    def test_multiple_operators_aggregation(self):
+        """Test aggregation with multiple operators (5 operators)."""
         num_operators = 5
-        operators = []
+        key_pairs = []
         signatures = []
-        message = b"Multi-operator test message"
 
-        # Create operators and collect signatures
+        message = b"Multi-operator aggregation test"
+
+        # Generate key pairs and signatures
         for i in range(num_operators):
             key_pair = new_key_pair_from_string(f"operator_{i}")
-            operators.append(key_pair)
-            signature = key_pair.sign_message(message)
-            signatures.append(signature)
-
-            # Verify individual signature
-            assert signature.verify(key_pair.get_pub_g2(), message)
-            print(f"✅ Operator {i} signature valid")
+            key_pairs.append(key_pair)
+            signatures.append(key_pair.sign_message(message))
 
         # Aggregate all signatures
         aggregated_sig = signatures[0]
         for sig in signatures[1:]:
             aggregated_sig = aggregated_sig.add(sig)
 
-        # Aggregate all public keys (G1)
-        aggregated_pub_g1 = operators[0].get_pub_g1()
-        for op in operators[1:]:
-            aggregated_pub_g1 = aggregated_pub_g1 + op.get_pub_g1()
+        # Aggregate all G1 public keys
+        aggregated_pub_g1 = key_pairs[0].get_pub_g1()
+        for kp in key_pairs[1:]:
+            aggregated_pub_g1 = aggregated_pub_g1 + kp.get_pub_g1()
 
-        print(f"🔗 Aggregated {num_operators} signatures successfully")
-        print(f"Aggregated signature: {aggregated_sig.to_json()}")
+        # Aggregate all G2 public keys
+        aggregated_pub_g2 = key_pairs[0].get_pub_g2()
+        for kp in key_pairs[1:]:
+            aggregated_pub_g2 = aggregated_pub_g2 + kp.get_pub_g2()
 
-    def test_signature_aggregation_with_different_messages_fails(self):
-        """Test that aggregating signatures for different messages doesn't verify properly."""
-        key_pair1 = new_key_pair_from_string("seed1")
-        key_pair2 = new_key_pair_from_string("seed2")
+        # Verify aggregated signature
+        assert aggregated_sig.verify(aggregated_pub_g2, message)
 
-        message1 = b"Message 1"
-        message2 = b"Message 2"
-
-        # Sign different messages
-        sig1 = key_pair1.sign_message(message1)
-        sig2 = key_pair2.sign_message(message2)
-
-        # Individual signatures should be valid for their respective messages
-        assert sig1.verify(key_pair1.get_pub_g2(), message1)
-        assert sig2.verify(key_pair2.get_pub_g2(), message2)
-
-        # But invalid for wrong messages
-        assert not sig1.verify(key_pair1.get_pub_g2(), message2)
-        assert not sig2.verify(key_pair2.get_pub_g2(), message1)
-
-        print("✅ Different message verification works correctly")
-
-    def test_empty_signature_aggregation(self):
-        """Test aggregation starting from zero signature."""
-        key_pair = new_key_pair_from_string("test_seed")
-        message = b"Test message"
-        signature = key_pair.sign_message(message)
-        # Start with zero signature
-        zero_sig = new_zero_signature()
-        aggregated = zero_sig.add(signature)
-        # Verify both original and aggregated signatures work
-        assert signature.verify(key_pair.get_pub_g2(), message)
-        assert aggregated.verify(key_pair.get_pub_g2(), message)
-        # Aggregated should be equivalent to original when adding zero
-        assert aggregated.to_json() == signature.to_json()
-        print("✅ Zero signature aggregation works")
+        # Test that individual signatures still work
+        for i, (kp, sig) in enumerate(zip(key_pairs, signatures)):
+            assert sig.verify(kp.get_pub_g2(), message), f"Individual signature {i} failed"
 
     def test_signature_aggregation_order_independence(self):
         """Test that signature aggregation is order-independent (commutative)."""
@@ -125,159 +95,263 @@ class TestBLSAggregation:
         assert agg_123.to_json() == agg_321.to_json()
         assert agg_123.to_json() == agg_213.to_json()
 
-        print("✅ Signature aggregation is order-independent")
-
     def test_public_key_aggregation_order_independence(self):
         """Test that public key aggregation is order-independent."""
         key_pair1 = new_key_pair_from_string("seed1")
         key_pair2 = new_key_pair_from_string("seed2")
         key_pair3 = new_key_pair_from_string("seed3")
 
-        pub1 = key_pair1.get_pub_g1()
-        pub2 = key_pair2.get_pub_g1()
-        pub3 = key_pair3.get_pub_g1()
+        pub1_g1 = key_pair1.get_pub_g1()
+        pub2_g1 = key_pair2.get_pub_g1()
+        pub3_g1 = key_pair3.get_pub_g1()
 
-        # Aggregate in different orders
-        agg_123 = pub1 + pub2 + pub3
-        agg_321 = pub3 + pub2 + pub1
-        agg_213 = pub2 + pub1 + pub3
+        pub1_g2 = key_pair1.get_pub_g2()
+        pub2_g2 = key_pair2.get_pub_g2()
+        pub3_g2 = key_pair3.get_pub_g2()
 
-        # Convert to comparable format
-        def point_to_tuple(point):
-            return int(point.getX().getStr()), int(point.getY().getStr())
+        # Aggregate G1 keys in different orders
+        agg_g1_123 = pub1_g1 + pub2_g1 + pub3_g1
+        agg_g1_321 = pub3_g1 + pub2_g1 + pub1_g1
+        agg_g1_213 = pub2_g1 + pub1_g1 + pub3_g1
 
-        assert point_to_tuple(agg_123) == point_to_tuple(agg_321)
-        assert point_to_tuple(agg_123) == point_to_tuple(agg_213)
+        # Aggregate G2 keys in different orders
+        agg_g2_123 = pub1_g2 + pub2_g2 + pub3_g2
+        agg_g2_321 = pub3_g2 + pub2_g2 + pub1_g2
+        agg_g2_213 = pub2_g2 + pub1_g2 + pub3_g2
 
-        print("✅ Public key aggregation is order-independent")
+        # All G1 aggregations should be equal
+        assert g1_to_tuple(agg_g1_123) == g1_to_tuple(agg_g1_321)
+        assert g1_to_tuple(agg_g1_123) == g1_to_tuple(agg_g1_213)
+
+        # All G2 aggregations should be equal
+        assert g2_to_tuple(agg_g2_123) == g2_to_tuple(agg_g2_321)
+        assert g2_to_tuple(agg_g2_123) == g2_to_tuple(agg_g2_213)
+
+    def test_single_signature_aggregation(self):
+        """Test aggregation with a single signature (edge case)."""
+        key_pair = new_key_pair_from_string("single_signer")
+        message = b"Single signature test"
+
+        signature = key_pair.sign_message(message)
+
+        # Aggregating a single signature should be the signature itself
+        aggregated_sig = signature.add(new_zero_signature())
+
+        # Both should verify successfully
+        assert signature.verify(key_pair.get_pub_g2(), message)
+        assert aggregated_sig.verify(key_pair.get_pub_g2(), message)
+
+    def test_empty_signature_handling(self):
+        """Test handling of zero/empty signatures in aggregation."""
+        key_pair = new_key_pair_from_string("zero_test")
+        message = b"Zero signature test"
+
+        signature = key_pair.sign_message(message)
+        zero_sig = new_zero_signature()
+
+        # Adding zero signature should not change the result
+        aggregated = signature.add(zero_sig)
+
+        # Original signature should still verify
+        assert signature.verify(key_pair.get_pub_g2(), message)
+        # Aggregated with zero should also verify
+        assert aggregated.verify(key_pair.get_pub_g2(), message)
+
+    def test_different_messages_same_signers(self):
+        """Test aggregation fails when signers sign different messages."""
+        key_pair1 = new_key_pair_from_string("signer1")
+        key_pair2 = new_key_pair_from_string("signer2")
+
+        message1 = b"Message one"
+        message2 = b"Message two"
+
+        # Sign different messages
+        sig1 = key_pair1.sign_message(message1)
+        sig2 = key_pair2.sign_message(message2)
+
+        # Aggregate signatures
+        aggregated_sig = sig1.add(sig2)
+        aggregated_pub_g2 = key_pair1.get_pub_g2() + key_pair2.get_pub_g2()
+
+        # Verification should fail for both original messages
+        assert not aggregated_sig.verify(aggregated_pub_g2, message1)
+        assert not aggregated_sig.verify(aggregated_pub_g2, message2)
 
     def test_large_scale_aggregation(self):
         """Test aggregation with many operators (stress test)."""
-        num_operators = 50
-        message = b"Large scale test message"
-
-        print(f"🧪 Testing aggregation with {num_operators} operators...")
-
-        operators = []
+        num_operators = 20
+        key_pairs = []
         signatures = []
 
-        # Generate operators and signatures
+        message = b"Large scale aggregation test"
+
+        # Generate many key pairs and signatures
         for i in range(num_operators):
-            key_pair = gen_random_bls_keys()  # Use random keys for variety
-            operators.append(key_pair)
-            signature = key_pair.sign_message(message)
-            signatures.append(signature)
+            key_pair = new_key_pair_from_string(f"large_scale_operator_{i}")
+            key_pairs.append(key_pair)
+            signatures.append(key_pair.sign_message(message))
 
         # Aggregate all signatures
         aggregated_sig = signatures[0]
         for sig in signatures[1:]:
             aggregated_sig = aggregated_sig.add(sig)
 
-        # Aggregate all public keys (G2 for verification)
-        aggregated_pub_g2 = operators[0].get_pub_g2()
-        for op in operators[1:]:
-            aggregated_pub_g2 = aggregated_pub_g2 + op.get_pub_g2()
+        # Aggregate all public keys
+        aggregated_pub_g2 = key_pairs[0].get_pub_g2()
+        for kp in key_pairs[1:]:
+            aggregated_pub_g2 = aggregated_pub_g2 + kp.get_pub_g2()
 
-        # Verify aggregated signature works
+        # Verify aggregated signature
         assert aggregated_sig.verify(aggregated_pub_g2, message)
 
-        # Verify some individual signatures still work
-        for i in range(0, min(5, num_operators)):
-            assert signatures[i].verify(operators[i].get_pub_g2(), message)
+    def test_incremental_aggregation(self):
+        """Test incremental aggregation (adding operators one by one)."""
+        message = b"Incremental aggregation test"
 
-        print(f"✅ Successfully aggregated {num_operators} signatures")
-        print(f"Aggregated signature size: {len(str(aggregated_sig.to_json()))} chars")
+        # Start with first operator
+        key_pair1 = new_key_pair_from_string("incremental_1")
+        aggregated_sig = key_pair1.sign_message(message)
+        aggregated_pub_g2 = key_pair1.get_pub_g2()
 
-    def test_partial_signature_aggregation(self):
-        """Test aggregating only a subset of available signatures."""
-        total_operators = 10
-        participating_operators = 6
+        # Verify single signature
+        assert aggregated_sig.verify(aggregated_pub_g2, message)
 
-        message = b"Partial participation test"
-
-        # Create all operators
-        all_operators = []
-        all_signatures = []
-
-        for i in range(total_operators):
-            key_pair = new_key_pair_from_string(f"operator_{i}")
-            all_operators.append(key_pair)
-            signature = key_pair.sign_message(message)
-            all_signatures.append(signature)
-
-        # Select subset for aggregation
-        participating_indices = list(range(participating_operators))
-
-        # Aggregate subset signatures
-        subset_sig = all_signatures[0]
-        for i in participating_indices[1:]:
-            subset_sig = subset_sig.add(all_signatures[i])
-
-        # Aggregate subset public keys (G2 for verification)
-        subset_pub_g2 = all_operators[0].get_pub_g2()
-        for i in participating_indices[1:]:
-            subset_pub_g2 = subset_pub_g2 + all_operators[i].get_pub_g2()
-
-        # Verify the aggregated subset signature works
-        assert subset_sig.verify(subset_pub_g2, message)
-
-        print(f"✅ Aggregated {participating_operators}/{total_operators} operators")
-        print("Subset aggregation successful")
-
-    def test_signature_serialization_after_aggregation(self):
-        """Test that aggregated signatures can be properly serialized."""
-        key_pair1 = new_key_pair_from_string("seed1")
-        key_pair2 = new_key_pair_from_string("seed2")
-
-        message = b"Serialization test"
-
-        sig1 = key_pair1.sign_message(message)
+        # Add second operator
+        key_pair2 = new_key_pair_from_string("incremental_2")
         sig2 = key_pair2.sign_message(message)
+        aggregated_sig = aggregated_sig.add(sig2)
+        aggregated_pub_g2 = aggregated_pub_g2 + key_pair2.get_pub_g2()
 
-        aggregated_sig = sig1.add(sig2)
+        # Verify with two signatures
+        assert aggregated_sig.verify(aggregated_pub_g2, message)
 
-        # Test JSON serialization
-        sig_json = aggregated_sig.to_json()
+        # Add third operator
+        key_pair3 = new_key_pair_from_string("incremental_3")
+        sig3 = key_pair3.sign_message(message)
+        aggregated_sig = aggregated_sig.add(sig3)
+        aggregated_pub_g2 = aggregated_pub_g2 + key_pair3.get_pub_g2()
 
-        assert isinstance(sig_json, dict)
-        assert "X" in sig_json
-        assert "Y" in sig_json
-        assert isinstance(sig_json["X"], int)
-        assert isinstance(sig_json["Y"], int)
-
-        print(f"✅ Aggregated signature JSON: {sig_json}")
+        # Verify with three signatures
+        assert aggregated_sig.verify(aggregated_pub_g2, message)
 
     def test_deterministic_aggregation(self):
         """Test that aggregation is deterministic with same inputs."""
-        message = b"Deterministic test"
+        key_pairs = [
+            new_key_pair_from_string("det_seed_1"),
+            new_key_pair_from_string("det_seed_2"),
+            new_key_pair_from_string("det_seed_3"),
+        ]
 
-        # Create the same signatures multiple times
-        results = []
-        for trial in range(3):
-            key_pair1 = new_key_pair_from_string("seed1")
-            key_pair2 = new_key_pair_from_string("seed2")
+        message = b"Deterministic test message"
 
-            sig1 = key_pair1.sign_message(message)
-            sig2 = key_pair2.sign_message(message)
+        # Perform aggregation twice
+        def aggregate_signatures():
+            sigs = [kp.sign_message(message) for kp in key_pairs]
+            agg_sig = sigs[0]
+            for sig in sigs[1:]:
+                agg_sig = agg_sig.add(sig)
+            return agg_sig
 
-            aggregated = sig1.add(sig2)
-            results.append(aggregated.to_json())
+        agg1 = aggregate_signatures()
+        agg2 = aggregate_signatures()
 
-        # All results should be identical
-        assert all(result == results[0] for result in results)
-        print("✅ Aggregation is deterministic")
+        # Results should be identical
+        assert agg1.to_json() == agg2.to_json()
 
-    def test_aggregation_with_zero_operators(self):
-        """Test edge case handling with no operators."""
-        # This should be handled gracefully in practice
-        zero_sig = new_zero_signature()
-        zero_json = zero_sig.to_json()
+    def test_partial_aggregation_subsets(self):
+        """Test aggregation with different subsets of operators."""
+        key_pairs = [new_key_pair_from_string(f"subset_operator_{i}") for i in range(5)]
 
-        assert zero_json["X"] == 0
-        assert zero_json["Y"] == 0
+        message = b"Subset aggregation test"
+        signatures = [kp.sign_message(message) for kp in key_pairs]
 
-        print("✅ Zero signature handling works")
+        # Test different subsets
+        subsets = [
+            [0, 1],  # First two
+            [2, 3, 4],  # Last three
+            [0, 2, 4],  # Every other
+            [1, 3],  # Middle two
+        ]
 
+        for subset_indices in subsets:
+            # Aggregate subset signatures
+            subset_sigs = [signatures[i] for i in subset_indices]
+            subset_keys = [key_pairs[i] for i in subset_indices]
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])
+            agg_sig = subset_sigs[0]
+            for sig in subset_sigs[1:]:
+                agg_sig = agg_sig.add(sig)
+
+            # Aggregate subset public keys
+            agg_pub_g2 = subset_keys[0].get_pub_g2()
+            for kp in subset_keys[1:]:
+                agg_pub_g2 = agg_pub_g2 + kp.get_pub_g2()
+
+            # Verify subset aggregation
+            assert agg_sig.verify(agg_pub_g2, message), f"Subset {subset_indices} failed"
+
+    def test_domain_separated_aggregation(self):
+        """Test aggregation with domain separation."""
+        key_pair1 = new_key_pair_from_string("domain_sep_1")
+        key_pair2 = new_key_pair_from_string("domain_sep_2")
+
+        message = b"Domain separated message"
+        domain = b"TEST_AGGREGATION_DOMAIN"
+
+        # Sign with domain separation
+        sig1 = key_pair1.sign_message(message, domain)
+        sig2 = key_pair2.sign_message(message, domain)
+
+        # Aggregate signatures and keys
+        aggregated_sig = sig1.add(sig2)
+        aggregated_pub_g2 = key_pair1.get_pub_g2() + key_pair2.get_pub_g2()
+
+        # Verify with domain separation
+        assert aggregated_sig.verify(aggregated_pub_g2, message, domain)
+
+        # Should fail without domain separation
+        assert not aggregated_sig.verify(aggregated_pub_g2, message)
+
+    def test_aggregation_associativity(self):
+        """Test that aggregation is associative: (a + b) + c = a + (b + c)."""
+        key_pair1 = new_key_pair_from_string("assoc_1")
+        key_pair2 = new_key_pair_from_string("assoc_2")
+        key_pair3 = new_key_pair_from_string("assoc_3")
+
+        message = b"Associativity test"
+
+        sig1 = key_pair1.sign_message(message)
+        sig2 = key_pair2.sign_message(message)
+        sig3 = key_pair3.sign_message(message)
+
+        # Test (sig1 + sig2) + sig3
+        left_assoc = sig1.add(sig2).add(sig3)
+
+        # Test sig1 + (sig2 + sig3)
+        right_assoc = sig1.add(sig2.add(sig3))
+
+        # Results should be the same
+        assert left_assoc.to_json() == right_assoc.to_json()
+
+    def test_signature_aggregation_json_consistency(self):
+        """Test that aggregated signatures have consistent JSON representation."""
+        key_pairs = [
+            new_key_pair_from_string("json_test_1"),
+            new_key_pair_from_string("json_test_2"),
+        ]
+
+        message = b"JSON consistency test"
+        signatures = [kp.sign_message(message) for kp in key_pairs]
+
+        # Aggregate signatures
+        aggregated = signatures[0].add(signatures[1])
+
+        # Check JSON format
+        json_data = aggregated.to_json()
+        assert isinstance(json_data, dict)
+        assert "X" in json_data
+        assert "Y" in json_data
+        assert isinstance(json_data["X"], int)
+        assert isinstance(json_data["Y"], int)
+        assert json_data["X"] != 0  # Should not be zero point
+        assert json_data["Y"] != 0

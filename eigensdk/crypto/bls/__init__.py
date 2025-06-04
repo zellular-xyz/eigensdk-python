@@ -14,6 +14,6 @@ from eigensdk.crypto.bls.attestation import (
     new_key_pair,
     new_key_pair_from_string,
     gen_random_bls_keys,
-    g1_to_tupple,
-    g2_to_tupple,
+    g1_to_tuple,
+    g2_to_tuple,
 )

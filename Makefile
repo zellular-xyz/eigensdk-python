@@ -29,7 +29,8 @@ test:
 		python -m pytest tests/chainio/anvil/eigenlayer/reader/test_el_reader.py && \
 		python -m pytest tests/chainio/anvil/eigenlayer/writer/test_el_writer.py && \
 		python -m pytest tests/chainio/anvil/avsregistry/reader/test_avs_reader.py && \
-		python -m pytest tests/chainio/anvil/avsregistry/writer/test_avs_writer.py"
+		python -m pytest tests/chainio/anvil/avsregistry/writer/test_avs_writer.py && \
+		python -m pytest tests/crypto/test_*"
 
 fresh-test: down
 	docker compose up -d anvil

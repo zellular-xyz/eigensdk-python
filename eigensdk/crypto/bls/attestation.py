@@ -1,6 +1,6 @@
 import json
 import os
-import hashlib
+import secrets
 
 from eth_account import Account
 from mcl import G1, G2, GT, Fr, Fp
@@ -21,6 +21,7 @@ class G1Point(G1):
         if x == 0 and y == 0:
             self.clear()
 
+    @staticmethod
     def from_G1(g1: G1):
         x = int(g1.getX().getStr())
         y = int(g1.getY().getStr())
@@ -54,6 +55,7 @@ class G2Point(G2):
         if xa == 0 and xb == 0 and ya == 0 and yb == 0:
             self.clear()
 
+    @staticmethod
     def from_G2(g2: G2):
         xa = int(g2.getX().get_a().getStr())
         xb = int(g2.getX().get_b().getStr())
@@ -93,11 +95,22 @@ class Signature(G1Point):
             "Y": int(self.getY().getStr()),
         }
 
-    def add(self, a: "Signature"):
-        return self + a
+    def add(self, a: "Signature") -> "Signature":
+        """Add two signatures and return a Signature object"""
+        result = super().__add__(a).normalize()
+        return Signature.from_g1_point(result)
 
-    def verify(self, pub_key: G2Point, msg_bytes: bytes) -> bool:
-        return bn256Utils.verify_sig(self, pub_key, msg_bytes)
+    def __add__(self, a: "Signature") -> "Signature":
+        """Override addition to return Signature object"""
+        result = super().__add__(a).normalize()
+        return Signature.from_g1_point(result)
+
+    def verify(self, pub_key: G2Point, msg_bytes: bytes, domain_tag: bytes = None) -> bool:
+        """Verify signature with optional domain separation"""
+        if domain_tag is None:
+            return bn256Utils.verify_sig(self, pub_key, msg_bytes)
+        else:
+            return bn256Utils.verify_sig(self, pub_key, msg_bytes, domain_tag)
 
 
 def new_zero_signature() -> Signature:
@@ -108,13 +121,16 @@ class PrivateKey(Fr):
     def __init__(self, secret: bytes = None):
         super().__init__()
         if not secret:
-            self.setHashOf(os.urandom(64))
+            # Use cryptographically secure random generation
+            self.setHashOf(secrets.token_bytes(32))  # 32 bytes is sufficient
         else:
+            if len(secret) != 32:
+                raise ValueError("Private key must be exactly 32 bytes")
             int_key = int.from_bytes(secret, "big")
             self.setStr(f"{int_key}".encode("utf-8"), 10)
 
     def get_str(self) -> str:
-        return self.getStr(16).decode("utf-8")  # .zfill(64)
+        return self.getStr(16).decode("utf-8")
 
 
 def new_private_key(sk: bytes = b"") -> PrivateKey:
@@ -133,40 +149,52 @@ class KeyPair:
 
     @staticmethod
     def from_string(sk: str, base=16) -> "KeyPair":
-        try:
-            sk_int = int(sk, base)
-            # If number is too large for 32 bytes, hash it instead
-            sk_bytes = (
-                sk_int.to_bytes(32, "big")
-                if sk_int.bit_length() <= 256
-                else hashlib.sha256(sk.encode("utf-8")).digest()
-            )
-        except (ValueError, OverflowError):
-            # If not a valid number, hash the string for deterministic bytes
-            sk_bytes = hashlib.sha256(sk.encode("utf-8")).digest()
-
+        """
+        Secure key derivation from string using consistent hashing.
+        Always uses the same derivation method to avoid collisions.
+        """
+        # Use secure key derivation function from bn256Utils
+        sk_bytes = bn256Utils.derive_key_from_string(sk)
         return KeyPair(PrivateKey(sk_bytes))
 
     def save_to_file(self, _path: str, password: str):
-        priv_key = "0x" + self.priv_key.getStr(16).decode("utf-8").rjust(64, "0")
-        keystore_json = Account.encrypt(priv_key, password)
-        keystore_json["pubKey"] = self.pub_g1.getStr().decode("utf-8")
-        os.makedirs(os.path.dirname(_path), exist_ok=True)
-        with open(_path, "w") as f:
-            f.write(json.dumps(keystore_json))
+        """Save key using Ethereum-compatible keystore format"""
+        try:
+            priv_key = "0x" + self.priv_key.getStr(16).decode("utf-8").rjust(64, "0")
+            keystore_json = Account.encrypt(priv_key, password)
+            keystore_json["pubKey"] = self.pub_g1.getStr().decode("utf-8")
+            keystore_json["keyType"] = "BLS"  # Mark as BLS key for identification
+            os.makedirs(os.path.dirname(_path), exist_ok=True)
+            with open(_path, "w") as f:
+                f.write(json.dumps(keystore_json, indent=2))
+        except Exception as e:
+            raise RuntimeError(f"Failed to save keystore: {e}")
 
     @staticmethod
     def read_from_file(_path: str, password: str):
-        with open(_path, "r") as f:
-            keystore_json = json.load(f)
-        if "version" not in keystore_json:
-            keystore_json["version"] = 3
+        """Read key from Ethereum-compatible keystore format"""
+        try:
+            with open(_path, "r") as f:
+                keystore_json = json.load(f)
 
-        private_key = Account.decrypt(keystore_json, password)
-        return KeyPair(PrivateKey(bytes(private_key)))
+            if "version" not in keystore_json:
+                keystore_json["version"] = 3
 
-    def sign_message(self, msg_bytes: bytes) -> Signature:
-        h = bn256Utils.map_to_curve(msg_bytes)
+            # Verify this is a BLS key if marked
+            if keystore_json.get("keyType") == "BLS":
+                pass  # Valid BLS keystore
+
+            private_key = Account.decrypt(keystore_json, password)
+            return KeyPair(PrivateKey(bytes(private_key)))
+        except Exception as e:
+            raise RuntimeError(f"Failed to read keystore: {e}")
+
+    def sign_message(self, msg_bytes: bytes, domain_tag: bytes = None) -> Signature:
+        """Sign message with optional domain separation"""
+        if domain_tag is None:
+            h = bn256Utils.map_to_curve(msg_bytes)
+        else:
+            h = bn256Utils.map_to_curve(msg_bytes, domain_tag)
         return self.sign_hashed_to_curve_message(h)
 
     def sign_hashed_to_curve_message(self, msg_map_point: G1Point) -> Signature:
@@ -174,10 +202,12 @@ class KeyPair:
         return Signature.from_g1_point(sig)
 
     def get_pub_g1(self) -> G1Point:
-        return bn256Utils.mul_by_generator_g1(self.priv_key)
+        """Get G1 public key with consistent normalization"""
+        return G1Point.from_G1(bn256Utils.mul_by_generator_g1(self.priv_key).normalize())
 
     def get_pub_g2(self) -> G2Point:
-        return bn256Utils.mul_by_generator_g2(self.priv_key)
+        """Get G2 public key with consistent normalization"""
+        return G2Point.from_G2(bn256Utils.mul_by_generator_g2(self.priv_key).normalize())
 
 
 def new_key_pair(priv_key: PrivateKey) -> KeyPair:
@@ -192,11 +222,13 @@ def gen_random_bls_keys() -> KeyPair:
     return KeyPair()
 
 
-def g1_to_tupple(g1):
+def g1_to_tuple(g1):
+    """Convert G1 point to tuple (fixed typo)"""
     return int(g1.getX().getStr()), int(g1.getY().getStr())
 
 
-def g2_to_tupple(g2):
+def g2_to_tuple(g2):
+    """Convert G2 point to tuple (fixed typo)"""
     return (
         (
             int(g2.getX().get_a().getStr()),
