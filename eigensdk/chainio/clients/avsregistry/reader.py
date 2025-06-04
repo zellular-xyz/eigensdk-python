@@ -419,7 +419,7 @@ class AvsRegistryReader:
         start_block: int = 0,
         stop_block: Optional[int] = None,
         block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
-    ) -> Tuple[List[Address], List[OperatorPubkeys], int]:
+    ) -> Tuple[List[Address], List[OperatorPubkeys]]:
         if stop_block is None:
             stop_block = self.eth_http_client.eth.block_number
 
@@ -462,7 +462,7 @@ class AvsRegistryReader:
                     )
                 )
                 operator_addresses.append(operator_addr)
-        return operator_addresses, operator_pubkeys, to_block
+        return operator_addresses, operator_pubkeys
 
     def get_registry_coordinator_owner(self) -> str:
         return self.registry_coordinator.functions.owner().call()

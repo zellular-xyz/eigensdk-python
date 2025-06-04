@@ -439,12 +439,11 @@ def test_query_existing_registered_operator_sockets():
 
 
 def test_query_existing_registered_operator_pubkeys():
-    operator_addresses, operator_pubkeys, stop_block = (
+    operator_addresses, operator_pubkeys = (
         clients.avs_registry_reader.query_existing_registered_operator_pubkeys()
     )
     assert isinstance(operator_addresses, list)
     assert isinstance(operator_pubkeys, list)
-    assert isinstance(stop_block, int)
     assert len(operator_addresses) == len(operator_pubkeys)
     for addr, pubkey in zip(operator_addresses, operator_pubkeys):
         assert isinstance(addr, str)
@@ -452,9 +451,7 @@ def test_query_existing_registered_operator_pubkeys():
         assert hasattr(pubkey, "g2_pub_key")
         assert isinstance(pubkey.g1_pub_key, G1Point)
         assert isinstance(pubkey.g2_pub_key, G2Point)
-    print(
-        f"Found {len(operator_addresses)} registered operator public keys up to block {stop_block}"
-    )
+    print(f"Found {len(operator_addresses)} registered operator public keys")
 
 
 def test_registry_coordinator_owner():
