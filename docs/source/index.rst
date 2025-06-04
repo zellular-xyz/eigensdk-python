@@ -16,7 +16,7 @@ This SDK provides essential tools for building and managing **AVS (Actively Vali
 📬 **Contact**: `mail@zellular.xyz <mailto:mail@zellular.xyz>`_
 
 Architecture Overview
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 EigenSDK-Python is built around two core modules that work together to provide comprehensive EigenLayer functionality:
 
@@ -62,17 +62,17 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 1
+    :caption: API
+
+    eigensdk.chainio
+    eigensdk.crypto
+    eigensdk.types
+
+.. toctree::
+    :maxdepth: 1
     :caption: Guides
 
     security
     advanced-examples
     performance
     troubleshooting
-
-.. toctree::
-    :maxdepth: 1
-    :caption: API
-
-    eigensdk.chainio
-    eigensdk.crypto
-    eigensdk.types

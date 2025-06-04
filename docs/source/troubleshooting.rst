@@ -68,7 +68,7 @@ Python Environment Issues
 
     # Reinstall if needed
     $ pip uninstall eigensdk-python
-    $ pip install git+https://github.com/abramsymons/eigensdk-python
+    $ pip install git+https://github.com/zellular-xyz/eigensdk-python
 
 **Problem**: Version conflicts with web3.py or other dependencies
 
@@ -79,7 +79,7 @@ Python Environment Issues
     # Create fresh environment
     $ python -m venv fresh-env
     $ source fresh-env/bin/activate
-    $ pip install git+https://github.com/abramsymons/eigensdk-python
+    $ pip install git+https://github.com/zellular-xyz/eigensdk-python
 
 Network and RPC Issues
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -4,8 +4,8 @@ Quickstart
 ==========
 
 **Requirements**
-- Python 3.8 or higher (3.9+ recommended)
-- Ubuntu 18.04+ / macOS 10.15+ / Windows 10+
+- Python 3.12+ or higher (3.12 recommended)
+- Ubuntu 24.04+ / macOS 13+ / Windows 11+
 - Git for installation from source
 
 Dependencies
@@ -61,7 +61,7 @@ Install `eigensdk-python` using ``pip``. It is recommended to perform this insta
     $ python -m venv eigensdk-env
     $ source eigensdk-env/bin/activate  # On Windows: eigensdk-env\Scripts\activate
     $ pip install --upgrade pip setuptools wheel
-    $ pip install git+https://github.com/abramsymons/eigensdk-python
+    $ pip install git+https://github.com/zelular-xyz/eigensdk-python
 
 **Option 2: Docker Setup (Recommended)**
 
@@ -69,7 +69,7 @@ A complete Docker-based environment is provided, featuring Python 3.12, pre-inst
 
 .. code-block:: shell
 
-    $ git clone https://github.com/abramsymons/eigensdk-python
+    $ git clone https://github.com/zellular-xyz/eigensdk-python
     $ cd eigensdk-python
     $ make build
     $ make test
@@ -80,7 +80,7 @@ For contributing to the SDK or advanced usage:
 
 .. code-block:: shell
 
-    $ git clone https://github.com/abramsymons/eigensdk-python
+    $ git clone https://github.com/zellular-xyz/eigensdk-python
     $ cd eigensdk-python
     $ python -m venv venv
     $ source venv/bin/activate
@@ -114,44 +114,6 @@ Verify your installation by testing the basic imports and crypto functionality:
     ... )
     >>> print("✅ Configuration created successfully")
 
-Migration from EigenSDK-Go
--------------------------
-
-If you're migrating from the Go SDK, here are the key differences and migration tips:
-
-**Key Differences:**
-
-1. **Package Structure**: Python uses ``eigensdk.chainio`` and ``eigensdk.crypto`` instead of Go's nested package structure
-2. **Configuration**: Python uses ``BuildAllConfig`` class instead of Go's struct initialization
-3. **Error Handling**: Python uses exceptions instead of Go's error return values
-4. **Type System**: Python uses dataclasses and type hints instead of Go structs
-
-**Common Migration Patterns:**
-
-.. code-block:: python
-
-    # Go: config := &BuildAllConfig{...}
-    # Python:
-    config = BuildAllConfig(
-        eth_http_url="...",
-        # ... other fields
-    )
-
-    # Go: clients, err := BuildAll(config, privateKey)
-    # Python:
-    try:
-        clients = build_all(config, private_key)
-    except Exception as e:
-        # Handle error
-
-    # Go: isRegistered, err := clients.ElReader.IsOperatorRegistered(address)
-    # Python:
-    try:
-        is_registered = clients.el_reader.is_operator_registered(address)
-    except Exception as e:
-        # Handle error
-
-**Contract Addresses**: The contract addresses are the same between Go and Python SDKs, so you can use your existing configuration.
 
 Using eigensdk
 --------------
@@ -165,23 +127,23 @@ To demonstrate using `eigensdk`, here's how you can find the list of operators r
     >>> # Note: You'll need to provide all required contract addresses
     >>> config = BuildAllConfig(
     ...     eth_http_url='https://ethereum-rpc.publicnode.com',
+    ...     avs_name="EigenDA",
     ...     registry_coordinator_addr='0x0BAAc79acD45A023E19345c352d8a7a83C4e5656',
     ...     operator_state_retriever_addr='0xD5D7fB4647cE79740E6e83819EFDf43fa74F8C31',
     ...     rewards_coordinator_addr='0x7750d328b314EfFa365A0402CcfD489B80B0adda',
-    ...     permission_controller_addr='0x00000000000000000000000000000000000000000',
+    ...     permission_controller_addr='0x0000000000000000000000000000000000000000',
     ...     service_manager_addr='0x870679E138bCdf293b7ff14dD44b70FC97e12fc0',
     ...     allocation_manager_addr='0x3A93c17D806bf74066d7e2c962b7a0F49b97e1Cf',
     ...     delegation_manager_addr='0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A',
-    ...     avs_name="eigenda",
     ... )
     >>> 
     >>> # You'll need a private key for transaction operations
     >>> private_key = "your_private_key_here"  # For read-only operations, use any valid key
     >>> clients = build_all(config, private_key)
     >>> 
-    >>> # Get operators in quorums 0 and 1
+    >>> # Get operators in quorums 0,1
     >>> quorums = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(
-    ...     quorum_numbers=[0, 1]
+    ...     quorum_numbers=[0,1]
     ... )
     >>> quorums
     [[
@@ -206,6 +168,6 @@ To calculate the total stake amount in both quorums 0 and 1:
 .. code-block:: python
 
     >>> print(sum([operator.stake for operator in quorums[0]]) / 10**18)
-    3677484.732396392
+    ...
     >>> print(sum([operator.stake for operator in quorums[1]]) / 10**18)
-    52989059.6562653
+    ...

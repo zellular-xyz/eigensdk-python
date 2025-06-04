@@ -19,17 +19,6 @@ Core Data Types
     :param allocation_delay: Delay in blocks for allocation changes.
     :param metadata_url: URL pointing to operator metadata (optional).
 
-    .. code-block:: python
-
-        >>> from eigensdk.types_ import Operator
-        >>> operator = Operator(
-        ...     address='0x123...',
-        ...     earnings_receiver_address='0x456...',
-        ...     delegation_approver_address='0x789...',
-        ...     staker_opt_out_window_blocks=10,
-        ...     allocation_delay=5,
-        ...     metadata_url='https://example.com/metadata.json'
-        ... )
 
 .. py:class:: eigensdk.types_.OperatorPubkeys
 
@@ -53,12 +42,6 @@ Core Data Types
     :param operator_id: Unique identifier for the operator as bytes.
     :param stake: The operator's stake amount.
 
-    .. code-block:: python
-
-        >>> # Example from get_operators_stake_in_quorums_at_current_block
-        >>> quorums = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block([0])
-        >>> operator = quorums[0][0]  # First operator in first quorum
-        >>> print(f"Operator {operator.operator} has stake: {operator.stake}")
 
 .. py:class:: eigensdk.types_.OperatorAvsState
 
@@ -124,30 +107,3 @@ Task Processing Types
     :param bls_signature: BLS signature for the response.
     :param operator_id: ID of the operator that signed the response.
 
-Example Usage
-~~~~~~~~~~~~~
-
-These types are commonly used when interacting with EigenLayer contracts:
-
-.. code-block:: python
-
-    >>> from eigensdk.types_ import Operator, OperatorStateRetrieverOperator
-    >>> from eigensdk.chainio.clients.builder import BuildAllConfig, build_all
-    >>> 
-    >>> # Create and register a new operator
-    >>> operator = Operator(
-    ...     address='0x1234567890123456789012345678901234567890',
-    ...     earnings_receiver_address='0x1234567890123456789012345678901234567890',
-    ...     delegation_approver_address='0x0000000000000000000000000000000000000000',
-    ...     staker_opt_out_window_blocks=50400,  # ~7 days
-    ...     allocation_delay=0,
-    ...     metadata_url='https://example.com/operator-metadata.json'
-    ... )
-    >>> 
-    >>> # Register the operator (requires proper configuration and private key)
-    >>> # receipt = clients.el_writer.register_as_operator(operator)
-    >>> 
-    >>> # Query operators in a quorum
-    >>> operators = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block([0])
-    >>> for op in operators[0]:  # First quorum
-    ...     print(f"Operator: {op.operator}, Stake: {op.stake}") 
