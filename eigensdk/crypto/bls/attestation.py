@@ -148,7 +148,7 @@ class KeyPair:
         self.pub_g2 = bn256Utils.mul_by_generator_g2(self.priv_key).normalize()
 
     @staticmethod
-    def from_string(sk: str, base=16) -> "KeyPair":
+    def from_string(sk: str) -> "KeyPair":
         """
         Secure key derivation from string using consistent hashing.
         Always uses the same derivation method to avoid collisions.
