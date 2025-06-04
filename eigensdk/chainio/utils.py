@@ -57,6 +57,25 @@ def send_transaction(
     return eth_http_client.eth.wait_for_transaction_receipt(tx_hash)
 
 
+class Transactor:
+    def __init__(
+        self,
+        pk_wallet: LocalAccount,
+        eth_http_client: Web3,
+        gas_limit: int = 10_000_000,
+        skip_estimation: bool = True,
+    ):
+        self.pk_wallet = pk_wallet
+        self.eth_http_client = eth_http_client
+        self.gas_limit = gas_limit
+        self.skip_estimation = skip_estimation
+
+    def send(self, func: ContractFunction):
+        return send_transaction(
+            func, self.pk_wallet, self.eth_http_client, self.gas_limit, self.skip_estimation
+        )
+
+
 class BN254G1Point:
     def __init__(self, x: int, y: int):
         self.X = x
@@ -135,7 +154,6 @@ def abi_encode_operator_avs_registration_params(
     socket: str,
     pubkey_reg_params: tuple[tuple[int, int], tuple[int, int], tuple[list[int], list[int]]],
 ) -> bytes:
-
     type_str = (
         "(uint256,uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
     )
@@ -187,7 +205,6 @@ def get_pubkey_registration_params(
     operator_address: ChecksumAddress,
     bls_key_pair: KeyPair,
 ) -> Dict[str, Any]:
-
     # Create contract instance for registry coordinator
     registry_coordinator = eth_client.eth.contract(
         address=registry_coordinator_addr,
