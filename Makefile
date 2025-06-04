@@ -1,6 +1,6 @@
 .PHONY: $(MAKECMDGOALS)
 
-DOCKER_DEV = docker compose run dev
+DOCKER_DEV = docker compose run --rm --remove-orphans dev
 
 build:
 	COMPOSE_BAKE=true docker compose build
