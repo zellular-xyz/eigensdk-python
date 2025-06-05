@@ -6,6 +6,7 @@ def advance_chain_by_n_blocks(web3_client, n: int):
     for _ in range(n):
         web3_client.provider.make_request("evm_mine", [])
 
+
 def test_deregister_from_operator_sets():
     # Now deregister from the same operator sets
     operator_address = config["operator_address_1"]

@@ -27,6 +27,7 @@ anvil-logs:
 test:
 	docker compose run --rm test sh -c "\
 		python -m pytest tests/chainio/anvil/threads/test_multi_register.py && \
+		python -m pytest tests/chainio/anvil/threads/test_threaded_metadata.py && \
 		python -m pytest tests/chainio/anvil/eigenlayer/reader/test_el_reader.py && \
 		python -m pytest tests/chainio/anvil/eigenlayer/writer/test_el_writer.py && \
 		python -m pytest tests/chainio/anvil/avsregistry/reader/test_avs_reader.py && \
