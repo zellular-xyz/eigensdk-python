@@ -1,4 +1,4 @@
-from eigensdk.crypto.bls.attestation import new_key_pair_from_string
+from eigensdk.crypto.bls.attestation import new_key_pair_from_string, G1Point, g1_to_tuple
 
 
 class TestBLSAttestation:
@@ -130,3 +130,31 @@ class TestBLSAttestation:
         is_valid = signature.verify(pub_g2, message)
 
         assert is_valid is True
+
+    def test_g1_point_operations_and_conversion(self):
+        """Test G1Point creation, addition, and conversion to tuple and string."""
+        # Create a G1Point with specific coordinates
+        a = G1Point(
+            21242924253830336613447550815376789474630333403745828964344218064739394108833,
+            14195402005158492706370388286202610633446140045109801404942361137198473695108,
+        )
+
+        # Test point addition (doubling)
+        doubled_point = a + a
+
+        # Test conversion to tuple
+        tuple_result = g1_to_tuple(doubled_point)
+        assert isinstance(tuple_result, tuple)
+        assert len(tuple_result) == 2
+        assert isinstance(tuple_result[0], int)
+        assert isinstance(tuple_result[1], int)
+
+        # Test string representation (returns bytes)
+        str_result = doubled_point.getStr()
+        assert isinstance(str_result, bytes)
+        assert len(str_result) > 0
+
+        # Verify that tuple and string represent the same point data
+        # Convert bytes to string for comparison
+        str_decoded = str_result.decode("utf-8")
+        assert str(tuple_result[0]) in str_decoded or str(tuple_result[1]) in str_decoded

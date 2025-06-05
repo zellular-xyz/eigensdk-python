@@ -4,9 +4,7 @@ from tests.builder import clients, clients_2, config
 from tests.chainio.anvil.avsregistry.writer.utils import (
     register_as_operator,
     register_for_operator_sets,
-    register_random_operator,
 )
-from tests.test_utils import repeat_in_threads
 
 
 def advance_chain_by_n_blocks(web3_client, n: int):
@@ -16,12 +14,6 @@ def advance_chain_by_n_blocks(web3_client, n: int):
 
 def test_register_as_operator():
     register_as_operator()
-
-
-def test_register_random_operators():
-    return
-    # import time; time.sleep(1)
-    repeat_in_threads(1, 1, register_random_operator())
 
 
 def test_register_for_operator_sets():

@@ -1,9 +1,8 @@
 from eth_utils import to_checksum_address
-
 from eigensdk.crypto.bls import KeyPair
 from eigensdk.types_ import Operator
 from tests.builder import clients, config
-from tests.test_utils import generate_random_address
+from web3 import Web3
 
 
 def register_as_operator(operator_address=config["operator_address"]):
@@ -11,7 +10,9 @@ def register_as_operator(operator_address=config["operator_address"]):
     operator = Operator(
         address=address,
         earnings_receiver_address=address,
-        delegation_approver_address=address,
+        delegation_approver_address=Web3.to_checksum_address(
+            "0x0000000000000000000000000000000000000000"
+        ),
         allocation_delay=50,
         metadata_url="https://example.com/operator-metadata",
         staker_opt_out_window_blocks=100,
@@ -20,10 +21,6 @@ def register_as_operator(operator_address=config["operator_address"]):
     assert receipt is not None
     assert receipt["status"] == 1
     print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
-
-
-def register_random_operator():
-    register_as_operator(generate_random_address())
 
 
 def register_for_operator_sets():
