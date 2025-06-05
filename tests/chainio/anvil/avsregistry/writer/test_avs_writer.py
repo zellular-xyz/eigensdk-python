@@ -49,7 +49,7 @@ def test_set_avs():
 
 @pytest.mark.order(6)
 def test_update_stakes_of_operator_subset_for_all_quorums():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operators = [str(operator_addr)]
     receipt = clients.avs_registry_writer.update_stakes_of_operator_subset_for_all_quorums(
         operators
@@ -61,7 +61,7 @@ def test_update_stakes_of_operator_subset_for_all_quorums():
 
 @pytest.mark.order(7)
 def test_set_rewards_initiator():
-    rewards_initiator_addr = Web3.to_checksum_address(config["operator_address"])
+    rewards_initiator_addr = Web3.to_checksum_address(config["operator_address_1"])
     receipt = clients.avs_registry_writer.set_rewards_initiator(str(rewards_initiator_addr))
     assert receipt is not None
     assert receipt["status"] == 1
@@ -122,7 +122,7 @@ def test_set_operator_set_params():
 
 @pytest.mark.order(11)
 def test_set_churn_approver():
-    churn_approver_address = Web3.to_checksum_address(config["operator_address"])
+    churn_approver_address = Web3.to_checksum_address(config["operator_address_1"])
     receipt = clients.avs_registry_writer.set_churn_approver(str(churn_approver_address))
     assert receipt is not None
     assert receipt["status"] == 1
@@ -131,7 +131,7 @@ def test_set_churn_approver():
 
 @pytest.mark.order(12)
 def test_set_ejector():
-    ejector_address = Web3.to_checksum_address(config["operator_address"])
+    ejector_address = Web3.to_checksum_address(config["operator_address_1"])
     receipt = clients.avs_registry_writer.set_ejector(str(ejector_address))
     assert receipt is not None
     assert receipt["status"] == 1
@@ -245,7 +245,7 @@ def test_add_strategies():
 
 @pytest.mark.order(20)
 def test_eject_operator():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     quorum_numbers = [0]  # Eject from quorum 0
     receipt = clients.avs_registry_writer.eject_operator(
         operator_address=str(operator_addr), quorum_numbers=quorum_numbers
@@ -277,7 +277,7 @@ def test_create_operator_directed_avs_rewards_submission():
     block_time = latest_block["timestamp"]
     start_timestamp = ((block_time // duration) + 1) * duration
     strategy_and_multiplier = {"strategy": Web3.to_checksum_address(strategy_addr), "multiplier": 1}
-    operator_rewards = [(str(Web3.to_checksum_address(config["operator_address"])), 1000)]
+    operator_rewards = [(str(Web3.to_checksum_address(config["operator_address_1"])), 1000)]
 
     rewards_submission = {
         "strategiesAndMultipliers": [strategy_and_multiplier],

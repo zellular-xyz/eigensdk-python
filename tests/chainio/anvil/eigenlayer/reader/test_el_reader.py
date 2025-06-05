@@ -5,7 +5,7 @@ from tests.builder import clients, config
 
 
 def test_get_allocatable_magnitude():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_allocatable_magnitude(operator_addr, strategy_addr)
     assert isinstance(result, int)
@@ -13,7 +13,7 @@ def test_get_allocatable_magnitude():
 
 
 def test_get_max_magnitudes():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addresses = [Web3.to_checksum_address(config["strategy_addr"])]
     result = clients.el_reader.get_max_magnitudes(operator_addr, strategy_addresses)
     assert isinstance(result, list)
@@ -22,7 +22,7 @@ def test_get_max_magnitudes():
 
 
 def test_get_allocation_info():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_allocation_info(operator_addr, strategy_addr)
     assert isinstance(result, list)
@@ -37,7 +37,7 @@ def test_get_allocation_info():
 
 
 def test_get_operator_shares():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addresses = [Web3.to_checksum_address(config["strategy_addr"])]
     result = clients.el_reader.get_operator_shares(operator_addr, strategy_addresses)
     assert isinstance(result, list)
@@ -46,7 +46,7 @@ def test_get_operator_shares():
 
 
 def test_get_operator_sets_for_operator():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     assert isinstance(result, list)
     for operator_set in result:
@@ -57,14 +57,14 @@ def test_get_operator_sets_for_operator():
 
 
 def test_get_allocation_delay():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_allocation_delay(operator_addr)
     assert isinstance(result, int)
     print(f"Allocation delay: {result}")
 
 
 def test_get_registered_sets():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_registered_sets(operator_addr)
     assert isinstance(result, list)
     for registered_set in result:
@@ -75,7 +75,7 @@ def test_get_registered_sets():
 
 
 def test_is_operator_registered_with_avs():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.is_operator_registered_with_avs(operator_addr, avs_addr)
     assert isinstance(result, bool)
@@ -83,7 +83,7 @@ def test_is_operator_registered_with_avs():
 
 
 def test_is_operator_registered_with_operator_set():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     registered_sets = clients.el_reader.get_registered_sets(operator_addr)
     if registered_sets:
         operator_set = registered_sets[0]
@@ -101,7 +101,7 @@ def test_is_operator_registered_with_operator_set():
 
 
 def test_is_operator_slashable():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if operator_sets:
         operator_set = operator_sets[0]
@@ -116,7 +116,7 @@ def test_is_operator_slashable():
 
 
 def test_get_allocated_stake():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if operator_sets:
@@ -146,7 +146,7 @@ def test_get_operators_for_operator_set():
 
 
 def test_get_num_operators_for_operator_set():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if operator_sets:
         operator_set = operator_sets[0]
@@ -171,14 +171,14 @@ def test_get_strategies_for_operator_set():
 
 
 def test_is_operator_registered():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.is_operator_registered(operator_addr)
     assert isinstance(result, bool)
     print(f"Is operator registered: {result}")
 
 
 def test_get_staker_shares():
-    staker_addr = Web3.to_checksum_address(config["operator_address"])
+    staker_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategies, shares = clients.el_reader.get_staker_shares(staker_addr)
     assert isinstance(strategies, list)
     assert isinstance(shares, list)
@@ -198,7 +198,7 @@ def test_get_avs_registrar():
 
 
 def test_get_delegated_operator():
-    staker_addr = Web3.to_checksum_address(config["operator_address"])
+    staker_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_delegated_operator(staker_addr)
     assert Web3.is_address(result) or result == "0x0000000000000000000000000000000000000000"
     print(f"Delegated operator: {result.hex() if isinstance(result, bytes) else result}")
@@ -214,7 +214,7 @@ def test_get_delegated_operator():
 
 
 def test_get_operator_details():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator = {"Address": operator_addr}
     result = clients.el_reader.get_operator_details(operator)
     assert isinstance(result, dict)
@@ -227,7 +227,7 @@ def test_get_operator_details():
 
 
 def test_get_operator_shares_in_strategy():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_operator_shares_in_strategy(operator_addr, strategy_addr)
     assert isinstance(result, int)
@@ -235,8 +235,8 @@ def test_get_operator_shares_in_strategy():
 
 
 def test_calculate_delegation_approval_digest_hash():
-    staker_addr = Web3.to_checksum_address(config["operator_address"])
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    staker_addr = Web3.to_checksum_address(config["operator_address_1"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     delegation_approver = Web3.to_checksum_address("0x0000000000000000000000000000000000000000")
     approver_salt = nums_to_bytes([0] * 32)
     expiry = 2**32 - 1
@@ -249,7 +249,7 @@ def test_calculate_delegation_approval_digest_hash():
 
 
 def test_get_operators_shares():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_operators_shares([operator_addr], [strategy_addr])
     assert isinstance(result, list)
@@ -260,7 +260,7 @@ def test_get_operators_shares():
 
 
 def test_get_delegation_approver_salt_is_spent():
-    delegation_approver = Web3.to_checksum_address(config["operator_address"])
+    delegation_approver = Web3.to_checksum_address(config["operator_address_1"])
     approver_salt = nums_to_bytes([0] * 32)
     result = clients.el_reader.get_delegation_approver_salt_is_spent(
         delegation_approver, approver_salt
@@ -277,15 +277,15 @@ def test_get_pending_withdrawal_status():
 
 
 def test_get_cumulative_withdrawals_queued():
-    staker_addr = Web3.to_checksum_address(config["operator_address"])
+    staker_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_cumulative_withdrawals_queued(staker_addr)
     assert isinstance(result, int)
     print(f"Cumulative withdrawals queued: {result}")
 
 
 def test_can_call():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
-    appointee_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
+    appointee_addr = Web3.to_checksum_address(config["operator_address_1"])
     target_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
     selector = nums_to_bytes([12, 34, 56, 78])
     result = clients.el_reader.can_call(account_addr, appointee_addr, target_addr, selector)
@@ -294,7 +294,7 @@ def test_can_call():
 
 
 def test_list_appointees():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
     target_addr = Web3.to_checksum_address(config["avs_registry_coordinator_address"])
     selector = nums_to_bytes([12, 34, 56, 78])
     result = clients.el_reader.list_appointees(account_addr, target_addr, selector)
@@ -305,8 +305,8 @@ def test_list_appointees():
 
 
 def test_list_appointee_permissions():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
-    appointee_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
+    appointee_addr = Web3.to_checksum_address(config["operator_address_1"])
     targets, selectors = clients.el_reader.list_appointee_permissions(account_addr, appointee_addr)
     assert len(targets) == len(selectors)
     for target in targets:
@@ -319,7 +319,7 @@ def test_list_appointee_permissions():
 
 
 def test_list_pending_admins():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.list_pending_admins(account_addr)
     assert isinstance(result, list)
     for admin in result:
@@ -328,7 +328,7 @@ def test_list_pending_admins():
 
 
 def test_list_admins():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.list_admins(account_addr)
     assert isinstance(result, list)
     for admin in result:
@@ -337,16 +337,16 @@ def test_list_admins():
 
 
 def test_is_pending_admin():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
-    pending_admin_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
+    pending_admin_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.is_pending_admin(account_addr, pending_admin_addr)
     assert isinstance(result, bool)
     print(f"Is pending admin: {result}")
 
 
 def test_is_admin():
-    account_addr = Web3.to_checksum_address(config["operator_address"])
-    admin_addr = Web3.to_checksum_address(config["operator_address"])
+    account_addr = Web3.to_checksum_address(config["operator_address_1"])
+    admin_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.is_admin(account_addr, admin_addr)
     assert isinstance(result, bool)
     print(f"Is admin: {result}")
@@ -375,7 +375,7 @@ def test_get_current_claimable_distribution_root():
 
 
 def test_get_cumulative_claimed():
-    earner_addr = Web3.to_checksum_address(config["operator_address"])
+    earner_addr = Web3.to_checksum_address(config["operator_address_1"])
     token_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_cumulative_claimed(earner_addr, token_addr)
     assert isinstance(result, int)
@@ -383,7 +383,7 @@ def test_get_cumulative_claimed():
 
 
 def test_get_operator_avs_split():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     avs_addr = Web3.to_checksum_address(config["avs_address"])
     result = clients.el_reader.get_operator_avs_split(operator_addr, avs_addr)
     assert isinstance(result, int)
@@ -391,14 +391,14 @@ def test_get_operator_avs_split():
 
 
 def test_get_operator_pi_split():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_operator_pi_split(operator_addr)
     assert isinstance(result, int)
     print(f"Operator PI split: {result}")
 
 
 def test_get_operator_set_split():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if operator_sets:
         operator_set = operator_sets[0]
@@ -425,7 +425,7 @@ def test_get_default_operator_split_bips():
 
 
 def test_get_claimer_for():
-    earner_addr = Web3.to_checksum_address(config["operator_address"])
+    earner_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_claimer_for(earner_addr)
     assert Web3.is_address(result)
     print(f"Claimer for {earner_addr}: {result.hex() if isinstance(result, bytes) else result}")
@@ -455,7 +455,7 @@ def test_get_is_rewards_submission_for_all_hash():
 
 
 def test_get_is_rewards_for_all_submitter():
-    submitter_addr = Web3.to_checksum_address(config["operator_address"])
+    submitter_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_is_rewards_for_all_submitter(submitter_addr)
     assert isinstance(result, bool)
     print(f"Is rewards for all submitter: {result}")
@@ -514,7 +514,7 @@ def test_get_strategy_and_underlying_erc20_token():
 
 
 def test_calculate_operator_avs_registration_digest_hash():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     avs_addr = Web3.to_checksum_address(config["avs_address"])
     salt = nums_to_bytes([0] * 32)
     expiry = 2**32 - 1
@@ -527,7 +527,7 @@ def test_calculate_operator_avs_registration_digest_hash():
 
 
 def test_get_encumbered_magnitude():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     result = clients.el_reader.get_encumbered_magnitude(operator_addr, strategy_addr)
     assert isinstance(result, int)
@@ -583,13 +583,13 @@ def test_get_allocation_configuration_delay():
 
 
 def test_get_num_operator_sets_for_operator():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.el_reader.get_num_operator_sets_for_operator(operator_addr)
     print(f"Number of operator sets for operator: {result}")
 
 
 def test_get_slashable_shares():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     strategy_addr = Web3.to_checksum_address(config["strategy_addr"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if operator_sets:
@@ -604,7 +604,7 @@ def test_get_slashable_shares():
 
 
 def test_get_slashable_shares_for_operator_sets_before():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if not operator_sets:
         operator_sets = [
@@ -618,7 +618,7 @@ def test_get_slashable_shares_for_operator_sets_before():
 
 
 def test_get_slashable_shares_for_operator_sets():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_sets = clients.el_reader.get_operator_sets_for_operator(operator_addr)
     if not operator_sets:
         operator_sets = [

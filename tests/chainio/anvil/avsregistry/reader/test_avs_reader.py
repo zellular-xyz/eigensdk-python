@@ -80,7 +80,7 @@ def test_get_operators_stake_in_quorums_of_operator_at_block():
 
 def test_weight_of_operator_for_quorum():
     quorum_number = 0
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.weight_of_operator_for_quorum(quorum_number, operator_addr)
     assert result is None or isinstance(result, int)
     print(f"Weight of operator {operator_addr} for quorum {quorum_number}: {result}")
@@ -363,7 +363,7 @@ def test_get_slashable_stake_look_ahead_per_quorum():
 
 
 def test_get_operator_id():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.get_operator_id(cast(Address, operator_addr))
     assert isinstance(result, bytes)
     print(f"Operator ID for {operator_addr}: {result.hex()}")
@@ -378,7 +378,7 @@ def test_get_operator_from_id():
 
 
 def test_query_registration_detail():
-    operator = Web3.to_checksum_address(config["operator_address"])
+    operator = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.query_registration_detail(cast(Address, operator))
 
     assert isinstance(result, list)
@@ -388,7 +388,7 @@ def test_query_registration_detail():
 
 
 def test_get_operator_address_from_operator_id():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     operator_id = clients.avs_registry_reader.get_operator_id_from_operator_address(operator_addr)
     if operator_id is not None:
         result = clients.avs_registry_reader.get_operator_address_from_operator_id(operator_id)
@@ -399,7 +399,7 @@ def test_get_operator_address_from_operator_id():
 
 
 def test_get_pubkey_from_operator_address():
-    operator_addr = Web3.to_checksum_address(config["operator_address"])
+    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.get_pubkey_from_operator_address(operator_addr)
     assert result is None or isinstance(result, G1Point)
     print(f"Public key for operator {operator_addr}: {result}")

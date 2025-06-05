@@ -5,7 +5,7 @@ from tests.builder import clients, config
 from web3 import Web3
 
 
-def register_as_operator(operator_address=config["operator_address"]):
+def register_as_operator(operator_address=config["operator_address_1"]):
     address = to_checksum_address(operator_address)
     operator = Operator(
         address=address,

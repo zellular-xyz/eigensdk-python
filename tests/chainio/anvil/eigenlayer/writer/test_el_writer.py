@@ -1,28 +1,14 @@
 from web3 import Web3
-
 from tests.builder import clients, clients_array, config
-from tests.chainio.anvil.avsregistry.writer.utils import (
-    register_as_operator,
-    register_for_operator_sets,
-)
 
 
 def advance_chain_by_n_blocks(web3_client, n: int):
     for _ in range(n):
         web3_client.provider.make_request("evm_mine", [])
 
-
-def test_register_as_operator():
-    register_as_operator()
-
-
-def test_register_for_operator_sets():
-    register_for_operator_sets()
-
-
 def test_deregister_from_operator_sets():
     # Now deregister from the same operator sets
-    operator_address = config["operator_address"]
+    operator_address = config["operator_address_1"]
     request = {
         "avs_address": config["service_manager_address"],
         "operator_set_ids": [0],
@@ -36,7 +22,7 @@ def test_deregister_from_operator_sets():
 
 
 def test_update_metadata_uri():
-    operator_addr = config["operator_address"]
+    operator_addr = config["operator_address_1"]
     metadata_uri = "https://example.com/updated-metadata-uri"
     receipt = clients.el_writer.update_metadata_uri(operator_addr, metadata_uri)
     assert receipt is not None
@@ -54,7 +40,7 @@ def test_deposit_erc20_into_strategy():
 
 
 def test_set_claimer_for():
-    claimer_addr = config["operator_address"]
+    claimer_addr = config["operator_address_1"]
     receipt = clients.el_writer.set_claimer_for(claimer_addr)
     assert receipt is not None
     assert receipt["status"] == 1
@@ -62,7 +48,7 @@ def test_set_claimer_for():
 
 
 def test_set_operator_avs_split():
-    operator_addr = config["operator_address"]
+    operator_addr = config["operator_address_1"]
     avs_addr = config["avs_address"]
     split = 5000
     receipt = clients.el_writer.set_operator_avs_split(operator_addr, avs_addr, split)
@@ -72,7 +58,7 @@ def test_set_operator_avs_split():
 
 
 def test_set_operator_pi_split():
-    operator_addr = config["operator_address"]
+    operator_addr = config["operator_address_1"]
     split = 3000
     receipt = clients.el_writer.set_operator_pi_split(operator_addr, split)
     assert receipt is not None
@@ -81,7 +67,7 @@ def test_set_operator_pi_split():
 
 
 def test_clear_deallocation_queue():
-    operator_addr = config["operator_address"]
+    operator_addr = config["operator_address_1"]
     strategy_addr = config["strategy_addr"]
     strategies = [strategy_addr]
     nums_to_clear = [1]
@@ -92,7 +78,7 @@ def test_clear_deallocation_queue():
 
 
 def test_set_allocation_delay():
-    operator_addr = config["operator_address"]
+    operator_addr = config["operator_address_1"]
     delay = 50
     receipt = clients.el_writer.set_allocation_delay(operator_addr, delay)
     assert receipt is not None
@@ -102,8 +88,8 @@ def test_set_allocation_delay():
 
 def test_add_pending_admin():
     request = {
-        "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],
+        "account_address": config["operator_address_1"],
+        "admin_address": config["operator_address_1"],
     }
     receipt = clients.el_writer.add_pending_admin(request)
     assert receipt is not None
@@ -113,8 +99,8 @@ def test_add_pending_admin():
 
 def test_remove_pending_admin():
     request = {
-        "account_address": config["operator_address"],
-        "admin_address": config["operator_address"],
+        "account_address": config["operator_address_1"],
+        "admin_address": config["operator_address_1"],
     }
     receipt = clients.el_writer.remove_pending_admin(request)
     assert receipt is not None
@@ -124,7 +110,7 @@ def test_remove_pending_admin():
 
 def test_accept_admin():
     test_add_pending_admin()
-    request = {"account_address": config["operator_address"]}
+    request = {"account_address": config["operator_address_1"]}
     receipt = clients.el_writer.accept_admin(request)
     assert receipt is not None
     assert receipt["status"] == 1
@@ -133,8 +119,8 @@ def test_accept_admin():
 
 def test_set_permission():
     request = {
-        "account_address": config["operator_address"],
-        "appointee_address": config["operator_address"],
+        "account_address": config["operator_address_1"],
+        "appointee_address": config["operator_address_1"],
         "target": config["avs_address"],
         "selector": "0x12345678",
     }
@@ -144,8 +130,8 @@ def test_set_permission():
 
 def test_remove_permission():
     request = {
-        "account_address": config["operator_address"],
-        "appointee_address": config["operator_address"],
+        "account_address": config["operator_address_1"],
+        "appointee_address": config["operator_address_1"],
         "target": config["avs_address"],
         "selector": "0x12345678",
     }
@@ -154,7 +140,7 @@ def test_remove_permission():
 
 
 def test_remove_admin_flow():
-    account_address = Web3.to_checksum_address(config["operator_address"])
+    account_address = Web3.to_checksum_address(config["operator_address_1"])
     admin2_address = Web3.to_checksum_address(config["operator_address_2"])
 
     receipt = clients.el_writer.add_pending_admin(
@@ -183,7 +169,7 @@ def test_remove_admin_flow():
 
 
 def test_modify_allocations():
-    operator_address = config["operator_address"]
+    operator_address = config["operator_address_1"]
     avs_service_manager = config["service_manager_address"]
     operator_set_id = 0
     strategies = [config["strategy_addr"]]

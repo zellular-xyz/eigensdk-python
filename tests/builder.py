@@ -22,7 +22,7 @@ cfg = BuildAllConfig(
     delegation_manager_addr=config["delegation_manager_address"],
 )
 clients_array = []
-for i in range(10):
+for i in range(3):
     clients_array.append(build_all(cfg, config["ecdsa_private_key_{}".format(i + 1)]))
 
 clients = clients_array[0]
