@@ -1,6 +1,6 @@
 from web3 import Web3
 
-from tests.builder import clients, clients_2, config
+from tests.builder import clients, clients_array, config
 from tests.chainio.anvil.avsregistry.writer.utils import (
     register_as_operator,
     register_for_operator_sets,
@@ -166,7 +166,7 @@ def test_remove_admin_flow():
     )
     assert receipt["status"] == 1, f"Transaction failed: {receipt}"
 
-    receipt = clients_2.el_writer.accept_admin(
+    receipt = clients_array[1].el_writer.accept_admin(
         {
             "account_address": account_address,
         }

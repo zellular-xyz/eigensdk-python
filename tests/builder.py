@@ -21,6 +21,8 @@ cfg = BuildAllConfig(
     allocation_manager_addr=config["allocation_manager_address"],
     delegation_manager_addr=config["delegation_manager_address"],
 )
-clients = build_all(cfg, config["ecdsa_private_key"])
+clients_array = []
+for i in range(10):
+    clients_array.append(build_all(cfg, config["ecdsa_private_key_{}".format(i + 1)]))
 
-clients_2 = build_all(cfg, config["ecdsa_private_key_2"])
+clients = clients_array[0]
