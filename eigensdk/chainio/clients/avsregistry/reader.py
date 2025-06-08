@@ -253,12 +253,14 @@ class AvsRegistryReader:
             oid.to_bytes(32, byteorder="big") for oid in non_signer_operator_ids
         ]
 
-        return self.operator_state_retriever.functions.getCheckSignaturesIndices(
+        result = self.operator_state_retriever.functions.getCheckSignaturesIndices(
             self.registry_coordinator_addr,
             reference_block_number,
             quorum_bytes,
             operator_ids_bytes32,
         ).call()
+
+        return OperatorStateRetrieverCheckSignaturesIndices(result[0], result[1], result[2], result[3])
 
     def get_current_total_stake(self, quorum_number: int) -> Optional[int]:
         return self.stake_registry.functions.getCurrentTotalStake(quorum_number).call()

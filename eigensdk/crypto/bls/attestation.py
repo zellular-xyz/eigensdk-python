@@ -1,9 +1,8 @@
 import json
 import os
-
+import secrets
 from eth_account import Account
 from mcl import G1, G2, GT, Fr, Fp
-
 from eigensdk.crypto.bn256 import utils as bn256Utils
 
 
@@ -107,7 +106,7 @@ class PrivateKey(Fr):
     def __init__(self, secret: bytes = None):
         super().__init__()
         if not secret:
-            self.setHashOf(os.urandom(64))
+            self.setHashOf(secrets.token_bytes(32))
         else:
             int_key = int.from_bytes(secret, "big")
             self.setStr(f"{int_key}".encode("utf-8"), 10)
