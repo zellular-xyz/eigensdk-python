@@ -3,8 +3,8 @@
 # -- Project information
 
 project = "EigenSDK Python"
-copyright = "2025, Abram Symons and iF3Labs"
-author = "Abram Symons (original author), maintained by iF3Labs under his supervision"
+copyright = "2025, Abram Symons"
+author = "Abram Symons"
 
 release = "0.1.0"
 version = "0.1.0"
@@ -38,6 +38,5 @@ epub_show_urls = "footnote"
 # -- Custom project attribution note (can be used in templates or footers)
 
 rst_epilog = """
-.. |project_note| replace:: This SDK was originally developed by Abram Symons and is now actively
-maintained and extended by iF3Labs.
+.. |project_note| replace:: This SDK was originally developed by Abram Symons .
 """

@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "eigensdk"
 version = "0.1.0"
-description = "A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons and maintained by iF3Labs under his supervision."
+description = "A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons."
 requires-python = ">=3.11"
 authors = [
     {name = "Abram Symons", email = "abramsymons@gmail.com"},
-    {name = "iF3Labs", email = "mail@if3.xyz"}
+
 ]
 maintainers = [
-    {name = "iF3Labs", email = "mail@if3.xyz"}
+    {name = "Abram Symons", email = "abramsymons@gmail.com"}
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

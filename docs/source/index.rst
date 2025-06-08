@@ -9,9 +9,8 @@ The SDK consists of two main modules:
 
 This SDK provides essential tools for building and managing **AVS (Actively Validated Services)** within the EigenLayer ecosystem.
 
-**Maintainership**: This SDK was originally developed by **Abram Symons** and is now actively maintained and extended by `iF3 Labs <https://github.com/if3-xyz>`_ under his supervision. The project originated as part of `Zellular <https://github.com/zellular-xyz>`_.
+**Maintainership**: This SDK was originally developed by **Abram Symons**.
 
-📬 **Contact**: `mail@if3.xyz <mailto:mail@if3.xyz>`_
 📬 **Contact**: `abramsymons@gmail.com <mailto:abramsymons@gmail.com>`_
 📬 **Contact**: `mail@zellular.xyz <mailto:mail@zellular.xyz>`_
 

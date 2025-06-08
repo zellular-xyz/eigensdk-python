@@ -91,5 +91,3 @@ class BLSApkRegistryTypesApkUpdate:
     apk_hash: bytes
     update_block_number: int
     next_update_block_number: int
-
-
