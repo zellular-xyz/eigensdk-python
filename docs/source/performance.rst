@@ -1,12 +1,12 @@
 .. _performance:
 
 Performance Guide
-================
+=================
 
 This guide covers performance optimization techniques, memory management, and best practices for high-throughput operations with EigenSDK-Python.
 
 RPC Optimization
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Connection Pooling and Caching
 ------------------------------
@@ -162,7 +162,7 @@ Batch RPC Calls
             return batch_results
 
 Memory Management
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Efficient Data Structures
 -------------------------
@@ -221,7 +221,7 @@ Efficient Data Structures
             print(f"Stake history memory usage: {memory_mb:.2f} MB")
 
 Large Dataset Processing
------------------------
+------------------------
 
 .. code-block:: python
 
@@ -298,7 +298,7 @@ Large Dataset Processing
             }
 
 Concurrency and Parallelization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Thread-Safe Operations
 ----------------------
@@ -418,7 +418,7 @@ Thread-Safe Operations
                 return analysis
 
 Caching Strategies
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Multi-Level Caching
 -------------------
@@ -541,7 +541,7 @@ Multi-Level Caching
                 return error_result
 
 Performance Monitoring
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Real-time Metrics
 -----------------
@@ -719,7 +719,7 @@ Real-time Metrics
             }
 
 Best Practices Summary
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 **Performance Checklist:**
 
