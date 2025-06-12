@@ -3,15 +3,17 @@
 Quickstart
 ==========
 
-**Requirements**
-- Python 3.12+ or higher (3.12 recommended)
+Requirements
+------------
+
+- Python 3.12+
 - Ubuntu 24.04+ / macOS 13+ / Windows 11+
 - Git for installation from source
 
 Dependencies
 ------------
 
-The installation requires the [MCL](https://github.com/herumi/mcl) native package. To install MCL, execute the following commands:
+The installation requires the `MCL <https://github.com/herumi/mcl>`_ native package. To install MCL, execute the following commands:
 
 **Ubuntu/Debian:**
 
@@ -87,7 +89,7 @@ For contributing to the SDK or advanced usage:
     $ pip install -e ".[dev]"  # Install in editable mode with dev dependencies
 
 Verification
------------
+------------
 
 Verify your installation by testing the basic imports and crypto functionality:
 
