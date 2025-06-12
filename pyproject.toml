@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "eigensdk"
 version = "0.1.0"
-description = "A Python SDK for developing EigenLayer AVS. Originally developed by Abram Symons."
+description = "A Python SDK for developing EigenLayer AVS."
 requires-python = ">=3.11"
 authors = [
     {name = "Abram Symons", email = "abramsymons@gmail.com"},
@@ -22,10 +22,7 @@ license = "MIT"
 dependencies = [
     "mcl @ git+https://github.com/sadeghte/mcl-python.git",
     "web3",
-    "python-dotenv==1.0.1",
-    "fastapi",
-    "pydantic",
-    "uvicorn"
+    "python-dotenv==1.0.1"
 ]
 
 [project.urls]
