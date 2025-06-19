@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Dict, Tuple
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address

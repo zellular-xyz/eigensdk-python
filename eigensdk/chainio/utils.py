@@ -8,7 +8,7 @@ from web3.types import ChecksumAddress
 from web3.types import TxReceipt
 
 from eigensdk.contracts import ABIs
-from eigensdk.crypto.bls.attestation import G1Point, G2Point, KeyPair
+from eigensdk.crypto.bls.attestation import G1Point, KeyPair
 
 
 def nums_to_bytes(nums: List[int]) -> bytes:
