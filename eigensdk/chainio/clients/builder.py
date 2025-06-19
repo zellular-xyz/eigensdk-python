@@ -145,7 +145,7 @@ class BuildAllConfig:
         self.logger.info(f"bls_apk_registry_instance: {bls_apk_registry_instance}")
         service_manager_instance = eth_http_client.eth.contract(
             address=self.service_manager_addr,
-            abi=ABIs.STRATEGY_MANAGER_ABI,
+            abi=ABIs.SERVICE_MANAGER_BASE_ABI,
         )
         self.logger.info(f"service_manager_instance: {service_manager_instance}")
         stake_registry_addr = registry_coordinator_instance.functions.stakeRegistry().call()

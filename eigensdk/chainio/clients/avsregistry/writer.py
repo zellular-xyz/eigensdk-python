@@ -207,9 +207,6 @@ class AvsRegistryWriter:
     ) -> TxReceipt:
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
         return self.send_transaction(func)
-        # return send_transaction(
-        #     func, self.transactor.pk_wallet, self.transactor.eth_http_client, gas_limit=20000000
-        # )
 
     def update_avs_metadata_uri(
         self,
