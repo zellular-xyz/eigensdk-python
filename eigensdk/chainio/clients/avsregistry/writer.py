@@ -93,10 +93,7 @@ class AvsRegistryWriter:
         self,
         rewards_initiator_addr: str,
     ) -> TxReceipt:
-        service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr, abi=self.service_manager_abi
-        )
-        func = service_manager_contract.functions.setRewardsInitiator(rewards_initiator_addr)
+        func = self.service_manager.functions.setRewardsInitiator(rewards_initiator_addr)
         return self.send_transaction(func)
 
     def set_slashable_stake_lookahead(
@@ -209,18 +206,16 @@ class AvsRegistryWriter:
         strategy_params: List[Dict],
     ) -> TxReceipt:
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
-        return send_transaction(
-            func, self.transactor.pk_wallet, self.transactor.eth_http_client, gas_limit=20000000
-        )
+        return self.send_transaction(func)
+        # return send_transaction(
+        #     func, self.transactor.pk_wallet, self.transactor.eth_http_client, gas_limit=20000000
+        # )
 
     def update_avs_metadata_uri(
         self,
         metadata_uri: str,
     ) -> TxReceipt:
-        service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr, abi=self.service_manager_abi
-        )
-        func = service_manager_contract.functions.updateAVSMetadataURI(metadata_uri)
+        func = self.service_manager.functions.updateAVSMetadataURI(metadata_uri)
         return self.send_transaction(func)
 
     def remove_strategies(
@@ -235,24 +230,14 @@ class AvsRegistryWriter:
         self,
         rewards_submission: List[Dict],
     ) -> TxReceipt:
-        service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr, abi=self.service_manager_abi
-        )
-        func = service_manager_contract.functions.createAVSRewardsSubmission(rewards_submission)
+        func = self.service_manager.functions.createAVSRewardsSubmission(rewards_submission)
         return self.send_transaction(func)
 
     def create_operator_directed_avs_rewards_submission(
         self,
         operator_directed_rewards_submissions: List[Dict],
     ) -> TxReceipt:
-        service_manager_contract = self.web3.eth.contract(
-            address=self.service_manager_addr, abi=self.service_manager_abi
-        )
-        func = service_manager_contract.functions.createOperatorDirectedAVSRewardsSubmission(
+        func = self.service_manager.functions.createOperatorDirectedAVSRewardsSubmission(
             operator_directed_rewards_submissions
         )
         return self.send_transaction(func)
-
-    def is_registry_coordinator_owner(self, address: str) -> bool:
-        owner_address = self.registry_coordinator.functions.owner().call()
-        return owner_address.lower() == address.lower()
