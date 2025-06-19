@@ -49,30 +49,6 @@ class AvsRegistryReader:
         self.stake_registry: Contract = stake_registry
         self.eth_http_client: Web3 = eth_http_client
 
-        if registry_coordinator is None:
-            self.logger.warning("RegistryCoordinator contract not provided")
-
-        if registry_coordinator_addr is None:
-            self.logger.warning("RegistryCoordinator address not provided")
-
-        if bls_apk_registry is None:
-            self.logger.warning("BLSApkRegistry contract not provided")
-
-        if bls_apk_registry_addr is None:
-            self.logger.warning("BLSApkRegistry address not provided")
-
-        if operator_state_retriever is None:
-            self.logger.warning("OperatorStateRetriever contract not provided")
-
-        if service_manager is None:
-            self.logger.warning("ServiceManager contract not provided")
-
-        if stake_registry is None:
-            self.logger.warning("StakeRegistry contract not provided")
-
-        if eth_http_client is None:
-            self.logger.warning("EthHTTPClient not provided")
-
     def get_quorum_count(self) -> int:
         return self.registry_coordinator.functions.quorumCount().call()
 
@@ -341,9 +317,7 @@ class AvsRegistryReader:
         operator_pubkey = self.bls_apk_registry.functions.operatorToPubkey(operator_address).call()
         return G1Point(operator_pubkey[0], operator_pubkey[1])
 
-    def get_apk_update(
-        self, quorum_number: int, index: int
-    ) -> BLSApkRegistryTypesApkUpdate:
+    def get_apk_update(self, quorum_number: int, index: int) -> BLSApkRegistryTypesApkUpdate:
         update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call()
         return BLSApkRegistryTypesApkUpdate(
             apk_hash=bytes(update[0]),  # or update["apkHash"]
