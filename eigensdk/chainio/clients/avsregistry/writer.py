@@ -24,7 +24,6 @@ class AvsRegistryWriter:
         logger: logging.Logger,
         eth_http_client: Web3,
         pk_wallet: LocalAccount,
-        service_manager_abi: Optional[List[Dict[str, Any]]] = None,
     ):
 
         self.registry_coordinator: Contract = registry_coordinator
@@ -36,33 +35,7 @@ class AvsRegistryWriter:
         self.el_reader: ELReader = el_reader
         self.logger: logging.Logger = logger
         self.web3: Web3 = eth_http_client  # Create alias for compatibility
-        self.service_manager_abi: Optional[List[Dict[str, Any]]] = service_manager_abi
-
         self.transactor = Transactor(pk_wallet, eth_http_client)
-
-        if registry_coordinator is None:
-            self.logger.warning("RegistryCoordinator contract not provided")
-
-        if operator_state_retriever is None:
-            self.logger.warning("OperatorStateRetriever contract not provided")
-
-        if service_manager is None:
-            self.logger.warning("ServiceManager contract not provided")
-
-        if service_manager_addr is None:
-            self.logger.warning("ServiceManager address not provided")
-
-        if stake_registry is None:
-            self.logger.warning("StakeRegistry contract not provided")
-
-        if eth_http_client is None:
-            self.logger.warning("EthHTTPClient not provided")
-
-        if pk_wallet is None:
-            self.logger.warning("PKWallet not provided")
-
-        if service_manager_abi is None:
-            self.logger.warning("ServiceManager ABI not provided")
 
     def send_transaction(self, func: ContractFunction):
         return self.transactor.send(func)

@@ -176,7 +176,6 @@ class BuildAllConfig:
             logger=self.logger,
             eth_http_client=eth_http_client,
             pk_wallet=pk_wallet,
-            service_manager_abi=ABIs.SERVICE_MANAGER_BASE_ABI,
         )
         return avs_reader_instance, avs_writer_instance
 
