@@ -7,9 +7,8 @@ from web3 import Web3
 from web3.contract.contract import Contract, ContractFunction
 from web3.types import TxReceipt
 
-from eigensdk.chainio import utils
-from ..elcontracts.reader import ELReader
-from ...utils import send_transaction, Transactor
+from eigensdk.chainio.utils import Transactor, nums_to_bytes
+from eigensdk.chainio.clients.elcontracts.reader import ELReader
 
 
 class AvsRegistryWriter:
@@ -75,7 +74,7 @@ class AvsRegistryWriter:
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.updateOperatorsForQuorum(
             operators_per_quorum,
-            utils.nums_to_bytes(quorum_numbers),
+            nums_to_bytes(quorum_numbers),
         )
         return self.send_transaction(func)
 
@@ -151,7 +150,7 @@ class AvsRegistryWriter:
     ) -> TxReceipt:
         func = self.registry_coordinator.functions.ejectOperator(
             operator_address,
-            utils.nums_to_bytes(quorum_numbers),
+            nums_to_bytes(quorum_numbers),
         )
         return self.send_transaction(func)
 
