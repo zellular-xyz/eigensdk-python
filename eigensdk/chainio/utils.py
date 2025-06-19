@@ -23,7 +23,7 @@ def bitmap_to_quorum_ids(bitmap: int) -> List[int]:
     return quorum_ids
 
 
-def send_transaction(
+def _send_transaction(
     func: ContractFunction,
     pk_wallet: LocalAccount,
     eth_http_client: Web3,
@@ -71,45 +71,9 @@ class Transactor:
         self.skip_estimation = skip_estimation
 
     def send(self, func: ContractFunction):
-        return send_transaction(
+        return _send_transaction(
             func, self.pk_wallet, self.eth_http_client, self.gas_limit, self.skip_estimation
         )
-
-
-class BN254G1Point:
-    def __init__(self, x: int, y: int):
-        self.X = x
-        self.Y = y
-
-
-class BN254G2Point:
-    def __init__(self, x: Tuple[int, int], y: Tuple[int, int]):
-        self.X = x
-        self.Y = y
-
-
-def convert_bn254_geth_to_gnark(input_point: BN254G1Point) -> G1Point:
-    return G1Point(input_point.X, input_point.Y)
-
-
-def convert_to_bn254_g1_point(input_point: G1Point) -> BN254G1Point:
-    return BN254G1Point(
-        x=int(input_point.x.getStr().decode("utf-8")),
-        y=int(input_point.y.getStr().decode("utf-8")),
-    )
-
-
-def convert_to_bn254_g2_point(input_point: G2Point) -> BN254G2Point:
-    return BN254G2Point(
-        x=(
-            int(input_point.getX().get_a().getStr().decode("utf-8")),
-            int(input_point.getX().get_b().getStr().decode("utf-8")),
-        ),
-        y=(
-            int(input_point.getY().get_a().getStr().decode("utf-8")),
-            int(input_point.getY().get_b().getStr().decode("utf-8")),
-        ),
-    )
 
 
 def abi_encode_normal_registration_params(
@@ -146,57 +110,6 @@ def abi_encode_normal_registration_params(
     encoded = encode([abi_type], [registration_struct])
 
     return encoded[32:]
-
-
-def abi_encode_operator_avs_registration_params(
-    operator_id: int,
-    registration_type: int,
-    socket: str,
-    pubkey_reg_params: tuple[tuple[int, int], tuple[int, int], tuple[list[int], list[int]]],
-) -> bytes:
-    type_str = (
-        "(uint256,uint8,string,((uint256,uint256),(uint256,uint256),(uint256[2],uint256[2])))"
-    )
-
-    data = (
-        operator_id,
-        registration_type,
-        socket,
-        (pubkey_reg_params[0], pubkey_reg_params[1], pubkey_reg_params[2]),
-    )
-
-    encoded = encode([type_str], [data])
-    return encoded[32:]
-
-
-def remove_duplicate_strategies(strategies):
-    """
-    Removes duplicates from the given list of strategy addresses.
-
-    Args:
-        strategies: List of strategy addresses as strings
-
-    Returns:
-        List of unique strategy addresses, sorted and with duplicates removed
-    """
-    if not strategies:
-        return []
-
-    # Sort the strategies lexicographically
-    sorted_strategies = sorted(strategies)
-
-    # Create a new list for unique strategies
-    unique_strategies = [sorted_strategies[0]]
-    last_element = sorted_strategies[0]
-
-    # Iterate through the sorted list, adding each unique strategy
-    for strategy in sorted_strategies[1:]:
-        if strategy == last_element:
-            continue
-        last_element = strategy
-        unique_strategies.append(strategy)
-
-    return unique_strategies
 
 
 def get_pubkey_registration_params(
