@@ -343,29 +343,17 @@ class AvsRegistryReader:
 
     def get_apk_update(
         self, quorum_number: int, index: int
-    ) -> Optional[BLSApkRegistryTypesApkUpdate]:
-        try:
-            update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call()
-            return BLSApkRegistryTypesApkUpdate(
-                apk_hash=bytes(update[0]),  # or update["apkHash"]
-                update_block_number=update[1],  # or update["updateBlockNumber"]
-                next_update_block_number=update[2],  # or update["nextUpdateBlockNumber"]
-            )
-        except Exception as e:
-            # Could raise IndexError or revert if index is out of range
-            print(f"Error fetching apk update at index {index} for quorum {quorum_number}: {e}")
-            return None
+    ) -> BLSApkRegistryTypesApkUpdate:
+        update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call()
+        return BLSApkRegistryTypesApkUpdate(
+            apk_hash=bytes(update[0]),  # or update["apkHash"]
+            update_block_number=update[1],  # or update["updateBlockNumber"]
+            next_update_block_number=update[2],  # or update["nextUpdateBlockNumber"]
+        )
 
-    def get_current_apk(self, quorum_number: int) -> Optional[G1Point]:
-        try:
-            apk = self.bls_apk_registry.functions.currentApk(quorum_number).call()
-            print(apk)
-            print(apk[0])
-            print(apk[1])
-            return G1Point(x=apk[0], y=apk[1])  # Use index-based access
-        except Exception as e:
-            print(f"Failed to fetch current APK for quorum {quorum_number}: {e}")
-            return None
+    def get_current_apk(self, quorum_number: int) -> G1Point:
+        apk = self.bls_apk_registry.functions.currentApk(quorum_number).call()
+        return G1Point(x=apk[0], y=apk[1])  # Use index-based access
 
     def query_existing_registered_operator_sockets(
         self,
