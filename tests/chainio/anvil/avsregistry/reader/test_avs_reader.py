@@ -8,6 +8,15 @@ from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from tests.builder import clients, config
 
 
+@pytest.fixture(scope="session")
+def operator_id():
+    quorum_numbers = [0]
+    result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(
+        quorum_numbers
+    )
+    return result[0][0].operator_id
+
+
 def test_get_quorum_count():
     quorum_count = clients.avs_registry_reader.get_quorum_count()
     assert isinstance(quorum_count, int)
@@ -48,8 +57,7 @@ def test_get_operator_addrs_in_quorums_at_current_block():
     print(f"Operator addresses in quorums at current block: {result}")
 
 
-def test_get_operators_stake_in_quorums_of_operator_at_block():
-    operator_id = 1
+def test_get_operators_stake_in_quorums_of_operator_at_block(operator_id):
     block_number = clients.eth_http_client.eth.block_number
 
     result = clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block(
@@ -75,7 +83,7 @@ def test_get_operators_stake_in_quorums_of_operator_at_block():
     #         assert hasattr(stake, "isRegistered")
 
     # print(f"Operator ID: {operator_ids[0]} → Quorum IDs: {quorum_ids_result}")
-    # print(f"Stakes at block {block_number}: {stakes_result}")
+    print(f"Stakes at block {block_number}: {stakes_result}")
 
 
 def test_weight_of_operator_for_quorum():
@@ -107,8 +115,7 @@ def test_strategy_params_by_index():
     print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
 
 
-def test_get_stake_history_length():
-    operator_id = 1
+def test_get_stake_history_length(operator_id):
     quorum_number = 0
     stake_history_length = clients.avs_registry_reader.get_stake_history_length(
         operator_id, quorum_number
@@ -120,8 +127,7 @@ def test_get_stake_history_length():
     )
 
 
-def test_get_stake_history():
-    operator_id = 1  # Replace with a valid operator ID
+def test_get_stake_history(operator_id):
     quorum_number = 0  # Replace with a valid quorum number
 
     stake_history = clients.avs_registry_reader.get_stake_history(operator_id, quorum_number)
@@ -140,16 +146,14 @@ def test_get_stake_history():
         )
 
 
-def test_get_latest_stake_update():
-    operator_id = 1
+def test_get_latest_stake_update(operator_id):
     quorum_number = 0
     latest_update = clients.avs_registry_reader.get_latest_stake_update(operator_id, quorum_number)
     print(latest_update)
     assert latest_update is not None, "Expected a stake update, got None"
 
 
-def test_get_stake_update_at_index():
-    operator_id = 1
+def test_get_stake_update_at_index(operator_id):
     quorum_number = 0
     history_length = clients.avs_registry_reader.get_stake_history_length(
         operator_id, quorum_number
@@ -172,8 +176,7 @@ def test_get_stake_update_at_index():
     print(f"  Registered: {stake_update.isRegistered}")
 
 
-def test_get_stake_at_block_number():
-    operator_id = 1  # Use a valid operator ID
+def test_get_stake_at_block_number(operator_id):
     quorum_number = 0  # Use a valid quorum
     block_number = clients.eth_http_client.eth.block_number  # Current block
 
@@ -199,8 +202,7 @@ def test_get_stake_at_block_number():
             raise  # re-raise if it's an unexpected logic error
 
 
-def test_get_stake_update_index_at_block_number():
-    operator_id = 1  # Replace with a valid operator ID
+def test_get_stake_update_index_at_block_number(operator_id):
     quorum_number = 0  # Replace with a valid quorum
     block_number = clients.eth_http_client.eth.block_number
 
@@ -237,10 +239,10 @@ def test_get_total_stake_history_length():
     print(f"Total stake history length for quorum {quorum_number}: {total_length}")
 
 
-def test_get_check_signatures_indices():
+def test_get_check_signatures_indices(operator_id):
     reference_block_number = clients.eth_http_client.eth.block_number - 1  # Safe block
-    quorum_numbers = [0]  # Replace with valid quorum IDs
-    non_signer_operator_ids = [1]  # Replace with valid registered operator IDs
+    quorum_numbers = [0]
+    non_signer_operator_ids = [operator_id]
 
     try:
         result = clients.avs_registry_reader.get_check_signatures_indices(
@@ -369,8 +371,7 @@ def test_get_operator_id():
     print(f"Operator ID for {operator_addr}: {result.hex()}")
 
 
-def test_get_operator_from_id():
-    operator_id = 1  # Use integer format for the operator ID
+def test_get_operator_from_id(operator_id):
     address = clients.avs_registry_reader.get_operator_from_id(operator_id)
     assert address is not None, "Returned address should not be None"
     assert Web3.is_checksum_address(address), f"Invalid Ethereum address returned: {address}"

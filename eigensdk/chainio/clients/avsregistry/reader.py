@@ -95,19 +95,18 @@ class AvsRegistryReader:
         return [[op[0] for op in quorum] for quorum in stakes]
 
     def get_operators_stake_in_quorums_of_operator_at_block(
-        self, operator_id: int, block_number: int
+        self, operator_id: bytes, block_number: int
     ) -> tuple[list[int], list[list[OperatorStateRetrieverOperator]]]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
         quorum_bitmap, operator_stakes = self.operator_state_retriever.get_function_by_signature(
             "getOperatorState(address,bytes32,uint32)"
-        )(self.registry_coordinator_addr, operator_id_bytes32, block_number).call()
+        )(self.registry_coordinator_addr, operator_id, block_number).call()
 
         # Convert the bitmap to quorum IDs
         quorums = bitmap_to_quorum_ids(quorum_bitmap)
         return quorums, operator_stakes
 
     def get_operators_stake_in_quorums_of_operator_at_current_block(
-        self, operator_ids: list[int]
+        self, operator_ids: list[bytes]
     ) -> tuple[list[int], list[list[OperatorStateRetrieverOperator]]]:
         if not operator_ids:
             return [], []
@@ -115,17 +114,16 @@ class AvsRegistryReader:
         combined_bitmap = 0
 
         for operator_id in operator_ids:
-            operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
-            bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(
-                operator_id_bytes32
-            ).call()
+            bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call()
             combined_bitmap |= int(bitmap)
 
         quorums = bitmap_to_quorum_ids(combined_bitmap)
         if not quorums:
             return [], []
 
-        operator_stakes = self.operator_state_retriever.functions.getOperatorState(
+        operator_stakes = self.operator_state_retriever.functions.get_function_by_signature(
+            "getOperatorState(address,bytes,uint32)"
+        )(
             self.registry_coordinator_addr,
             utils.nums_to_bytes(quorums),
             self.eth_http_client.eth.block_number,
@@ -147,56 +145,46 @@ class AvsRegistryReader:
         result = self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call()
         return StakeRegistryTypesStrategyParams(strategy=result[0], multiplier=result[1])
 
-    def get_stake_history_length(self, operator_id: int, quorum_number: int) -> int:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
+    def get_stake_history_length(self, operator_id: bytes, quorum_number: int) -> int:
         return self.stake_registry.functions.getStakeHistoryLength(
-            operator_id_bytes32, quorum_number
+            operator_id, quorum_number
         ).call()
 
     def get_stake_history(
-        self, operator_id: int, quorum_number: int
+        self, operator_id: bytes, quorum_number: int
     ) -> Optional[list[StakeRegistryTypesStakeUpdate]]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")  # bytes32
-        return self.stake_registry.functions.getStakeHistory(
-            operator_id_bytes32, quorum_number
-        ).call()
+        return self.stake_registry.functions.getStakeHistory(operator_id, quorum_number).call()
 
     def get_latest_stake_update(
-        self, operator_id: int, quorum_number: int
+        self, operator_id: bytes, quorum_number: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
-        return self.stake_registry.functions.getLatestStakeUpdate(
-            operator_id_bytes32, quorum_number
-        ).call()
+        return self.stake_registry.functions.getLatestStakeUpdate(operator_id, quorum_number).call()
 
     def get_stake_update_at_index(
-        self, operator_id: int, quorum_number: int, index: int
+        self, operator_id: bytes, quorum_number: int, index: int
     ) -> Optional[StakeRegistryTypesStakeUpdate]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
         return self.stake_registry.functions.getStakeUpdateAtIndex(
-            quorum_number, operator_id_bytes32, index
+            quorum_number, operator_id, index
         ).call()
 
     def get_stake_at_block_number(
         self,
-        operator_id: int,
+        operator_id: bytes,
         quorum_number: int,
         block_number: int,
     ) -> Optional[int]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")  # ✅ convert to bytes32
         return self.stake_registry.functions.getStakeAtBlockNumber(
-            operator_id_bytes32, quorum_number, block_number
+            operator_id, quorum_number, block_number
         ).call()
 
     def get_stake_update_index_at_block_number(
         self,
-        operator_id: int,
+        operator_id: bytes,
         quorum_number: int,
         block_number: int,
     ) -> int:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
         return self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
-            operator_id_bytes32, quorum_number, block_number
+            operator_id, quorum_number, block_number
         ).call()
 
     def get_total_stake_history_length(self, quorum_number: int) -> int:
@@ -206,18 +194,14 @@ class AvsRegistryReader:
         self,
         reference_block_number: int,
         quorum_numbers: list[int],
-        non_signer_operator_ids: list[int],
+        non_signer_operator_ids: list[bytes],
     ) -> OperatorStateRetrieverCheckSignaturesIndices:
         quorum_bytes = utils.nums_to_bytes(quorum_numbers)
-        operator_ids_bytes32 = [
-            oid.to_bytes(32, byteorder="big") for oid in non_signer_operator_ids
-        ]
-
         result = self.operator_state_retriever.functions.getCheckSignaturesIndices(
             self.registry_coordinator_addr,
             reference_block_number,
             quorum_bytes,
-            operator_ids_bytes32,
+            non_signer_operator_ids,
         ).call()
 
         return OperatorStateRetrieverCheckSignaturesIndices(
@@ -276,9 +260,8 @@ class AvsRegistryReader:
         operator_id = self.registry_coordinator.functions.getOperatorId(operator_address).call()
         return operator_id
 
-    def get_operator_from_id(self, operator_id: int) -> Optional[str]:
-        operator_id_bytes32 = operator_id.to_bytes(32, byteorder="big")
-        return self.registry_coordinator.functions.getOperatorFromId(operator_id_bytes32).call()
+    def get_operator_from_id(self, operator_id: bytes) -> Optional[str]:
+        return self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
 
     def query_registration_detail(self, operator_address: Address) -> Optional[list[bool]]:
         operator_id = self.get_operator_id(operator_address=operator_address)
