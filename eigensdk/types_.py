@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 from web3 import Web3
 from web3.types import ChecksumAddress
@@ -35,7 +35,7 @@ class OperatorInfo:
 class OperatorAvsState:
     operator_id: bytes
     operator_info: OperatorInfo
-    stake_per_quorum: Dict[int, int]
+    stake_per_quorum: dict[int, int]
     block_number: int
 
 
@@ -49,10 +49,10 @@ class QuorumAvsState:
 
 @dataclass
 class OperatorStateRetrieverCheckSignaturesIndices:
-    non_signer_quorum_bitmap_indices: List[int]
-    quorum_apk_indices: List[int]
-    total_stake_indices: List[int]
-    non_signer_stake_indices: List[List[int]]
+    non_signer_quorum_bitmap_indices: list[int]
+    quorum_apk_indices: list[int]
+    total_stake_indices: list[int]
+    non_signer_stake_indices: list[list[int]]
 
 
 @dataclass

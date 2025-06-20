@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from eth_typing import Address
 from eth_utils import event_abi_to_log_topic
@@ -14,8 +13,6 @@ from eigensdk.types_ import (
     OperatorPubkeys,
     OperatorStateRetrieverCheckSignaturesIndices,
     OperatorStateRetrieverOperator,
-)
-from eigensdk.types_ import (
     StakeRegistryTypesStrategyParams,
     StakeRegistryTypesStakeUpdate,
     BLSApkRegistryTypesApkUpdate,
@@ -93,7 +90,6 @@ class AvsRegistryReader:
             "getOperatorState(address,bytes32,uint32)"
         )(self.registry_coordinator_addr, operator_id, block_number).call()
 
-        # Convert the bitmap to quorum IDs
         quorums = bitmap_to_quorum_ids(quorum_bitmap)
         return quorums, [
             [
@@ -145,22 +141,30 @@ class AvsRegistryReader:
 
     def get_latest_stake_update(
         self, operator_id: bytes, quorum_number: int
-    ) -> Optional[StakeRegistryTypesStakeUpdate]:
-        return self.stake_registry.functions.getLatestStakeUpdate(operator_id, quorum_number).call()
+    ) -> StakeRegistryTypesStakeUpdate:
+        update = self.stake_registry.functions.getLatestStakeUpdate(
+            operator_id, quorum_number
+        ).call()
+        return StakeRegistryTypesStakeUpdate(
+            update_block_number=update[0], next_update_block_number=update[1], stake=update[2]
+        )
 
     def get_stake_update_at_index(
         self, operator_id: bytes, quorum_number: int, index: int
-    ) -> Optional[StakeRegistryTypesStakeUpdate]:
-        return self.stake_registry.functions.getStakeUpdateAtIndex(
+    ) -> StakeRegistryTypesStakeUpdate:
+        update = self.stake_registry.functions.getStakeUpdateAtIndex(
             quorum_number, operator_id, index
         ).call()
+        return StakeRegistryTypesStakeUpdate(
+            update_block_number=update[0], next_update_block_number=update[1], stake=update[2]
+        )
 
     def get_stake_at_block_number(
         self,
         operator_id: bytes,
         quorum_number: int,
         block_number: int,
-    ) -> Optional[int]:
+    ) -> int:
         return self.stake_registry.functions.getStakeAtBlockNumber(
             operator_id, quorum_number, block_number
         ).call()
@@ -201,33 +205,36 @@ class AvsRegistryReader:
 
     def get_total_stake_update_at_index(
         self, quorum_number: int, index: int
-    ) -> Optional[StakeRegistryTypesStakeUpdate]:
-        return self.stake_registry.functions.getTotalStakeUpdateAtIndex(quorum_number, index).call()
+    ) -> StakeRegistryTypesStakeUpdate:
+        update = self.stake_registry.functions.getTotalStakeUpdateAtIndex(quorum_number, index).call()
+        return StakeRegistryTypesStakeUpdate(
+            update_block_number=update[0], next_update_block_number=update[1], stake=update[2]
+        )
 
     def get_total_stake_at_block_number_from_index(
         self, quorum_number: int, block_number: int, index: int
-    ) -> Optional[int]:
+    ) -> int:
         return self.stake_registry.functions.getTotalStakeAtBlockNumberFromIndex(
             quorum_number, block_number, index
         ).call()
 
     def get_total_stake_indices_at_block_number(
         self, quorum_numbers: list[int], block_number: int
-    ) -> Optional[list[int]]:
-        quorum_bytes = utils.nums_to_bytes(quorum_numbers)  # Convert list[int] → bytes
+    ) -> list[int]:
+        quorum_bytes = utils.nums_to_bytes(quorum_numbers)
         return self.stake_registry.functions.getTotalStakeIndicesAtBlockNumber(
             block_number, quorum_bytes
         ).call()
 
-    def get_minimum_stake_for_quorum(self, quorum_number: int) -> Optional[int]:
+    def get_minimum_stake_for_quorum(self, quorum_number: int) -> int:
         return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call()
 
     def get_strategy_params_at_index(
         self, quorum_number: int, index: int
-    ) -> Optional[StakeRegistryTypesStrategyParams]:
+    ) -> StakeRegistryTypesStrategyParams:
         return self.stake_registry.functions.strategyParams(quorum_number, index).call()
 
-    def get_strategy_per_quorum_at_index(self, quorum_number: int, index: int) -> Optional[str]:
+    def get_strategy_per_quorum_at_index(self, quorum_number: int, index: int) -> str:
         return self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call()
 
     # TODO: IMPLEMENT TEST BASED ON THE AVS SERVICE MANAGER
@@ -238,20 +245,20 @@ class AvsRegistryReader:
     def get_operator_restaked_strategies(self, operator: str) -> list[str]:
         return self.service_manager.functions.getOperatorRestakedStrategies(operator).call()
 
-    def get_stake_type_per_quorum(self, quorum_number: int) -> Optional[int]:
+    def get_stake_type_per_quorum(self, quorum_number: int) -> int:
         return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call()
 
-    def get_slashable_stake_look_ahead_per_quorum(self, quorum_number: int) -> Optional[int]:
+    def get_slashable_stake_look_ahead_per_quorum(self, quorum_number: int) -> int:
         return self.stake_registry.functions.slashableStakeLookAheadPerQuorum(quorum_number).call()
 
     def get_operator_id(self, operator_address: Address) -> bytes:
         operator_id = self.registry_coordinator.functions.getOperatorId(operator_address).call()
         return operator_id
 
-    def get_operator_from_id(self, operator_id: bytes) -> Optional[str]:
+    def get_operator_from_id(self, operator_id: bytes) -> str:
         return self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
 
-    def query_registration_detail(self, operator_address: Address) -> Optional[list[bool]]:
+    def query_registration_detail(self, operator_address: Address) -> list[bool]:
         operator_id = self.get_operator_id(operator_address=operator_address)
         value = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call()
         return [(value & (1 << i)) != 0 for i in range(value.bit_length())]
@@ -259,35 +266,35 @@ class AvsRegistryReader:
     def is_operator_registered(self, operator_address: str) -> bool:
         return self.registry_coordinator.functions.getOperatorStatus(operator_address).call() == 1
 
-    def is_operator_set_quorum(self, quorum_number: int) -> Optional[bool]:
+    def is_operator_set_quorum(self, quorum_number: int) -> bool:
         return self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call()
 
-    def get_operator_id_from_operator_address(self, operator_address: str) -> Optional[bytes]:
+    def get_operator_id_from_operator_address(self, operator_address: str) -> bytes:
         return self.bls_apk_registry.functions.operatorToPubkeyHash(operator_address).call()
 
-    def get_operator_address_from_operator_id(self, operator_pubkey_hash: bytes) -> Optional[str]:
+    def get_operator_address_from_operator_id(self, operator_pubkey_hash: bytes) -> str:
         return self.bls_apk_registry.functions.pubkeyHashToOperator(operator_pubkey_hash).call()
 
-    def get_pubkey_from_operator_address(self, operator_address: str) -> Optional[G1Point]:
+    def get_pubkey_from_operator_address(self, operator_address: str) -> G1Point:
         operator_pubkey = self.bls_apk_registry.functions.operatorToPubkey(operator_address).call()
         return G1Point(operator_pubkey[0], operator_pubkey[1])
 
     def get_apk_update(self, quorum_number: int, index: int) -> BLSApkRegistryTypesApkUpdate:
         update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call()
         return BLSApkRegistryTypesApkUpdate(
-            apk_hash=bytes(update[0]),  # or update["apkHash"]
-            update_block_number=update[1],  # or update["updateBlockNumber"]
-            next_update_block_number=update[2],  # or update["nextUpdateBlockNumber"]
+            apk_hash=bytes(update[0]),
+            update_block_number=update[1],
+            next_update_block_number=update[2],
         )
 
     def get_current_apk(self, quorum_number: int) -> G1Point:
         apk = self.bls_apk_registry.functions.currentApk(quorum_number).call()
-        return G1Point(x=apk[0], y=apk[1])  # Use index-based access
+        return G1Point(x=apk[0], y=apk[1])
 
     def query_existing_registered_operator_sockets(
         self,
         start_block: int = 0,
-        stop_block: Optional[int] = None,
+        stop_block: int | None = None,
         block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
     ) -> tuple[dict[bytes, str], int]:
         if stop_block is None:
@@ -338,7 +345,7 @@ class AvsRegistryReader:
     def query_existing_registered_operator_pubkeys(
         self,
         start_block: int = 0,
-        stop_block: Optional[int] = None,
+        stop_block: int | None = None,
         block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
     ) -> tuple[list[Address], list[OperatorPubkeys]]:
         if stop_block is None:

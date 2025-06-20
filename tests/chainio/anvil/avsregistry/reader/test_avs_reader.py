@@ -7,6 +7,15 @@ from eth_typing import Address
 from eigensdk.crypto.bls.attestation import G1Point, G2Point
 from tests.builder import clients, config
 
+from eigensdk.types_ import (
+    OperatorPubkeys,
+    OperatorStateRetrieverCheckSignaturesIndices,
+    OperatorStateRetrieverOperator,
+    StakeRegistryTypesStrategyParams,
+    StakeRegistryTypesStakeUpdate,
+    BLSApkRegistryTypesApkUpdate,
+)
+
 
 @pytest.fixture(scope="session")
 def operator_id():
@@ -31,6 +40,10 @@ def test_get_operators_stake_in_quorums_at_current_block():
     assert isinstance(result, list)
     for quorum_operators in result:
         assert isinstance(quorum_operators, list)
+        assert all(
+            isinstance(operator, OperatorStateRetrieverOperator) for operator in quorum_operators
+        )
+
     print(f"Operators stake in quorums at current block: {result}")
 
 
@@ -43,6 +56,10 @@ def test_get_operators_stake_in_quorums_at_block():
     assert isinstance(result, list)
     for quorum_operators in result:
         assert isinstance(quorum_operators, list)
+        assert all(
+            isinstance(operator, OperatorStateRetrieverOperator) for operator in quorum_operators
+        )
+
     print(f"Operators stake in quorums at block {block_number}: {result}")
 
 
@@ -52,8 +69,9 @@ def test_get_operator_addrs_in_quorums_at_current_block():
         quorum_numbers
     )
     assert isinstance(result, list)
-    for quorum_operators in result:
-        assert isinstance(quorum_operators, list)
+    for addresses in result:
+        assert isinstance(addresses, list)
+        assert all(isinstance(address, str) for address in addresses)
     print(f"Operator addresses in quorums at current block: {result}")
 
 
@@ -67,20 +85,13 @@ def test_get_operators_stake_in_quorums_of_operator_at_block(operator_id):
     assert isinstance(result, tuple) and len(result) == 2
     quorum_ids_result, stakes_result = result
 
-    if not quorum_ids_result:
-        print("No quorums found for operator — skipping detailed assertions.")
-        return
-
     assert isinstance(quorum_ids_result, list)
     assert all(isinstance(qid, int) for qid in quorum_ids_result)
 
     assert isinstance(stakes_result, list)
     assert all(isinstance(s, list) for s in stakes_result)
     for stake_list in stakes_result:
-        for stake in stake_list:
-            assert hasattr(stake, "operator")
-            assert hasattr(stake, "operator_id")
-            assert hasattr(stake, "stake")
+        assert all(isinstance(operator, OperatorStateRetrieverOperator) for operator in stake_list)
 
     print(f"Operator ID: {operator_id} → Quorum IDs: {quorum_ids_result}")
     print(f"Stakes at block {block_number}: {stakes_result}")
@@ -90,16 +101,14 @@ def test_weight_of_operator_for_quorum():
     quorum_number = 0
     operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.weight_of_operator_for_quorum(quorum_number, operator_addr)
-    assert result is None or isinstance(result, int)
+    assert isinstance(result, int)
     print(f"Weight of operator {operator_addr} for quorum {quorum_number}: {result}")
 
 
 def test_strategy_params_length():
     quorum_number = 0
-    result = clients.avs_registry_reader.strategy_params_length(
-        quorum_number
-    )  # Verify the result is an integer or None
-    assert result is None or isinstance(result, int)
+    result = clients.avs_registry_reader.strategy_params_length(quorum_number)
+    assert isinstance(result, int)
     print(f"Strategy params length for quorum {quorum_number}: {result}")
 
 
@@ -107,11 +116,7 @@ def test_strategy_params_by_index():
     quorum_number = 0
     index = 0
     result = clients.avs_registry_reader.strategy_params_by_index(quorum_number, index)
-    assert result is not None, "Strategy params should not be None"
-    assert hasattr(result, "strategy"), "Result should have strategy attribute"
-    assert hasattr(result, "multiplier"), "Result should have multiplier attribute"
-    assert isinstance(result.strategy, str), "Strategy should be a string"
-    assert isinstance(result.multiplier, int), "Multiplier should be an integer"
+    assert isinstance(result, StakeRegistryTypesStrategyParams)
     print(f"Strategy params for quorum {quorum_number} at index {index}: {result}")
 
 
@@ -120,8 +125,8 @@ def test_get_stake_history_length(operator_id):
     stake_history_length = clients.avs_registry_reader.get_stake_history_length(
         operator_id, quorum_number
     )
-    assert isinstance(stake_history_length, int), "Stake history length must be an integer"
-    assert stake_history_length >= 0, "Stake history length must be non-negative"
+    assert isinstance(stake_history_length, int)
+    assert stake_history_length >= 0
     print(
         f"Stake history length for operator {operator_id} in quorum {quorum_number}: {stake_history_length}"
     )
@@ -132,25 +137,20 @@ def test_get_stake_history(operator_id):
 
     stake_history = clients.avs_registry_reader.get_stake_history(operator_id, quorum_number)
 
-    assert isinstance(stake_history, list), "Expected stake history to be a list"
+    assert isinstance(stake_history, list)
+    assert all(isinstance(update, StakeRegistryTypesStakeUpdate) for update in stake_history)
 
-    for update in stake_history:
-        assert hasattr(update, "update_block_number")
-        assert hasattr(update, "next_update_block_number")
-        assert hasattr(update, "stake")
-
-    print(f"Stake history for operator {operator_id} in quorum {quorum_number}:")
-    for entry in stake_history:
-        print(
-            f"Update Block Number: {entry.update_block_number} - Next Update Block Number: {entry.next_update_block_number} - Stake: {entry.stake}"
-        )
+    print(f"Stake history for operator {operator_id} in quorum {quorum_number}: {stake_history}")
 
 
 def test_get_latest_stake_update(operator_id):
     quorum_number = 0
     latest_update = clients.avs_registry_reader.get_latest_stake_update(operator_id, quorum_number)
-    print(latest_update)
-    assert latest_update is not None, "Expected a stake update, got None"
+    assert isinstance(latest_update, StakeRegistryTypesStakeUpdate)
+
+    print(
+        f"Last stake update for operator {operator_id} in quorum {quorum_number}: {latest_update}"
+    )
 
 
 def test_get_stake_update_at_index(operator_id):
@@ -159,132 +159,90 @@ def test_get_stake_update_at_index(operator_id):
         operator_id, quorum_number
     )
     assert isinstance(history_length, int)
-    if history_length <= 0:
-        print(f"No stake updates available for operator {operator_id} in quorum {quorum_number}")
-        return
+    assert history_length > 0
+
     index = history_length - 1
     stake_update = clients.avs_registry_reader.get_stake_update_at_index(
         operator_id, quorum_number, index
     )
-    assert stake_update is not None
-    assert hasattr(stake_update, "blockNumber")
-    assert hasattr(stake_update, "stake")
-    assert hasattr(stake_update, "isRegistered")
-    print(f"Stake update at index {index} for operator {operator_id} in quorum {quorum_number}:")
-    print(f"  Block: {stake_update.blockNumber}")
-    print(f"  Stake: {stake_update.stake}")
-    print(f"  Registered: {stake_update.isRegistered}")
+    assert isinstance(stake_update, StakeRegistryTypesStakeUpdate)
+    print(
+        f"Stake update at index {index} for operator {operator_id} in quorum {quorum_number}: {stake_update}"
+    )
 
 
 def test_get_stake_at_block_number(operator_id):
-    quorum_number = 0  # Use a valid quorum
-    block_number = clients.eth_http_client.eth.block_number  # Current block
+    quorum_number = 0
+    block_number = clients.eth_http_client.eth.block_number
 
-    try:
-        stake = clients.avs_registry_reader.get_stake_at_block_number(
-            operator_id, quorum_number, block_number
-        )
+    stake = clients.avs_registry_reader.get_stake_at_block_number(
+        operator_id, quorum_number, block_number
+    )
 
-        assert isinstance(stake, int), "Stake value should be an integer"
-        assert stake >= 0, "Stake should be non-negative"
+    assert isinstance(stake, int)
+    assert stake >= 0
 
-        print(
-            f"Stake at block {block_number} for operator {operator_id} in quorum {quorum_number}: {stake}"
-        )
-
-    except ContractLogicError as e:
-        error_message = str(e)
-        if "no stake update found" in error_message:
-            print(
-                f"Skipped: No stake update found for operator {operator_id} in quorum {quorum_number} at block {block_number}"
-            )
-        else:
-            raise  # re-raise if it's an unexpected logic error
+    print(
+        f"Stake at block {block_number} for operator {operator_id} in quorum {quorum_number}: {stake}"
+    )
 
 
 def test_get_stake_update_index_at_block_number(operator_id):
-    quorum_number = 0  # Replace with a valid quorum
+    quorum_number = 0
     block_number = clients.eth_http_client.eth.block_number
 
-    try:
-        index = clients.avs_registry_reader.get_stake_update_index_at_block_number(
-            operator_id, quorum_number, block_number
-        )
+    index = clients.avs_registry_reader.get_stake_update_index_at_block_number(
+        operator_id, quorum_number, block_number
+    )
 
-        assert isinstance(index, int), "Returned index should be an integer"
-        assert index >= 0, "Index should be non-negative"
+    assert isinstance(index, int)
+    assert index >= 0
 
-        print(
-            f"Stake update index for operator {operator_id} in quorum {quorum_number} at block {block_number}: {index}"
-        )
-
-    except ContractLogicError as e:
-        error_message = str(e)
-        if "no stake update found" in error_message:
-            print(
-                f"Skipped: No stake update found for operator {operator_id} in quorum {quorum_number} at block {block_number}"
-            )
-        else:
-            raise
+    print(
+        f"Stake update index for operator {operator_id} in quorum {quorum_number} at block {block_number}: {index}"
+    )
 
 
 def test_get_total_stake_history_length():
-    quorum_number = 0  # Replace with a valid quorum number
+    quorum_number = 0
 
     total_length = clients.avs_registry_reader.get_total_stake_history_length(quorum_number)
 
-    assert isinstance(total_length, int), "Total stake history length must be an integer"
-    assert total_length >= 0, "Length must be non-negative"
+    assert isinstance(total_length, int)
+    assert total_length >= 0
 
     print(f"Total stake history length for quorum {quorum_number}: {total_length}")
 
 
 def test_get_check_signatures_indices(operator_id):
-    reference_block_number = clients.eth_http_client.eth.block_number - 1  # Safe block
+    reference_block_number = clients.eth_http_client.eth.block_number - 1
     quorum_numbers = [0]
     non_signer_operator_ids = [operator_id]
 
-    try:
-        result = clients.avs_registry_reader.get_check_signatures_indices(
-            reference_block_number, quorum_numbers, non_signer_operator_ids
-        )
+    result = clients.avs_registry_reader.get_check_signatures_indices(
+        reference_block_number, quorum_numbers, non_signer_operator_ids
+    )
 
-        # Validate response structure
-        assert result is not None, "Expected non-null result"
-        assert hasattr(result, "quorumBitmap"), "Missing quorumBitmap"
-        assert hasattr(result, "operatorIdIndices"), "Missing operatorIdIndices"
-
-        print(f"Check Signatures Indices result at block {reference_block_number}:")
-        print(f"  Quorum Bitmap: {result.quorumBitmap}")
-        print(f"  Operator ID Indices: {result.operatorIdIndices}")
-
-    except ContractLogicError as e:
-        if "no bitmap update found for operatorId" in str(e):
-            print(
-                f"No quorum bitmap update found at block {reference_block_number} for operator(s) {non_signer_operator_ids}"
-            )
-            return
-        else:
-            raise
+    assert isinstance(result, OperatorStateRetrieverCheckSignaturesIndices)
+    print(f"Check Signatures Indices result at block {reference_block_number}: {result}")
 
 
 def test_get_current_total_stake():
-    quorum_number = 0  # Replace with a known valid quorum number
+    quorum_number = 0
     total_stake = clients.avs_registry_reader.get_current_total_stake(quorum_number)
-    assert isinstance(total_stake, int), "Total stake should be an integer"
-    assert total_stake >= 0, "Total stake should be non-negative"
+    assert isinstance(total_stake, int)
+    assert total_stake >= 0
     print(f"Current total stake for quorum {quorum_number}: {total_stake}")
 
 
 def test_get_total_stake_update_at_index():
     quorum_number = 0
     total_length = clients.avs_registry_reader.get_total_stake_history_length(quorum_number)
-    assert (
-        total_length is not None and total_length > 0
-    ), "No total stake updates found for the given quorum"
-    index = total_length - 1  # Use latest available index
+    assert isinstance(total_length, int) and total_length > 0
+    index = total_length - 1
     update = clients.avs_registry_reader.get_total_stake_update_at_index(quorum_number, index)
-    assert update is not None
+    assert isinstance(update, StakeRegistryTypesStakeUpdate)
+    print(f"Total stake update for quorum {quorum_number} at index {index}: {update}")
 
 
 def test_get_total_stake_at_block_number_from_index():
@@ -294,7 +252,7 @@ def test_get_total_stake_at_block_number_from_index():
     result = clients.avs_registry_reader.get_total_stake_at_block_number_from_index(
         quorum_number, block_number, index
     )
-    assert result is None or isinstance(result, int)
+    assert isinstance(result, int)
     print(
         f"Total stake for quorum {quorum_number} at block {block_number} from index {index}: {result}"
     )
@@ -304,38 +262,32 @@ def test_get_total_stake_indices_at_block_number():
     quorum_numbers = [0]
     block_number = clients.eth_http_client.eth.block_number
 
-    try:
-        indices = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
-            quorum_numbers, block_number
-        )
+    indices = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
+        quorum_numbers, block_number
+    )
 
-        assert isinstance(indices, list), "Expected list of indices"
-        assert all(isinstance(i, int) for i in indices)
+    assert isinstance(indices, list)
+    assert all(isinstance(i, int) for i in indices)
 
-        print(
-            f"Total stake indices at block {block_number} for quorums {quorum_numbers}: {indices}"
-        )
-
-    except Exception as e:
-        pytest.fail(f"get_total_stake_indices_at_block_number failed: {e}")
+    print(f"Total stake indices at block {block_number} for quorums {quorum_numbers}: {indices}")
 
 
 def test_get_minimum_stake_for_quorum():
     quorum_number = 0
     result = clients.avs_registry_reader.get_minimum_stake_for_quorum(quorum_number)
-    assert result is None or isinstance(result, int)
+    assert isinstance(result, int)
     print(f"Minimum stake for quorum {quorum_number}: {result}")
 
 
 def test_get_strategy_params_at_index():
-    quorum_number = 0  # Replace with a valid quorum number
+    quorum_number = 0
     total_stake_strategy_count = clients.avs_registry_reader.get_total_stake_history_length(
         quorum_number
     )
     assert total_stake_strategy_count is not None and (
         total_stake_strategy_count >= 1
     ), f"No strategy parameters found for quorum {quorum_number}"
-    index = total_stake_strategy_count - 1  # Test latest strategy param
+    index = total_stake_strategy_count - 1
     strategy_param = clients.avs_registry_reader.get_strategy_params_at_index(quorum_number, index)
     assert strategy_param is not None
 
@@ -344,7 +296,7 @@ def test_get_strategy_per_quorum_at_index():
     quorum_number = 0
     index = 0
     result = clients.avs_registry_reader.get_strategy_per_quorum_at_index(quorum_number, index)
-    assert result is None or isinstance(result, str)
+    assert isinstance(result, str)
     print(f"Strategy for quorum {quorum_number} at index {index}: {result}")
 
 
@@ -357,7 +309,7 @@ def test_get_stake_type_per_quorum():
 
 
 def test_get_slashable_stake_look_ahead_per_quorum():
-    quorum_number = 0  # Replace with a valid quorum number
+    quorum_number = 0
     lookahead = clients.avs_registry_reader.get_slashable_stake_look_ahead_per_quorum(quorum_number)
     assert isinstance(lookahead, int), "Lookahead value should be an integer"
     assert lookahead >= 0, "Lookahead should be non-negative"
@@ -388,21 +340,16 @@ def test_query_registration_detail():
     print(f"Quorum participation bitmap for operator {operator}: {result}")
 
 
-def test_get_operator_address_from_operator_id():
-    operator_addr = Web3.to_checksum_address(config["operator_address_1"])
-    operator_id = clients.avs_registry_reader.get_operator_id_from_operator_address(operator_addr)
-    if operator_id is not None:
-        result = clients.avs_registry_reader.get_operator_address_from_operator_id(operator_id)
-        assert result is None or isinstance(result, str)
-        print(f"Operator address from operator ID {operator_id.hex()}: {result}")
-    else:
-        print("Operator ID is None, skipping test")
+def test_get_operator_address_from_operator_id(operator_id):
+    result = clients.avs_registry_reader.get_operator_address_from_operator_id(operator_id)
+    assert isinstance(result, str)
+    print(f"Operator address from operator ID {operator_id.hex()}: {result}")
 
 
 def test_get_pubkey_from_operator_address():
     operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.get_pubkey_from_operator_address(operator_addr)
-    assert result is None or isinstance(result, G1Point)
+    assert isinstance(result, G1Point)
     print(f"Public key for operator {operator_addr}: {result}")
 
 
