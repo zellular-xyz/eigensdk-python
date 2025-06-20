@@ -77,13 +77,9 @@ class StakeRegistryTypesStrategyParams:
 
 @dataclass
 class StakeRegistryTypesStakeUpdate:
-    """Python equivalent of IStakeRegistryTypesStakeUpdate struct for testing"""
-
     update_block_number: int
     next_update_block_number: int
     stake: int
-    block_number: int
-    is_registered: bool
 
 
 @dataclass

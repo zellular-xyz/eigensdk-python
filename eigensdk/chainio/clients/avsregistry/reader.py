@@ -134,8 +134,14 @@ class AvsRegistryReader:
 
     def get_stake_history(
         self, operator_id: bytes, quorum_number: int
-    ) -> Optional[list[StakeRegistryTypesStakeUpdate]]:
-        return self.stake_registry.functions.getStakeHistory(operator_id, quorum_number).call()
+    ) -> list[StakeRegistryTypesStakeUpdate]:
+        history = self.stake_registry.functions.getStakeHistory(operator_id, quorum_number).call()
+        return [
+            StakeRegistryTypesStakeUpdate(
+                update_block_number=update[0], next_update_block_number=update[1], stake=update[2]
+            )
+            for update in history
+        ]
 
     def get_latest_stake_update(
         self, operator_id: bytes, quorum_number: int

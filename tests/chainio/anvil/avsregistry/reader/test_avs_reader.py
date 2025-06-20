@@ -128,21 +128,21 @@ def test_get_stake_history_length(operator_id):
 
 
 def test_get_stake_history(operator_id):
-    quorum_number = 0  # Replace with a valid quorum number
+    quorum_number = 0
 
     stake_history = clients.avs_registry_reader.get_stake_history(operator_id, quorum_number)
 
     assert isinstance(stake_history, list), "Expected stake history to be a list"
 
     for update in stake_history:
-        assert hasattr(update, "blockNumber")
+        assert hasattr(update, "update_block_number")
+        assert hasattr(update, "next_update_block_number")
         assert hasattr(update, "stake")
-        assert hasattr(update, "isRegistered")
 
     print(f"Stake history for operator {operator_id} in quorum {quorum_number}:")
     for entry in stake_history:
         print(
-            f"  Block {entry.block_number} - Stake: {entry.stake} - Registered: {entry.is_registered}"
+            f"Update Block Number: {entry.update_block_number} - Next Update Block Number: {entry.next_update_block_number} - Stake: {entry.stake}"
         )
 
 
