@@ -1,10 +1,9 @@
 import pytest
 from web3 import Web3
-from web3.exceptions import ContractLogicError
 from typing import cast
 from eth_typing import Address
 
-from eigensdk.crypto.bls.attestation import G1Point, G2Point
+from eigensdk.crypto.bls.attestation import G1Point
 from tests.builder import clients, config
 
 from eigensdk.types_ import (
@@ -93,7 +92,7 @@ def test_get_operators_stake_in_quorums_of_operator_at_block(operator_id):
     for stake_list in stakes_result:
         assert all(isinstance(operator, OperatorStateRetrieverOperator) for operator in stake_list)
 
-    print(f"Operator ID: {operator_id} → Quorum IDs: {quorum_ids_result}")
+    print(f"Operator ID: {operator_id.hex()} → Quorum IDs: {quorum_ids_result}")
     print(f"Stakes at block {block_number}: {stakes_result}")
 
 
@@ -128,7 +127,7 @@ def test_get_stake_history_length(operator_id):
     assert isinstance(stake_history_length, int)
     assert stake_history_length >= 0
     print(
-        f"Stake history length for operator {operator_id} in quorum {quorum_number}: {stake_history_length}"
+        f"Stake history length for operator {operator_id.hex()} in quorum {quorum_number}: {stake_history_length}"
     )
 
 
@@ -140,7 +139,9 @@ def test_get_stake_history(operator_id):
     assert isinstance(stake_history, list)
     assert all(isinstance(update, StakeRegistryTypesStakeUpdate) for update in stake_history)
 
-    print(f"Stake history for operator {operator_id} in quorum {quorum_number}: {stake_history}")
+    print(
+        f"Stake history for operator {operator_id.hex()} in quorum {quorum_number}: {stake_history}"
+    )
 
 
 def test_get_latest_stake_update(operator_id):
@@ -149,7 +150,7 @@ def test_get_latest_stake_update(operator_id):
     assert isinstance(latest_update, StakeRegistryTypesStakeUpdate)
 
     print(
-        f"Last stake update for operator {operator_id} in quorum {quorum_number}: {latest_update}"
+        f"Last stake update for operator {operator_id.hex()} in quorum {quorum_number}: {latest_update}"
     )
 
 
@@ -167,7 +168,7 @@ def test_get_stake_update_at_index(operator_id):
     )
     assert isinstance(stake_update, StakeRegistryTypesStakeUpdate)
     print(
-        f"Stake update at index {index} for operator {operator_id} in quorum {quorum_number}: {stake_update}"
+        f"Stake update at index {index} for operator {operator_id.hex()} in quorum {quorum_number}: {stake_update}"
     )
 
 
@@ -183,7 +184,7 @@ def test_get_stake_at_block_number(operator_id):
     assert stake >= 0
 
     print(
-        f"Stake at block {block_number} for operator {operator_id} in quorum {quorum_number}: {stake}"
+        f"Stake at block {block_number} for operator {operator_id.hex()} in quorum {quorum_number}: {stake}"
     )
 
 
@@ -199,7 +200,7 @@ def test_get_stake_update_index_at_block_number(operator_id):
     assert index >= 0
 
     print(
-        f"Stake update index for operator {operator_id} in quorum {quorum_number} at block {block_number}: {index}"
+        f"Stake update index for operator {operator_id.hex()} in quorum {quorum_number} at block {block_number}: {index}"
     )
 
 
@@ -325,9 +326,8 @@ def test_get_operator_id():
 
 def test_get_operator_from_id(operator_id):
     address = clients.avs_registry_reader.get_operator_from_id(operator_id)
-    assert address is not None, "Returned address should not be None"
-    assert Web3.is_checksum_address(address), f"Invalid Ethereum address returned: {address}"
-    print(f"Operator ID {operator_id} maps to address: {address}")
+    assert Web3.is_checksum_address(address)
+    print(f"Operator ID {operator_id.hex()} maps to address: {address}")
 
 
 def test_query_registration_detail():
@@ -357,23 +357,15 @@ def test_get_apk_update():
     quorum_number = 0
     index = 0
     update = clients.avs_registry_reader.get_apk_update(quorum_number, index)
-    assert update is not None, "APK update should not be None"
-    assert isinstance(update.apk_hash, bytes)
-    assert isinstance(update.update_block_number, int)
-    assert isinstance(update.next_update_block_number, int)
-    print(f"APK Update for quorum {quorum_number}, index {index}:")
-    print(f"  Hash: {update.apk_hash.hex()}")
-    print(f"  Update Block: {update.update_block_number}")
-    print(f"  Next Update Block: {update.next_update_block_number}")
+    assert isinstance(update, BLSApkRegistryTypesApkUpdate)
+    print(f"APK Update for quorum {quorum_number}, index {index}: {update}")
 
 
 def test_get_current_apk():
     quorum_number = 0
     apk = clients.avs_registry_reader.get_current_apk(quorum_number)
-    assert apk is not None, "APK should not be None"
-    print(f"Current APK for quorum {quorum_number}:")
-    print(f"  x = {apk.x}")
-    print(f"  y = {apk.y}")
+    assert isinstance(apk, G1Point)
+    print(f"Current APK for quorum {quorum_number}: x = {apk.x} y = {apk.y}")
 
 
 def test_query_existing_registered_operator_sockets():
@@ -383,6 +375,7 @@ def test_query_existing_registered_operator_sockets():
     for operator_id, socket in result.items():
         assert isinstance(operator_id, bytes)
         assert isinstance(socket, str)
+
     print(f"Found {len(result)} registered operator sockets up to block {stop_block}")
 
 
@@ -395,10 +388,8 @@ def test_query_existing_registered_operator_pubkeys():
     assert len(operator_addresses) == len(operator_pubkeys)
     for addr, pubkey in zip(operator_addresses, operator_pubkeys):
         assert isinstance(addr, str)
-        assert hasattr(pubkey, "g1_pub_key")
-        assert hasattr(pubkey, "g2_pub_key")
-        assert isinstance(pubkey.g1_pub_key, G1Point)
-        assert isinstance(pubkey.g2_pub_key, G2Point)
+        assert isinstance(pubkey, OperatorPubkeys)
+
     print(f"Found {len(operator_addresses)} registered operator public keys")
 
 
@@ -408,8 +399,10 @@ def test_registry_coordinator_owner():
     print(f"RegistryCoordinator owner: {owner}")
     is_owner = clients.avs_registry_reader.is_registry_coordinator_owner(owner)
     assert is_owner is True, "Owner should be verified as the owner"
+
     test_address = Web3.to_checksum_address("0x1234567890123456789012345678901234567890")
     can_satisfy = clients.avs_registry_reader.can_satisfy_only_coordinator_owner_modifier(
         test_address
     )
+    assert can_satisfy is False
     print(f"Can address {test_address} satisfy onlyCoordinatorOwner modifier? {can_satisfy}")

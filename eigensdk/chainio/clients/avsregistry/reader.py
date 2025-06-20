@@ -206,7 +206,9 @@ class AvsRegistryReader:
     def get_total_stake_update_at_index(
         self, quorum_number: int, index: int
     ) -> StakeRegistryTypesStakeUpdate:
-        update = self.stake_registry.functions.getTotalStakeUpdateAtIndex(quorum_number, index).call()
+        update = self.stake_registry.functions.getTotalStakeUpdateAtIndex(
+            quorum_number, index
+        ).call()
         return StakeRegistryTypesStakeUpdate(
             update_block_number=update[0], next_update_block_number=update[1], stake=update[2]
         )
