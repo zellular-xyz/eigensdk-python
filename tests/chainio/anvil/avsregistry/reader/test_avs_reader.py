@@ -72,17 +72,17 @@ def test_get_operators_stake_in_quorums_of_operator_at_block(operator_id):
         return
 
     assert isinstance(quorum_ids_result, list)
-    # assert all(isinstance(qid, int) for qid in quorum_ids_result)
+    assert all(isinstance(qid, int) for qid in quorum_ids_result)
 
-    # assert isinstance(stakes_result, list)
-    # assert all(isinstance(s, list) for s in stakes_result)
-    # for stake_list in stakes_result:
-    #     for stake in stake_list:
-    #         assert hasattr(stake, "operatorId")
-    #         assert hasattr(stake, "stake")
-    #         assert hasattr(stake, "isRegistered")
+    assert isinstance(stakes_result, list)
+    assert all(isinstance(s, list) for s in stakes_result)
+    for stake_list in stakes_result:
+        for stake in stake_list:
+            assert hasattr(stake, "operator")
+            assert hasattr(stake, "operator_id")
+            assert hasattr(stake, "stake")
 
-    # print(f"Operator ID: {operator_ids[0]} → Quorum IDs: {quorum_ids_result}")
+    print(f"Operator ID: {operator_id} → Quorum IDs: {quorum_ids_result}")
     print(f"Stakes at block {block_number}: {stakes_result}")
 
 

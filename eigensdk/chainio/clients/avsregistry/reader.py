@@ -1,5 +1,4 @@
 import logging
-import math
 from typing import Optional
 
 from eth_typing import Address
@@ -56,8 +55,6 @@ class AvsRegistryReader:
         self, quorum_numbers: list[int]
     ) -> list[list[OperatorStateRetrieverOperator]]:
         cur_block = self.eth_http_client.eth.block_number
-        if cur_block > math.pow(2, 32) - 1:
-            raise ValueError("Current block number is too large to be converted to uint32")
         return self.get_operators_stake_in_quorums_at_block(quorum_numbers, cur_block)
 
     def get_operators_stake_in_quorums_at_block(
@@ -85,14 +82,9 @@ class AvsRegistryReader:
     def get_operator_addrs_in_quorums_at_current_block(
         self, quorum_numbers: list[int]
     ) -> list[list[str]]:
-        stakes = self.operator_state_retriever.get_function_by_signature(
-            "getOperatorState(address,bytes,uint32)"
-        )(
-            self.registry_coordinator_addr,
-            utils.nums_to_bytes(quorum_numbers),
-            self.eth_http_client.eth.block_number,
-        ).call()
-        return [[op[0] for op in quorum] for quorum in stakes]
+        cur_block = self.eth_http_client.eth.block_number
+        stakes = self.get_operators_stake_in_quorums_at_block(quorum_numbers, cur_block)
+        return [[op.operator for op in quorum] for quorum in stakes]
 
     def get_operators_stake_in_quorums_of_operator_at_block(
         self, operator_id: bytes, block_number: int
@@ -103,33 +95,23 @@ class AvsRegistryReader:
 
         # Convert the bitmap to quorum IDs
         quorums = bitmap_to_quorum_ids(quorum_bitmap)
-        return quorums, operator_stakes
+        return quorums, [
+            [
+                OperatorStateRetrieverOperator(
+                    operator=operator[0],
+                    operator_id=operator[1],
+                    stake=operator[2],
+                )
+                for operator in quorum
+            ]
+            for quorum in operator_stakes
+        ]
 
     def get_operators_stake_in_quorums_of_operator_at_current_block(
-        self, operator_ids: list[bytes]
+        self, operator_id: bytes
     ) -> tuple[list[int], list[list[OperatorStateRetrieverOperator]]]:
-        if not operator_ids:
-            return [], []
-
-        combined_bitmap = 0
-
-        for operator_id in operator_ids:
-            bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call()
-            combined_bitmap |= int(bitmap)
-
-        quorums = bitmap_to_quorum_ids(combined_bitmap)
-        if not quorums:
-            return [], []
-
-        operator_stakes = self.operator_state_retriever.functions.get_function_by_signature(
-            "getOperatorState(address,bytes,uint32)"
-        )(
-            self.registry_coordinator_addr,
-            utils.nums_to_bytes(quorums),
-            self.eth_http_client.eth.block_number,
-        ).call()
-
-        return quorums, operator_stakes
+        cur_block = self.eth_http_client.eth.block_number
+        return self.get_operators_stake_in_quorums_of_operator_at_block(operator_id, cur_block)
 
     def weight_of_operator_for_quorum(self, quorum_number: int, operator_addr: str) -> int:
         return self.stake_registry.functions.weightOfOperatorForQuorum(
