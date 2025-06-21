@@ -36,15 +36,14 @@ RUN git clone https://github.com/Layr-Labs/incredible-squaring-avs.git \
     && forge build 
 
 # Copy application requirements first for better caching
-COPY pyproject.toml requirements-dev.txt .
-RUN pip install --no-cache-dir -e . && \
-    pip install --no-cache-dir -r requirements-dev.txt
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e .[dev]
 
 # Copy the rest of the application code
 COPY . .
 
 # Install the application
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e .[dev]
 
 # Expose port 8545 for Anvil
 EXPOSE 8545
