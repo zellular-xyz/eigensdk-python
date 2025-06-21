@@ -1,18 +1,44 @@
-import pytest
 from web3 import Web3
-from tests.builder import clients, config
-from tests.chainio.anvil.avsregistry.writer.utils import (
-    register_as_operator,
-    register_for_operator_sets,
-)
+from tests.builder import clients_array, clients, config
+from eigensdk.crypto.bls import KeyPair
+from eth_utils import to_checksum_address
+from eigensdk.chainio.clients.elcontracts.writer import Operator
+
+
+def test_register_as_operator_for_operator_sets():
+    for i in range(1, 4):
+        address = to_checksum_address(config["operator_address_{}".format(i)])
+        operator = Operator(
+            address=address,
+            earnings_receiver_address=address,
+            delegation_approver_address=Web3.to_checksum_address(
+                "0x0000000000000000000000000000000000000000"
+            ),
+            allocation_delay=50,
+            metadata_url="https://example.com/operator-metadata",
+            staker_opt_out_window_blocks=100,
+        )
+        receipt = clients_array[i - 1].el_writer.register_as_operator(operator)
+        assert receipt is not None
+        assert receipt["status"] == 1
+        print(f"Registered operator with tx hash: {receipt['transactionHash'].hex()}")
+        request = {
+            "operator_address": address,
+            "avs_address": config["service_manager_address"],
+            "operator_set_ids": [0],
+            "socket": "operator-socket",
+            "bls_key_pair": KeyPair(),
+        }
+        receipt = clients_array[i - 1].el_writer.register_for_operator_sets(
+            config["avs_registry_coordinator_address"], request
+        )
+        assert receipt["status"] == 1
+        print(f"Registered for operator sets with tx hash: {receipt['transactionHash'].hex()}")
 
 
 def test_update_stakes_of_entire_operator_set_for_quorums():
-    try:
-        register_as_operator()
-        register_for_operator_sets()
-    except AssertionError:  # FIXME simplify flow
-        pass
+    # register_as_operator()
+    # register_for_operator_sets()
 
     operator_addr = Web3.to_checksum_address(config["operator_address_2"])
     operators_per_quorum = [[str(operator_addr)]]
@@ -25,11 +51,6 @@ def test_update_stakes_of_entire_operator_set_for_quorums():
 
 
 def test_update_socket():
-    try:
-        register_as_operator()
-        register_for_operator_sets()
-    except AssertionError:  # FIXME simplify code flow
-        pass
     new_socket = "192.168.1.100:9000"
     receipt = clients.avs_registry_writer.update_socket(new_socket)
     assert receipt is not None

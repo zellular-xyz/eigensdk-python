@@ -398,7 +398,7 @@ def test_get_current_apk():
     quorum_number = 0
     apk = clients.avs_registry_reader.get_current_apk(quorum_number)
     assert isinstance(apk, G1Point)
-    print(f"Current APK for quorum {quorum_number}: x = {apk.x} y = {apk.y}")
+    print(f"Current APK for quorum {quorum_number}: {apk.getStr()}")
 
 
 def test_query_existing_registered_operator_sockets():
