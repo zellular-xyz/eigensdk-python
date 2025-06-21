@@ -2,7 +2,7 @@ import pytest
 from web3 import Web3
 from typing import cast
 from eth_typing import Address
-
+from web3.exceptions import ContractLogicError
 from eigensdk.crypto.bls.attestation import G1Point
 from tests.builder import clients, config
 
@@ -15,10 +15,11 @@ from eigensdk.types_ import (
     BLSApkRegistryTypesApkUpdate,
 )
 
+quorum_numbers = [0]
+
 
 @pytest.fixture(scope="session")
 def operator_id():
-    quorum_numbers = [0]
     result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(
         quorum_numbers
     )
@@ -32,7 +33,6 @@ def test_get_quorum_count():
 
 
 def test_get_operators_stake_in_quorums_at_current_block():
-    quorum_numbers = [0]
     result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_current_block(
         quorum_numbers
     )
@@ -47,7 +47,6 @@ def test_get_operators_stake_in_quorums_at_current_block():
 
 
 def test_get_operators_stake_in_quorums_at_block():
-    quorum_numbers = [0]
     block_number = clients.eth_http_client.eth.block_number
     result = clients.avs_registry_reader.get_operators_stake_in_quorums_at_block(
         quorum_numbers, block_number
@@ -63,7 +62,6 @@ def test_get_operators_stake_in_quorums_at_block():
 
 
 def test_get_operator_addrs_in_quorums_at_current_block():
-    quorum_numbers = [0]
     result = clients.avs_registry_reader.get_operator_addrs_in_quorums_at_current_block(
         quorum_numbers
     )
@@ -74,13 +72,42 @@ def test_get_operator_addrs_in_quorums_at_current_block():
     print(f"Operator addresses in quorums at current block: {result}")
 
 
+def test_get_operators_stake_in_quorums_of_operator_at_block_for_non_registered_operator():
+    operator_id = b"\x00" * 32
+    block_number = clients.eth_http_client.eth.block_number
+    with pytest.raises(ContractLogicError) as exc_info:
+        clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block(
+            operator_id, block_number
+        )
+        print(f"Exception for querying operators stake for non-registered users: {exc_info}")
+
+
+def test_get_single_operator_stake_in_quorums_of_operator_at_current_block(operator_id):
+    result = clients.avs_registry_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
+        operator_id
+    )
+    assert isinstance(result, dict)
+    assert all(isinstance(quorum, int) for quorum in result)
+    assert all(isinstance(result[quorum], int) for quorum in result)
+    print(f"Single operator stakes in quorums at current block: {result}")
+
+
+def test_get_single_operator_stake_in_quorums_of_operator_at_current_block_for_non_registered_operator():
+    operator_id = b"\x00" * 32
+    result = clients.avs_registry_reader.get_operator_stake_in_quorums_of_operator_at_current_block(
+        operator_id
+    )
+    assert isinstance(result, dict)
+    assert len(result) == 0
+
+
 def test_get_operators_stake_in_quorums_of_operator_at_block(operator_id):
     block_number = clients.eth_http_client.eth.block_number
 
     result = clients.avs_registry_reader.get_operators_stake_in_quorums_of_operator_at_block(
         operator_id, block_number
     )
-    print(f"Result: {result}")
+
     assert isinstance(result, tuple) and len(result) == 2
     quorum_ids_result, stakes_result = result
 
@@ -217,7 +244,6 @@ def test_get_total_stake_history_length():
 
 def test_get_check_signatures_indices(operator_id):
     reference_block_number = clients.eth_http_client.eth.block_number - 1
-    quorum_numbers = [0]
     non_signer_operator_ids = [operator_id]
 
     result = clients.avs_registry_reader.get_check_signatures_indices(
@@ -260,7 +286,6 @@ def test_get_total_stake_at_block_number_from_index():
 
 
 def test_get_total_stake_indices_at_block_number():
-    quorum_numbers = [0]
     block_number = clients.eth_http_client.eth.block_number
 
     indices = clients.avs_registry_reader.get_total_stake_indices_at_block_number(
@@ -321,6 +346,14 @@ def test_get_operator_id():
     operator_addr = Web3.to_checksum_address(config["operator_address_1"])
     result = clients.avs_registry_reader.get_operator_id(cast(Address, operator_addr))
     assert isinstance(result, bytes)
+    print(f"Operator ID for {operator_addr}: {result.hex()}")
+
+
+def test_get_operator_id_for_non_registered_operator():
+    operator_addr = Web3.to_checksum_address("0x1234567890123456789012345678901234567890")
+    result = clients.avs_registry_reader.get_operator_id(cast(Address, operator_addr))
+    assert isinstance(result, bytes)
+    assert result == b"\x00" * 32
     print(f"Operator ID for {operator_addr}: {result.hex()}")
 
 
