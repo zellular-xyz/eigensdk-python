@@ -109,6 +109,18 @@ class AvsRegistryReader:
         cur_block = self.eth_http_client.eth.block_number
         return self.get_operators_stake_in_quorums_of_operator_at_block(operator_id, cur_block)
 
+    def get_operator_stake_in_quorums_of_operator_at_current_block(
+        self, operator_id: bytes
+    ) -> dict[int, int]:
+        quorum_bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(
+            operator_id
+        ).call()
+        quorums = bitmap_to_quorum_ids(quorum_bitmap)
+        return {
+            quorum: self.stake_registry.functions.getCurrentStake(operator_id, quorum).call()
+            for quorum in quorums
+        }
+
     def weight_of_operator_for_quorum(self, quorum_number: int, operator_addr: str) -> int:
         return self.stake_registry.functions.weightOfOperatorForQuorum(
             quorum_number, operator_addr
