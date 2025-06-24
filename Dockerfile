@@ -42,9 +42,6 @@ RUN pip install --no-cache-dir -e .[dev]
 # Copy the rest of the application code
 COPY . .
 
-# Install the application
-RUN pip install --no-cache-dir -e .[dev]
-
 # Expose port 8545 for Anvil
 EXPOSE 8545
 
