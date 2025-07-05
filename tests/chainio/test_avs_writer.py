@@ -37,9 +37,6 @@ def test_register_as_operator_for_operator_sets():
 
 
 def test_update_stakes_of_entire_operator_set_for_quorums():
-    # register_as_operator()
-    # register_for_operator_sets()
-
     operator_addr = Web3.to_checksum_address(config["operator_address_2"])
     operators_per_quorum = [[str(operator_addr)]]
     quorum_numbers = [0]
