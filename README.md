@@ -67,6 +67,14 @@ make build
 make test
 ```
 
+Formatting, linting and type checking is also available via:
+
+```bash
+make format     # Format code using Black
+make lint       # Lint code with Flake8
+make mypy       # Run type checking
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
