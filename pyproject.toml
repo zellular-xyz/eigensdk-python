@@ -20,7 +20,6 @@ classifiers = [
 ]
 license = "MIT"
 dependencies = [
-    "mcl @ git+https://github.com/sadeghte/mcl-python.git",
     "web3",
     "python-dotenv==1.0.1"
 ]
