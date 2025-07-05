@@ -1,7 +1,5 @@
 .PHONY: $(MAKECMDGOALS)
 
-DOCKER_DEV = docker compose run --rm --remove-orphans dev
-
 build:
 	COMPOSE_BAKE=true docker compose build
 
@@ -40,13 +38,13 @@ format:
 	$(DOCKER_DEV) black .
 
 format-check:
-	$(DOCKER_DEV) black --check .
+	black --check .
 
 mypy:
-	$(DOCKER_DEV) mypy --ignore-missing-imports --implicit-optional .
+	mypy --ignore-missing-imports --implicit-optional .
 
 lint:
-	$(DOCKER_DEV) flake8 .
+	flake8 .
 
 precommit: format-check mypy lint
 commit-all-no-verify:
