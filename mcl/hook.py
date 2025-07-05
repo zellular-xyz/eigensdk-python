@@ -46,7 +46,7 @@ with change_cwd(DIR_FOR_LINKER):
     if system == "Darwin":
         mclbn384_256 = get_dll("lib/libmclbn384_256.dylib")
     elif system == "Linux":
-        get_dll('lib/libmcl.so', ctypes.RTLD_GLOBAL)
+        get_dll("lib/libmcl.so", ctypes.RTLD_GLOBAL)
         mclbn384_256 = get_dll("lib/libmclbn384_256.so")
     else:
         raise RuntimeError(f"Unsupported OS {system}")

@@ -124,7 +124,10 @@ def buildIsEqual(cls):
 
 def buildIsOne(cls):
     wrapper = utils.wrap_function(
-        hook.mclbn384_256, f"mclBn{cls.__name__}_isOne", None, [ctypes.POINTER(cls)],
+        hook.mclbn384_256,
+        f"mclBn{cls.__name__}_isOne",
+        None,
+        [ctypes.POINTER(cls)],
     )
 
     def isOne(self, other):
@@ -276,7 +279,11 @@ def buildPairing(cls, left_group, right_group):
         hook.mclbn384_256,
         "mclBn_pairing",
         None,
-        [ctypes.POINTER(cls), ctypes.POINTER(left_group), ctypes.POINTER(right_group),],
+        [
+            ctypes.POINTER(cls),
+            ctypes.POINTER(left_group),
+            ctypes.POINTER(right_group),
+        ],
     )
 
     @staticmethod
