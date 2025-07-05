@@ -44,25 +44,21 @@ cd eigensdk-python
 pip install .
 ```
 
+## Documentation
+
+For detailed API documentation, installation guides, and examples, please refer to the [official documentation](https://eigensdk-python.readthedocs.io/en/latest).
+
 ## Testing & Development
 
-A complete Docker-based environment is provided, featuring:
+A complete [Docker](https://docs.docker.com/get-docker/) based environment is provided, featuring:
 
 * Python 3.12
 * Pre-installed MCL library
 * [Foundry](https://book.getfoundry.sh/) (for local Ethereum development)
 * EigenLayer contracts (cloned and built)
 * Incredible-Squaring AVS example contracts
-* Pre-configured development tools: Black, Flake8, MyPy
 
 This setup ensures a clean, reproducible environment for development and testing.
-
-### Requirements
-
-* [Docker](https://docs.docker.com/get-docker/)
-* [Docker Compose V2](https://docs.docker.com/compose/install/)
-
-### Quick Start
 
 ```bash
 git clone https://github.com/zellular-xyz/eigensdk-python
@@ -70,20 +66,6 @@ cd eigensdk-python
 make build
 make test
 ```
-
-### Development Workflow
-
-```bash
-make build      # Build Docker image
-make test       # Run tests
-make format     # Format code using Black
-make lint       # Lint code with Flake8
-make mypy       # Run type checking
-```
-
-## Documentation
-
-For detailed API documentation, installation guides, and examples, please refer to the [official documentation](https://eigensdk-python.readthedocs.io/en/latest).
 
 ## License
 
