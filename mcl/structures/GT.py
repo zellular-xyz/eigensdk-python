@@ -1,7 +1,5 @@
-import types
 import ctypes
 
-from .. import utils
 from .. import builder
 from .G1 import G1
 from .G2 import G2

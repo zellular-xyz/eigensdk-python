@@ -1,7 +1,6 @@
 import ctypes
 
 from .Fp import Fp
-from ..hook import mclbn384_256
 from .. import builder
 
 

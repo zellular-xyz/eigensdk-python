@@ -1,7 +1,6 @@
 import contextlib
 import ctypes
 import os
-import pathlib
 import platform
 import sys
 import textwrap

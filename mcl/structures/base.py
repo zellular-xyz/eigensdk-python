@@ -6,4 +6,4 @@ class Structure(ctypes.Structure):
         return f"{self.__class__} {self.getStr().decode()}"
 
     def __repr__(self):
-      return str(self)
+        return str(self)

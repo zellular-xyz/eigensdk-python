@@ -84,7 +84,7 @@ def buildGetSubArray(cls, idx, sub_cls):
         result = sub_cls.from_address(addr + (ctypes.sizeof(sub_cls) * idx))
         return result
 
-    return getSubArray;
+    return getSubArray
 
 
 def buildGetStr(cls):
@@ -232,7 +232,7 @@ def buildDeserialize(cls):
 
     def deserialize(self, value):
         if len(value) > BUFFER_SIZE:
-            raise RuntimeError(f"deserialize error: value is more than a buffer size.")
+            raise RuntimeError("deserialize error: value is more than a buffer size.")
         buffer = ctypes.create_string_buffer(b"\0" * BUFFER_SIZE)
         ctypes.memmove(buffer, value, len(value))
         wrapper(self, buffer, BUFFER_SIZE)
@@ -274,7 +274,7 @@ def buildHashAndMapTo(cls):
 def buildPairing(cls, left_group, right_group):
     wrapper = utils.wrap_function(
         hook.mclbn384_256,
-        f"mclBn_pairing",
+        "mclBn_pairing",
         None,
         [ctypes.POINTER(cls), ctypes.POINTER(left_group), ctypes.POINTER(right_group),],
     )
