@@ -1,4 +1,4 @@
-gimport logging
+import logging
 
 from eth_typing import Address
 from eth_utils import event_abi_to_log_topic
@@ -52,14 +52,20 @@ class AvsRegistryReader:
     def get_operators_stake_in_quorums_at_current_block(
         self, quorum_numbers: list[int]
     ) -> list[list[OperatorStateRetrieverOperator]]:
-        """Returns, for each quorum in quorumNumbers, a vector of the operators registered for that quorum at the current block, containing each operator's operatorId and stake."""
+        """Returns, for each quorum in quorumNumbers, a vector of the operators registered for that
+        quorum at the current block, containing each operator's operatorId and stake."""
         cur_block = self.eth_http_client.eth.block_number
         return self.get_operators_stake_in_quorums_at_block(quorum_numbers, cur_block)
 
     def get_operators_stake_in_quorums_at_block(
         self, quorum_numbers: list[int], block_number: int
     ) -> list[list[OperatorStateRetrieverOperator]]:
-        """Returns, for each quorum in quorumNumbers, a vector of the operators registered for that quorum at a specific block number. The contract stores historical state, so `block_number` should be the block number of the state to query."""
+        """Returns, for each quorum in quorumNumbers, a vector of the operators registered for that
+        quorum at a specific block number.
+
+        The contract stores historical state, so `block_number` should be the block number of the
+        state to query.
+        """
         operator_stakes = self.operator_state_retriever.get_function_by_signature(
             "getOperatorState(address,bytes,uint32)"
         )(
@@ -82,7 +88,8 @@ class AvsRegistryReader:
     def get_operator_addrs_in_quorums_at_current_block(
         self, quorum_numbers: list[int]
     ) -> list[list[str]]:
-        """Returns, for each quorum in quorumNumbers, a list of the addresses of the operators registered for that quorum at the current block."""
+        """Returns, for each quorum in quorumNumbers, a list of the addresses of the operators
+        registered for that quorum at the current block."""
         cur_block = self.eth_http_client.eth.block_number
         stakes = self.get_operators_stake_in_quorums_at_block(quorum_numbers, cur_block)
         return [[op.operator for op in quorum] for quorum in stakes]
@@ -92,7 +99,8 @@ class AvsRegistryReader:
     ) -> tuple[list[int], list[list[OperatorStateRetrieverOperator]]]:
         """Returns a tuple:
         - An array with the quorum IDs in which the given operator is registered at the given block
-        - An array that contains, for each quorum, an array with the address, id, and stake of each operator
+        - An array that contains, for each quorum, an array with the address, id, and stake of each
+         operator
         """
         quorum_bitmap, operator_stakes = self.operator_state_retriever.get_function_by_signature(
             "getOperatorState(address,bytes32,uint32)"
@@ -114,14 +122,21 @@ class AvsRegistryReader:
     def get_operators_stake_in_quorums_of_operator_at_current_block(
         self, operator_id: bytes
     ) -> tuple[list[int], list[list[OperatorStateRetrieverOperator]]]:
-        """Returns quorum registration and stake data of a given operator at the current block. `opts` will be updated to include the latest blockNumber."""
+        """Returns quorum registration and stake data of a given operator at the current block.
+
+        `opts` will be updated to include the latest blockNumber.
+        """
         cur_block = self.eth_http_client.eth.block_number
         return self.get_operators_stake_in_quorums_of_operator_at_block(operator_id, cur_block)
 
     def get_operator_stake_in_quorums_of_operator_at_current_block(
         self, operator_id: bytes
     ) -> dict[int, int]:
-        """Avoids race conditions by ensuring consistent blockNumber usage. Queries operator's stake data in relevant quorums using provided or default blockNumber in opts."""
+        """Avoids race conditions by ensuring consistent blockNumber usage.
+
+        Queries operator's stake data in relevant quorums using provided or default blockNumber in
+        opts.
+        """
         quorum_bitmap = self.registry_coordinator.functions.getCurrentQuorumBitmap(
             operator_id
         ).call()
@@ -138,13 +153,15 @@ class AvsRegistryReader:
         ).call()
 
     def strategy_params_length(self, quorum_number: int) -> int:
-        """Returns the length of the dynamic array stored in strategyParams[quorumNumber] in the StakeRegistry contract."""
+        """Returns the length of the dynamic array stored in strategyParams[quorumNumber] in the
+        StakeRegistry contract."""
         return self.stake_registry.functions.strategyParamsLength(quorum_number).call()
 
     def strategy_params_by_index(
         self, quorum_number: int, index: int
     ) -> StakeRegistryTypesStrategyParams:
-        """Returns the strategy and weight multiplier for the index-th strategy in the specified quorum."""
+        """Returns the strategy and weight multiplier for the index-th strategy in the specified
+        quorum."""
         result = self.stake_registry.functions.strategyParamsByIndex(quorum_number, index).call()
         return StakeRegistryTypesStrategyParams(strategy=result[0], multiplier=result[1])
 
@@ -157,7 +174,8 @@ class AvsRegistryReader:
     def get_stake_history(
         self, operator_id: bytes, quorum_number: int
     ) -> list[StakeRegistryTypesStakeUpdate]:
-        """Returns the entire operatorStakeHistory[operatorId][quorumNumber] array, which contains the operator's stake update history."""
+        """Returns the entire operatorStakeHistory[operatorId][quorumNumber] array, which contains
+        the operator's stake update history."""
         history = self.stake_registry.functions.getStakeHistory(operator_id, quorum_number).call()
         return [
             StakeRegistryTypesStakeUpdate(
@@ -180,7 +198,8 @@ class AvsRegistryReader:
     def get_stake_update_at_index(
         self, operator_id: bytes, quorum_number: int, index: int
     ) -> StakeRegistryTypesStakeUpdate:
-        """Returns the index-th entry in the operatorStakeHistory for the specified operator and quorum."""
+        """Returns the index-th entry in the operatorStakeHistory for the specified operator and
+        quorum."""
         update = self.stake_registry.functions.getStakeUpdateAtIndex(
             quorum_number, operator_id, index
         ).call()
@@ -194,7 +213,8 @@ class AvsRegistryReader:
         quorum_number: int,
         block_number: int,
     ) -> int:
-        """Returns the stake of the operator for the provided quorumNumber at the given blockNumber."""
+        """Returns the stake of the operator for the provided quorumNumber at the given
+        blockNumber."""
         return self.stake_registry.functions.getStakeAtBlockNumber(
             operator_id, quorum_number, block_number
         ).call()
@@ -205,7 +225,8 @@ class AvsRegistryReader:
         quorum_number: int,
         block_number: int,
     ) -> int:
-        """Returns the indices of the operator stakes for the provided quorumNumber at the given blockNumber."""
+        """Returns the indices of the operator stakes for the provided quorumNumber at the given
+        blockNumber."""
         return self.stake_registry.functions.getStakeUpdateIndexAtBlockNumber(
             operator_id, quorum_number, block_number
         ).call()
@@ -220,7 +241,8 @@ class AvsRegistryReader:
         quorum_numbers: list[int],
         non_signer_operator_ids: list[bytes],
     ) -> OperatorStateRetrieverCheckSignaturesIndices:
-        """Returns a struct containing the indices of the quorum members that signed, and those that didn't."""
+        """Returns a struct containing the indices of the quorum members that signed, and those
+        that didn't."""
         quorum_bytes = utils.nums_to_bytes(quorum_numbers)
         result = self.operator_state_retriever.functions.getCheckSignaturesIndices(
             self.registry_coordinator_addr,
@@ -251,7 +273,8 @@ class AvsRegistryReader:
     def get_total_stake_at_block_number_from_index(
         self, quorum_number: int, block_number: int, index: int
     ) -> int:
-        """Returns the total stake weight for the specified quorum at the index-th entry in the stake history array if it was the stake at the specified blockNumber."""
+        """Returns the total stake weight for the specified quorum at the index-th entry in the
+        stake history array if it was the stake at the specified blockNumber."""
         return self.stake_registry.functions.getTotalStakeAtBlockNumberFromIndex(
             quorum_number, block_number, index
         ).call()
@@ -307,7 +330,8 @@ class AvsRegistryReader:
         return self.registry_coordinator.functions.getOperatorFromId(operator_id).call()
 
     def query_registration_detail(self, operator_address: Address) -> list[bool]:
-        """Returns an array of booleans representing whether an operator is registered for each quorum."""
+        """Returns an array of booleans representing whether an operator is registered for each
+        quorum."""
         operator_id = self.get_operator_id(operator_address=operator_address)
         value = self.registry_coordinator.functions.getCurrentQuorumBitmap(operator_id).call()
         return [(value & (1 << i)) != 0 for i in range(value.bit_length())]
@@ -334,7 +358,8 @@ class AvsRegistryReader:
         return G1Point(operator_pubkey[0], operator_pubkey[1])
 
     def get_apk_update(self, quorum_number: int, index: int) -> BLSApkRegistryTypesApkUpdate:
-        """Stores and retrieves the history of aggregate public key updates for a quorum at a given index."""
+        """Stores and retrieves the history of aggregate public key updates for a quorum at a given
+        index."""
         update = self.bls_apk_registry.functions.apkHistory(quorum_number, index).call()
         return BLSApkRegistryTypesApkUpdate(
             apk_hash=bytes(update[0]),
@@ -353,7 +378,10 @@ class AvsRegistryReader:
         stop_block: int | None = None,
         block_range: int = DEFAULT_QUERY_BLOCK_RANGE,
     ) -> tuple[dict[bytes, str], int]:
-        """Queries operator sockets for a block range. Returns a mapping from operator IDs to sockets."""
+        """Queries operator sockets for a block range.
+
+        Returns a mapping from operator IDs to sockets.
+        """
         if stop_block is None:
             stop_block = self.eth_http_client.eth.block_number
 
