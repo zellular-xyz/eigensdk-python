@@ -66,12 +66,3 @@ Table of Contents
     eigensdk.chainio
     eigensdk.crypto
     eigensdk.types
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Guides
-
-    security
-    advanced-examples
-    performance
-    troubleshooting

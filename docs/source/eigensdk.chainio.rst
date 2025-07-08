@@ -3,6 +3,14 @@
 eigensdk.chainio
 ================
 
+AvsRegistryReader
+~~~~~~~~~~~~~~~~~
+.. autoclass:: eigensdk.chainio.clients.avsregistry.reader.AvsRegistryReader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 eigensdk.chainio.clients.builder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

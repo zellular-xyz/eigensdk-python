@@ -12,11 +12,11 @@ version = "0.1.0"
 # -- General configuration
 
 extensions = [
-    "sphinx.ext.duration",
-    "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx_autodoc_typehints",
 ]
 
 intersphinx_mapping = {
@@ -25,7 +25,9 @@ intersphinx_mapping = {
 }
 intersphinx_disabled_domains = ["std"]
 
-templates_path = ["_templates"]
+autodoc_typehints = "description"
+
+# templates_path = ["_templates"]
 
 # -- Options for HTML output
 
@@ -33,10 +35,6 @@ html_theme = "sphinx_rtd_theme"
 
 # -- Options for EPUB output
 
-epub_show_urls = "footnote"
-
-# -- Custom project attribution note (can be used in templates or footers)
-
-rst_epilog = """
-.. |project_note| replace:: This SDK was originally developed by Abram Symons .
-"""
+# epub_show_urls = "footnote"
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
