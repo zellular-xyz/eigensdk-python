@@ -34,7 +34,6 @@ class AvsRegistryReader:
         logger: logging.Logger,
         eth_http_client: Web3,
     ):
-        """TODO: Add description."""
         self.logger: logging.Logger = logger
         self.bls_apk_registry: Contract = bls_apk_registry
         self.bls_apk_registry_addr = bls_apk_registry_addr
@@ -100,7 +99,7 @@ class AvsRegistryReader:
         """Returns a tuple:
         - An array with the quorum IDs in which the given operator is registered at the given block
         - An array that contains, for each quorum, an array with the address, id, and stake of each
-         operator
+        operator
         """
         quorum_bitmap, operator_stakes = self.operator_state_retriever.get_function_by_signature(
             "getOperatorState(address,bytes32,uint32)"
@@ -262,7 +261,6 @@ class AvsRegistryReader:
     def get_total_stake_update_at_index(
         self, quorum_number: int, index: int
     ) -> StakeRegistryTypesStakeUpdate:
-        """TODO: Add description."""
         update = self.stake_registry.functions.getTotalStakeUpdateAtIndex(
             quorum_number, index
         ).call()
@@ -282,42 +280,34 @@ class AvsRegistryReader:
     def get_total_stake_indices_at_block_number(
         self, quorum_numbers: list[int], block_number: int
     ) -> list[int]:
-        """TODO: Add description."""
         quorum_bytes = utils.nums_to_bytes(quorum_numbers)
         return self.stake_registry.functions.getTotalStakeIndicesAtBlockNumber(
             block_number, quorum_bytes
         ).call()
 
     def get_minimum_stake_for_quorum(self, quorum_number: int) -> int:
-        """TODO: Add description."""
         return self.stake_registry.functions.minimumStakeForQuorum(quorum_number).call()
 
     def get_strategy_params_at_index(
         self, quorum_number: int, index: int
     ) -> StakeRegistryTypesStrategyParams:
-        """TODO: Add description."""
         return self.stake_registry.functions.strategyParams(quorum_number, index).call()
 
     def get_strategy_per_quorum_at_index(self, quorum_number: int, index: int) -> str:
-        """TODO: Add description."""
         return self.stake_registry.functions.strategiesPerQuorum(quorum_number, index).call()
 
     # TODO: IMPLEMENT TEST BASED ON THE AVS SERVICE MANAGER
     def get_restakeable_strategies(self) -> list[str]:
-        """TODO: Add description."""
         return self.service_manager.functions.getRestakeableStrategies().call()
 
     # TODO: IMPLEMENT TEST BASED ON THE AVS SERVICE MANAGER
     def get_operator_restaked_strategies(self, operator: str) -> list[str]:
-        """TODO: Add description."""
         return self.service_manager.functions.getOperatorRestakedStrategies(operator).call()
 
     def get_stake_type_per_quorum(self, quorum_number: int) -> int:
-        """TODO: Add description."""
         return self.stake_registry.functions.stakeTypePerQuorum(quorum_number).call()
 
     def get_slashable_stake_look_ahead_per_quorum(self, quorum_number: int) -> int:
-        """TODO: Add description."""
         return self.stake_registry.functions.slashableStakeLookAheadPerQuorum(quorum_number).call()
 
     def get_operator_id(self, operator_address: Address) -> bytes:
@@ -341,7 +331,6 @@ class AvsRegistryReader:
         return self.registry_coordinator.functions.getOperatorStatus(operator_address).call() == 1
 
     def is_operator_set_quorum(self, quorum_number: int) -> bool:
-        """TODO: Add description."""
         return self.stake_registry.functions.isOperatorSetQuorum(quorum_number).call()
 
     def get_operator_id_from_operator_address(self, operator_address: str) -> bytes:
@@ -479,14 +468,11 @@ class AvsRegistryReader:
         return operator_addresses, operator_pubkeys
 
     def get_registry_coordinator_owner(self) -> str:
-        """TODO: Add description."""
         return self.registry_coordinator.functions.owner().call()
 
     def is_registry_coordinator_owner(self, address: str) -> bool:
-        """TODO: Add description."""
         owner = self.get_registry_coordinator_owner()
         return owner.lower() == address.lower()
 
     def can_satisfy_only_coordinator_owner_modifier(self, address: str) -> bool:
-        """TODO: Add description."""
         return self.is_registry_coordinator_owner(address)
