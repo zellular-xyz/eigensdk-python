@@ -11,3 +11,7 @@ extensions = [
 autodoc_typehints = "description"
 html_theme = "sphinx_rtd_theme"
 napoleon_google_docstring = True
+
+autodoc_mock_imports = [
+    "mcl",
+]
