@@ -14,9 +14,11 @@ def new_fp_element(v: int) -> Fp:
 
 
 class G1Point(G1):
+    """Represents a point on the G1 curve.
+
+    Provides basic arithmetic operations.
     """
-    Represents a point on the G1 curve. Provides basic arithmetic operations.
-    """
+
     def __init__(self, x: int, y: int) -> None:
         super().__init__()
         self.setStr(f"1 {x} {y}".encode("utf-8"))
@@ -30,28 +32,23 @@ class G1Point(G1):
         return G1Point(x, y)
 
     def __add__(self, a: "G1Point"):
-        """
-        Adds another G1Point to this point and returns the result.
-        """
+        """Adds another G1Point to this point and returns the result."""
         return G1Point.from_G1(super().__add__(a).normalize())
 
     def __sub__(self, a: "G1Point"):
-        """
-        Subtracts another G1Point from this point and returns the result.
-        """
+        """Subtracts another G1Point from this point and returns the result."""
         return G1Point.from_G1(super().__sub__(a).normalize())
 
     def verify_equivalence(self, a: "G2Point"):
-        """
-        Verifies if a G1Point and a G2Point represent the same underlying discrete logarithm. Useful for signature verification.
+        """Verifies if a G1Point and a G2Point represent the same underlying discrete logarithm.
+
+        Useful for signature verification.
         """
         return bn256Utils.check_g1_and_g2_discrete_log_equality(self, a)
 
 
 def new_g1_point(x: int, y: int) -> G1Point:
-    """
-    Constructs a new G1Point.
-    """
+    """Constructs a new G1Point."""
     res = G1Point(x, y)
     if x == 0 and y == 0:
         res.clear()
@@ -64,9 +61,8 @@ def new_zero_g1_point() -> G1Point:
 
 
 class G2Point(G2):
-    """
-    Represents a point on the G2 curve.
-    """
+    """Represents a point on the G2 curve."""
+
     def __init__(self, xa: int, xb: int, ya: int, yb: int) -> None:
         super().__init__()
         self.setStr(f"1 {xb} {xa} {yb} {ya}".encode("utf-8"))
@@ -91,9 +87,7 @@ class G2Point(G2):
 
 
 def new_g2_point(xa: int, xb: int, ya: int, yb: int) -> G2Point:
-    """
-    Constructs a new G2Point.
-    """
+    """Constructs a new G2Point."""
     return G2Point(xa, xb, ya, yb)
 
 
@@ -104,18 +98,16 @@ def new_zero_g2_point() -> G2Point:
 
 class GTPoint(GT):
     """Represents a point on the GT curve (target group of the pairing)."""
+
     pass
 
 
 class Signature(G1Point):
-    """
-    A special type of G1Point specifically used for signatures.
-    """
+    """A special type of G1Point specifically used for signatures."""
+
     @staticmethod
     def from_g1_point(p: G1Point) -> "Signature":
-        """
-        Constructs a Signature from a G1Point.
-        """
+        """Constructs a Signature from a G1Point."""
         x = int(p.getX().getStr())
         y = int(p.getY().getStr())
         return Signature(x, y)
@@ -142,9 +134,8 @@ def new_zero_signature() -> Signature:
 
 
 class PrivateKey(Fr):
-    """
-    Represents a BLS private key.
-    """
+    """Represents a BLS private key."""
+
     def __init__(self, secret: bytes = None):
         super().__init__()
         if not secret:
@@ -154,9 +145,7 @@ class PrivateKey(Fr):
             self.setStr(f"{int_key}".encode("utf-8"), 10)
 
     def get_str(self) -> str:
-        """
-        Returns the private key as a hexadecimal string.
-        """
+        """Returns the private key as a hexadecimal string."""
         return self.getStr(16).decode("utf-8")  # .zfill(64)
 
 
@@ -166,9 +155,8 @@ def new_private_key(sk: bytes = b"") -> PrivateKey:
 
 
 class KeyPair:
-    """
-    Represents a BLS key pair, including both private and public keys.
-    """
+    """Represents a BLS key pair, including both private and public keys."""
+
     def __init__(self, priv_key: PrivateKey = None) -> None:
         if not priv_key:
             self.priv_key = PrivateKey()
@@ -180,9 +168,7 @@ class KeyPair:
 
     @staticmethod
     def from_string(sk: str, base=16) -> "KeyPair":
-        """
-        Constructs a KeyPair from a private key string.
-        """
+        """Constructs a KeyPair from a private key string."""
         pk = PrivateKey()
         pk.setStr(sk.encode("utf-8"), base)
         return KeyPair(pk)
@@ -208,9 +194,7 @@ class KeyPair:
         return KeyPair(PrivateKey(bytes(private_key)))
 
     def sign_message(self, msg_bytes: bytes) -> Signature:
-        """
-        Signs a message using the private key of the key pair.
-        """
+        """Signs a message using the private key of the key pair."""
         h = bn256Utils.map_to_curve(msg_bytes)
         return self.sign_hashed_to_curve_message(h)
 
