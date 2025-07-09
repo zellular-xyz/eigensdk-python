@@ -130,9 +130,7 @@ class ELReader:
         is_set, delay = self.allocation_manager.functions.getAllocationDelay(operator_addr).call()
         return delay if is_set else 0
 
-    def get_registered_sets(
-        self, operator_addr: Address | str | None
-    ) -> list[dict[str, Any]]:
+    def get_registered_sets(self, operator_addr: Address | str | None) -> list[dict[str, Any]]:
         """Returns a list of all operator sets the operator is registered for."""
         return [
             {"Id": s[0], "Avs": s[1]}
@@ -495,9 +493,7 @@ class ELReader:
         """Returns the split configured by the operator for Programmatic Incentives."""
         return self.reward_coordinator.functions.getOperatorPISplit(operator).call()
 
-    def get_operator_set_split(
-        self, operator: Address | str | None, operator_set: dict
-    ) -> int:
+    def get_operator_set_split(self, operator: Address | str | None, operator_set: dict) -> int:
         """Returns the split for an operator in an operator set."""
         return self.reward_coordinator.functions.getOperatorSetSplit(
             operator, (operator_set["Avs"], operator_set["Id"])
@@ -523,9 +519,7 @@ class ELReader:
         """Returns the submission nonce for an avs."""
         return self.reward_coordinator.functions.submissionNonce(avs).call()
 
-    def get_is_avs_rewards_submission_hash(
-        self, avs: Address | str | None, hash: bytes
-    ) -> bool:
+    def get_is_avs_rewards_submission_hash(self, avs: Address | str | None, hash: bytes) -> bool:
         """Returns whether a hash is a valid rewards submission hash for a given avs."""
         return self.reward_coordinator.functions.isAVSRewardsSubmissionHash(avs, hash).call()
 
@@ -646,9 +640,7 @@ class ELReader:
         """Returns the delay before allocation delay modifications take effect."""
         return self.allocation_manager.functions.ALLOCATION_CONFIGURATION_DELAY().call()
 
-    def get_num_operator_sets_for_operator(
-        self, operator_address: Address | str | None
-    ) -> int:
+    def get_num_operator_sets_for_operator(self, operator_address: Address | str | None) -> int:
         """Returns the number of operator sets that an operator is part of.
 
         This doesn't include M2 quorums.
