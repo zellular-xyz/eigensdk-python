@@ -46,7 +46,7 @@ pip install .
 
 ## Documentation
 
-For detailed API documentation, installation guides, and examples, please refer to the [official documentation](https://eigensdk-python.readthedocs.io/en/latest).
+For detailed API documentation, installation guides, and examples, please refer to the [official documentation](https://docs.zellular.xyz/eigensdk-python/).
 
 ## Testing & Development
 
