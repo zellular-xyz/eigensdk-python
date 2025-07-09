@@ -36,7 +36,10 @@ dev = [
     "pytest-order>=1.3.0",
     "PyYAML>=6.0.0",
     "twine",
-    "build"
+    "build",
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx_rtd_theme",
 ]
 
 [project.urls]
