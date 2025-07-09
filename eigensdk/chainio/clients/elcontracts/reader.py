@@ -62,7 +62,8 @@ class ELReader:
         operator_addr: Optional[Union[Address, ChecksumAddress, str]],
         strategy_addr: Optional[Union[Address, ChecksumAddress, str]],
     ) -> int:
-        """Returns the amount of magnitude on a strategy not currently allocated to any operator set, by an operator."""
+        """Returns the amount of magnitude on a strategy not currently allocated to any operator
+        set, by an operator."""
 
         return self.allocation_manager.functions.getAllocatableMagnitude(
             operator_addr, strategy_addr
@@ -113,14 +114,19 @@ class ELReader:
     def get_operator_sets_for_operator(
         self, operator_addr: Optional[Union[Address, str]]
     ) -> List[Dict[str, Any]]:
-        """Returns the list of operator sets the operator has current or pending allocations/deallocations in. This doesn't include M2 quorums."""
+        """Returns the list of operator sets the operator has current or pending
+        allocations/deallocations in.
+
+        This doesn't include M2 quorums.
+        """
         return [
             {"Id": s[0], "AvsAddress": s[1]}
             for s in self.allocation_manager.functions.getAllocatedSets(operator_addr).call()
         ]
 
     def get_allocation_delay(self, operator_addr: Optional[Union[Address, str]]) -> int:
-        """Returns the time in blocks between an operator allocating slashable magnitude and the magnitude becoming slashable."""
+        """Returns the time in blocks between an operator allocating slashable magnitude and the
+        magnitude becoming slashable."""
         is_set, delay = self.allocation_manager.functions.getAllocationDelay(operator_addr).call()
         return delay if is_set else 0
 
@@ -138,7 +144,11 @@ class ELReader:
         operator_address: Optional[Union[Address, str]],
         avs_address: Optional[Union[Address, str]],
     ) -> bool:
-        """Returns true if an operator is registered with a specific M2 quorum, querying AVSDirectory. Note: this method does not take into account operator sets."""
+        """Returns true if an operator is registered with a specific M2 quorum, querying
+        AVSDirectory.
+
+        Note: this method does not take into account operator sets.
+        """
         return (
             self.avs_directory.functions.avsOperatorStatus(avs_address, operator_address).call()
             == 1
@@ -147,7 +157,10 @@ class ELReader:
     def is_operator_registered_with_operator_set(
         self, operator_addr: Optional[Union[Address, str]], operator_set: dict
     ) -> bool:
-        """Returns true if an operator is registered with a specific operator set. Note: this method does not take into account M2 quorums."""
+        """Returns true if an operator is registered with a specific operator set.
+
+        Note: this method does not take into account M2 quorums.
+        """
         return any(
             s[0] == operator_set.get("Id", 0) and s[1] == operator_set.get("Avs")
             for s in self.allocation_manager.functions.getRegisteredSets(operator_addr).call()
@@ -156,7 +169,10 @@ class ELReader:
     def is_operator_slashable(
         self, operator_address: Optional[Union[Address, str]], operator_set: Dict[str, Any]
     ) -> bool:
-        """Returns true if the received operator is slashable by the received operator set. Note: this method does not take into account M2 quorums."""
+        """Returns true if the received operator is slashable by the received operator set.
+
+        Note: this method does not take into account M2 quorums.
+        """
         return self.allocation_manager.functions.isOperatorSlashable(
             operator_address,
             (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"]),
@@ -168,7 +184,11 @@ class ELReader:
         operator_addresses: Sequence[Union[Address, ChecksumAddress]],
         strategy_addresses: Sequence[Union[Address, ChecksumAddress]],
     ) -> List[List[int]]:
-        """Returns the current allocated stake, despite the operator's slashable status for the operatorSet. Note: this method does not take into account M2 quorums."""
+        """Returns the current allocated stake, despite the operator's slashable status for the
+        operatorSet.
+
+        Note: this method does not take into account M2 quorums.
+        """
         stakes = self.allocation_manager.functions.getAllocatedStake(
             (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"]),
             operator_addresses,
@@ -177,7 +197,10 @@ class ELReader:
         return stakes
 
     def get_operators_for_operator_set(self, operator_set: dict) -> list:
-        """Returns the list of operators in a specific operator set. Not supported for M2 AVSs."""
+        """Returns the list of operators in a specific operator set.
+
+        Not supported for M2 AVSs.
+        """
 
         if operator_set.get("id", 0) == 0:
             raise ValueError("Legacy AVSs not supported")
@@ -195,13 +218,19 @@ class ELReader:
         return operators
 
     def get_num_operators_for_operator_set(self, operator_set: dict) -> int:
-        """Returns the number of operators in a specific operator set. Not supported for M2 AVSs."""
+        """Returns the number of operators in a specific operator set.
+
+        Not supported for M2 AVSs.
+        """
         return self.allocation_manager.functions.getMemberCount(
             (Web3.to_checksum_address(operator_set["Avs"]), operator_set["Id"])
         ).call()
 
     def get_strategies_for_operator_set(self, operator_set: dict) -> List[Address]:
-        """Returns the list of strategies that an operator set takes into account. Not supported for M2 AVSs."""
+        """Returns the list of strategies that an operator set takes into account.
+
+        Not supported for M2 AVSs.
+        """
 
         if operator_set.get("id", 0) == 0:
             raise ValueError("Legacy AVSs not supported")
@@ -223,13 +252,15 @@ class ELReader:
         return strategies
 
     def is_operator_registered(self, operator_address: Optional[Union[Address, str]]) -> bool:
-        """Returns true if the operator is registered to the EigenLayer protocol, false otherwise."""
+        """Returns true if the operator is registered to the EigenLayer protocol, false
+        otherwise."""
         return self.delegation_manager.functions.isOperator(operator_address).call()
 
     def get_staker_shares(
         self, staker_address: Optional[Union[Address, str]]
     ) -> Tuple[List[Address], List[int]]:
-        """Returns the amount of shares that a staker has in all of the strategies they have shares in."""
+        """Returns the amount of shares that a staker has in all of the strategies they have shares
+        in."""
         return self.delegation_manager.functions.getDepositedShares(staker_address).call()
 
     def get_avs_registrar(self, avs_address: Optional[Union[Address, str]]) -> Address:
@@ -278,7 +309,8 @@ class ELReader:
         approver_salt: bytes,
         expiry: int,
     ) -> bytes:
-        """Returns the digest hash to be signed by the operator's delegation approver to be used when delegating to an operator."""
+        """Returns the digest hash to be signed by the operator's delegation approver to be used
+        when delegating to an operator."""
         return self.delegation_manager.functions.calculateDelegationApprovalDigestHash(
             staker, operator, delegation_approver, approver_salt, expiry
         ).call()
@@ -288,7 +320,8 @@ class ELReader:
         operator_addresses: Sequence[Union[Address, ChecksumAddress]],
         strategy_addresses: Sequence[Union[Address, ChecksumAddress]],
     ) -> List[List[int]]:
-        """Returns the shares that a set of operators have delegated to them in a set of strategies."""
+        """Returns the shares that a set of operators have delegated to them in a set of
+        strategies."""
         return self.delegation_manager.functions.getOperatorsShares(
             operator_addresses, strategy_addresses
         ).call()
@@ -316,7 +349,8 @@ class ELReader:
         target: Optional[Union[Address, str]],
         selector: bytes,
     ) -> bool:
-        """Returns true if appointeeAddress has permission to call the function with the given selector on the target contract, on behalf of accountAddress, and false otherwise."""
+        """Returns true if appointeeAddress has permission to call the function with the given
+        selector on the target contract, on behalf of accountAddress, and false otherwise."""
         return self.permission_controller.functions.canCall(
             account_address, appointee_address, target, selector
         ).call()
@@ -327,7 +361,10 @@ class ELReader:
         target: Optional[Union[Address, str]],
         selector: bytes,
     ) -> List[Address]:
-        """Returns the list of appointees for a given account, target and function selector. Note that this doesn't include any of the appointed admins."""
+        """Returns the list of appointees for a given account, target and function selector.
+
+        Note that this doesn't include any of the appointed admins.
+        """
         return self.permission_controller.functions.getAppointees(
             account_address, target, selector
         ).call()
@@ -355,7 +392,8 @@ class ELReader:
         account_address: Optional[Union[Address, str]],
         pending_admin_address: Optional[Union[Address, str]],
     ) -> bool:
-        """Returns true if pendingAdminAddress is a pending admin for accountAddress, false otherwise."""
+        """Returns true if pendingAdminAddress is a pending admin for accountAddress, false
+        otherwise."""
         return self.permission_controller.functions.isPendingAdmin(
             account_address, pending_admin_address
         ).call()
@@ -396,7 +434,8 @@ class ELReader:
         return self.reward_coordinator.functions.cumulativeClaimed(earner, token).call()
 
     def check_claim(self, claim: Dict[str, Any]) -> bool:
-        """Returns true if the claim would currently pass the check in ChainWriter.ProcessClaims or return an error if invalid."""
+        """Returns true if the claim would currently pass the check in ChainWriter.ProcessClaims or
+        return an error if invalid."""
         token_indices = claim.get("tokenIndices", [])
         token_tree_proofs = claim.get("tokenTreeProofs", [])
         token_leaves = claim.get("tokenLeaves", [])
@@ -503,7 +542,8 @@ class ELReader:
     def get_is_rewards_submission_for_all_earners_hash(
         self, avs: Optional[Union[Address, str]], hash: bytes
     ) -> bool:
-        """Returns whether a hash is a valid rewards submission for all earners hash for a given avs."""
+        """Returns whether a hash is a valid rewards submission for all earners hash for a given
+        avs."""
         return self.reward_coordinator.functions.isRewardsSubmissionForAllEarnersHash(
             avs, hash
         ).call()
@@ -511,7 +551,8 @@ class ELReader:
     def get_is_operator_directed_avs_rewards_submission_hash(
         self, avs: Optional[Union[Address, str]], hash: bytes
     ) -> bool:
-        """Returns whether a hash is a valid operator set performance rewards submission hash for a given avs."""
+        """Returns whether a hash is a valid operator set performance rewards submission hash for a
+        given avs."""
         return self.reward_coordinator.functions.isOperatorDirectedAVSRewardsSubmissionHash(
             avs, hash
         ).call()
@@ -519,7 +560,8 @@ class ELReader:
     def get_is_operator_directed_operator_set_rewards_submission_hash(
         self, avs: Optional[Union[Address, str]], hash: bytes
     ) -> bool:
-        """Returns whether a hash is a valid operator set performance rewards submission hash for a given avs."""
+        """Returns whether a hash is a valid operator set performance rewards submission hash for a
+        given avs."""
         return self.reward_coordinator.functions.isOperatorDirectedOperatorSetRewardsSubmissionHash(
             avs, hash
         ).call()
@@ -534,7 +576,8 @@ class ELReader:
     def get_strategy_and_underlying_erc20_token(
         self, strategy_addr: Union[Address, ChecksumAddress]
     ) -> Tuple[Contract, Contract, Optional[str]]:
-        """Returns the bindings of a given strategy and the bindings and address of its underlying token."""
+        """Returns the bindings of a given strategy and the bindings and address of its underlying
+        token."""
         strategy_contract = self.eth_http_client.eth.contract(
             address=Web3.to_checksum_address(strategy_addr), abi=self.strategy_abi
         )
@@ -563,13 +606,15 @@ class ELReader:
         operator_address: Optional[Union[Address, str]],
         strategy_address: Optional[Union[Address, str]],
     ) -> int:
-        """Returns the amount of magnitude an operator has allocated to operator sets for a given strategy."""
+        """Returns the amount of magnitude an operator has allocated to operator sets for a given
+        strategy."""
         return self.allocation_manager.functions.getEncumberedMagnitude(
             operator_address, strategy_address
         ).call()
 
     def get_calculation_interval_seconds(self) -> int:
-        """Gets the interval in seconds at which the calculation for rewards distribution is done."""
+        """Gets the interval in seconds at which the calculation for rewards distribution is
+        done."""
         return self.reward_coordinator.functions.CALCULATION_INTERVAL_SECONDS().call()
 
     def get_max_rewards_duration(self) -> int:
@@ -581,7 +626,8 @@ class ELReader:
         return self.reward_coordinator.functions.MAX_RETROACTIVE_LENGTH().call()
 
     def get_max_future_length(self) -> int:
-        """Get the max amount of time (seconds) that a rewards submission can start in the future."""
+        """Get the max amount of time (seconds) that a rewards submission can start in the
+        future."""
         return self.reward_coordinator.functions.MAX_FUTURE_LENGTH().call()
 
     def get_genesis_rewards_timestamp(self) -> int:
@@ -603,7 +649,10 @@ class ELReader:
     def get_num_operator_sets_for_operator(
         self, operator_address: Optional[Union[Address, str]]
     ) -> int:
-        """Returns the number of operator sets that an operator is part of. This doesn't include M2 quorums."""
+        """Returns the number of operator sets that an operator is part of.
+
+        This doesn't include M2 quorums.
+        """
         return self.allocation_manager.functions.getAllocatedSets(operator_address).call()
 
     def get_slashable_shares(
@@ -612,7 +661,8 @@ class ELReader:
         operator_set: Dict[str, Any],
         strategies: Sequence[Union[Address, ChecksumAddress]],
     ) -> Optional[Dict[str, int]]:
-        """Returns a list of the number of shares slashable by the operator set for each of the given strategies."""
+        """Returns a list of the number of shares slashable by the operator set for each of the
+        given strategies."""
         if operator_address is None:
             return None
         return self.allocation_manager.functions.getMinimumSlashableStake(
@@ -622,7 +672,12 @@ class ELReader:
     def get_slashable_shares_for_operator_sets_before(
         self, operator_sets: List[Dict[str, Any]], future_block: int
     ) -> Optional[List[Dict[str, Any]]]:
-        """Returns the strategies the operatorSets take into account, their operators, and the minimum amount of shares slashable by the operatorSets before a given timestamp. Timestamp must be in the future. Used to estimate future slashable stake. Not supported for M2 AVSs."""
+        """Returns the strategies the operatorSets take into account, their operators, and the
+        minimum amount of shares slashable by the operatorSets before a given timestamp.
+
+        Timestamp must be in the future. Used to estimate future slashable stake. Not supported for
+        M2 AVSs.
+        """
         result = []
         for op_set in operator_sets:
             operators = self.get_operators_for_operator_set(op_set)
@@ -648,7 +703,11 @@ class ELReader:
     def get_slashable_shares_for_operator_sets(
         self, operator_sets: List[Dict[str, Any]]
     ) -> Optional[List[Dict[str, Any]]]:
-        """Returns the strategies the operatorSets take into account, their operators, and the minimum amount of shares that are slashable by the operatorSets. Not supported for M2 AVSs."""
+        """Returns the strategies the operatorSets take into account, their operators, and the
+        minimum amount of shares that are slashable by the operatorSets.
+
+        Not supported for M2 AVSs.
+        """
         return self.get_slashable_shares_for_operator_sets_before(
             operator_sets, self.eth_http_client.eth.block_number
         )
