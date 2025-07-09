@@ -26,40 +26,11 @@ class OperatorPubkeys:
 
 
 @dataclass
-class OperatorInfo:
-    socket: str
-    pub_keys: OperatorPubkeys
-
-
-@dataclass
-class OperatorAvsState:
-    operator_id: bytes
-    operator_info: OperatorInfo
-    stake_per_quorum: dict[int, int]
-    block_number: int
-
-
-@dataclass
-class QuorumAvsState:
-    quorum_number: int
-    total_stake: int
-    agg_pub_key_g1: G1Point
-    block_number: int
-
-
-@dataclass
 class OperatorStateRetrieverCheckSignaturesIndices:
     non_signer_quorum_bitmap_indices: list[int]
     quorum_apk_indices: list[int]
     total_stake_indices: list[int]
     non_signer_stake_indices: list[list[int]]
-
-
-@dataclass
-class SignedTaskResponseDigest:
-    task_response: Any
-    bls_signature: Signature
-    operator_id: int
 
 
 @dataclass
