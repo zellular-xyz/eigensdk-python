@@ -1,5 +1,4 @@
 import logging
-from typing import List, Dict, Tuple
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import Address
@@ -43,8 +42,8 @@ class AvsRegistryWriter:
 
     def update_stakes_of_entire_operator_set_for_quorums(
         self,
-        operators_per_quorum: List[List[str]],
-        quorum_numbers: List[int],
+        operators_per_quorum: list[list[str]],
+        quorum_numbers: list[int],
     ) -> TxReceipt:
         """
         Used by avs teams running https://github.com/Layr-Labs/avs-sync to update the stake of
@@ -56,7 +55,7 @@ class AvsRegistryWriter:
         )
         return self.send_transaction(func)
 
-    def update_stakes_of_operator_subset_for_all_quorums(self, operators: List[str]) -> TxReceipt:
+    def update_stakes_of_operator_subset_for_all_quorums(self, operators: list[str]) -> TxReceipt:
         """Updates the stakes of the given operators for all the quorums."""
         func = self.registry_coordinator.functions.updateOperators(operators)
         return self.send_transaction(func)
@@ -102,9 +101,9 @@ class AvsRegistryWriter:
 
     def create_total_delegated_stake_quorum(
         self,
-        operator_set_params: Tuple[int, int, int],
+        operator_set_params: tuple[int, int, int],
         minimum_stake_required: int,
-        strategy_params: List[Tuple[str, int]],
+        strategy_params: list[tuple[str, int]],
     ) -> TxReceipt:
         """Creates a new quorum tracking total delegated stake.
 
@@ -117,9 +116,9 @@ class AvsRegistryWriter:
 
     def create_slashable_stake_quorum(
         self,
-        operator_set_params: Tuple[int, int, int],
+        operator_set_params: tuple[int, int, int],
         minimum_stake_required: int,
-        strategy_params: List[Tuple[str, int]],
+        strategy_params: list[tuple[str, int]],
         look_ahead_period: int,
     ) -> TxReceipt:
         """Creates a quorum tracking slashable stake.
@@ -137,7 +136,7 @@ class AvsRegistryWriter:
     def eject_operator(
         self,
         operator_address: str,
-        quorum_numbers: List[int],
+        quorum_numbers: list[int],
     ) -> TxReceipt:
         """Ejects an operator from the specified quorums.
 
@@ -152,7 +151,7 @@ class AvsRegistryWriter:
     def set_operator_set_params(
         self,
         quorum_number: int,
-        operator_set_params: Dict,
+        operator_set_params: dict,
     ) -> TxReceipt:
         """Sets max operator count and churn parameters for a specific quorum."""
         func = self.registry_coordinator.functions.setOperatorSetParams(
@@ -183,8 +182,8 @@ class AvsRegistryWriter:
     def modify_strategy_params(
         self,
         quorum_number: int,
-        strategy_indices: List[int],
-        multipliers: List[int],
+        strategy_indices: list[int],
+        multipliers: list[int],
     ) -> TxReceipt:
         """Modifies multipliers for existing strategies in a specific quorum."""
         func = self.stake_registry.functions.modifyStrategyParams(
@@ -213,7 +212,7 @@ class AvsRegistryWriter:
     def add_strategies(
         self,
         quorum_number: int,
-        strategy_params: List[Dict],
+        strategy_params: list[dict],
     ) -> TxReceipt:
         """Adds new strategies and multipliers to the specified quorum."""
         func = self.stake_registry.functions.addStrategies(quorum_number, strategy_params)
@@ -230,7 +229,7 @@ class AvsRegistryWriter:
     def remove_strategies(
         self,
         quorum_number: int,
-        indices_to_remove: List[int],
+        indices_to_remove: list[int],
     ) -> TxReceipt:
         """Removes strategies and their weights from the specified quorum."""
         func = self.stake_registry.functions.removeStrategies(quorum_number, indices_to_remove)
@@ -238,7 +237,7 @@ class AvsRegistryWriter:
 
     def create_avs_rewards_submission(
         self,
-        rewards_submission: List[Dict],
+        rewards_submission: list[dict],
     ) -> TxReceipt:
         """Creates a new AVS rewards submission for registered operators' stakers.
 
@@ -249,7 +248,7 @@ class AvsRegistryWriter:
 
     def create_operator_directed_avs_rewards_submission(
         self,
-        operator_directed_rewards_submissions: List[Dict],
+        operator_directed_rewards_submissions: list[dict],
     ) -> TxReceipt:
         """Creates operator-directed AVS rewards submission.
 
